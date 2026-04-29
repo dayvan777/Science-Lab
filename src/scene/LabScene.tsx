@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { Canvas } from '@react-three/fiber'
+import { Physics } from '@react-three/rapier'
 import { Lighting } from './Lighting'
 import { CameraRig, CameraPreset } from './CameraRig'
+import { Table } from './Table'
 import { Button } from '../ui/Button'
 
 export function LabScene() {
@@ -16,14 +18,9 @@ export function LabScene() {
       >
         <Lighting />
         <CameraRig preset={preset} />
-        <mesh castShadow position={[0, 0.5, 0]}>
-          <boxGeometry args={[0.3, 0.3, 0.3]} />
-          <meshStandardMaterial color="orange" />
-        </mesh>
-        <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[5, 5]} />
-          <meshStandardMaterial color="#404040" />
-        </mesh>
+        <Physics gravity={[0, -9.81, 0]}>
+          <Table />
+        </Physics>
       </Canvas>
       <div style={{ position: 'fixed', bottom: 16, right: 16, display: 'flex', gap: 8, zIndex: 10 }}>
         <Button variant="secondary" onClick={() => setPreset('overview')}>Скинути</Button>
