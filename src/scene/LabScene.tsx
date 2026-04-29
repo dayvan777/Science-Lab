@@ -10,6 +10,7 @@ import { Baseball } from './objects/Baseball'
 import { Button } from '../ui/Button'
 import { DigitalScale } from './instruments/DigitalScale'
 import { Dynamometer } from './instruments/Dynamometer'
+import { LeverBalance } from './instruments/LeverBalance'
 
 export function LabScene() {
   const [preset, setPreset] = useState<CameraPreset>('overview')
@@ -30,6 +31,7 @@ export function LabScene() {
           <Baseball position={[0.3, 1.2, 0]} />
           <DigitalScale position={[0.6, 0.85, 0]} />
           <Dynamometer position={[-0.5, 0.85, 0]} />
+          <LeverBalance position={[0, 0.85, 0]} />
         </Physics>
       </Canvas>
       <div style={{ position: 'fixed', bottom: 16, right: 16, display: 'flex', gap: 8, zIndex: 10 }}>
