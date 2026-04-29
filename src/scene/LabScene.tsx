@@ -8,6 +8,7 @@ import { TennisBall } from './objects/TennisBall'
 import { Apple } from './objects/Apple'
 import { Baseball } from './objects/Baseball'
 import { Button } from '../ui/Button'
+import { HUD } from '../lab/HUD'
 import { DigitalScale } from './instruments/DigitalScale'
 import { Dynamometer } from './instruments/Dynamometer'
 import { LeverBalance } from './instruments/LeverBalance'
@@ -36,6 +37,7 @@ export function LabScene() {
           <Weights startPosition={[0.5, 0.86, 0.45]} />
         </Physics>
       </Canvas>
+      <HUD />
       <div style={{ position: 'fixed', bottom: 16, right: 16, display: 'flex', gap: 8, zIndex: 10 }}>
         <Button variant="secondary" onClick={() => setPreset('overview')}>Скинути</Button>
         <Button variant="secondary" onClick={() => setPreset('digital-scale')}>Наблизити</Button>
