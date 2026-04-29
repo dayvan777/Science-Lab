@@ -1,3 +1,9 @@
+import { useLabState } from './lab/LabState'
+import { IntroScreen } from './lab/IntroScreen'
+
 export default function App() {
-  return <div style={{ color: 'white', padding: 32 }}>Mass Measurement Lab — bootstrapping</div>
+  const phase = useLabState(s => s.phase)
+  if (phase === 'intro') return <IntroScreen />
+  // LabScene and SummaryScreen wired in later tasks
+  return <div style={{ padding: 32, color: '#fff' }}>Phase: {phase} (not yet wired)</div>
 }
