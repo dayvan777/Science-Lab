@@ -3,8 +3,8 @@ import { RapierRigidBody } from '@react-three/rapier'
 
 export type SnapTarget = {
   id: string
-  position: Vector3
-  radius: number
+  position: Vector3       // world position of the snap target center
+  radius: number          // horizontal (X/Z) snap radius
   onAttach: (body: RapierRigidBody) => void
 }
 
@@ -16,8 +16,14 @@ export function registerSnap(target: SnapTarget) {
 }
 
 export function findSnapNear(pos: Vector3): SnapTarget | null {
+  let best: { t: SnapTarget; d: number } | null = null
   for (const t of targets.values()) {
-    if (pos.distanceTo(t.position) <= t.radius) return t
+    const dx = pos.x - t.position.x
+    const dz = pos.z - t.position.z
+    const d = Math.sqrt(dx * dx + dz * dz)
+    if (d <= t.radius && (!best || d < best.d)) {
+      best = { t, d }
+    }
   }
-  return null
+  return best?.t ?? null
 }

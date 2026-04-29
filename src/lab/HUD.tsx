@@ -2,6 +2,7 @@ import { useLabState } from './LabState'
 import { tasks } from './tasks'
 import { NumberInput } from '../ui/NumberInput'
 import { newtonsToGrams } from '../utils/units'
+import { useReadings } from './InstrumentReadings'
 
 const PANEL_BG = 'rgba(20, 20, 30, 0.92)'
 const TOTAL = 9
@@ -12,8 +13,41 @@ export function HUD() {
   const journal = useLabState(s => s.journal)
   const setMeasurement = useLabState(s => s.setMeasurement)
 
+  const digitalScaleG = useReadings(s => s.digitalScaleGrams)
+  const dynamometerN = useReadings(s => s.dynamometerNewtons)
+  const leverTilt = useReadings(s => s.leverBalanceTilt)
+  const leverRightG = useReadings(s => s.leverRightPanGrams)
+
   if (phase !== 'in-progress') return null
   const current = tasks[idx]
+
+  let liveReadingText = ''
+  let liveReadingValue = ''
+  let stepHint = ''
+  if (current.instrumentId === 'digital-scale') {
+    liveReadingText = 'Прилад показує:'
+    liveReadingValue = `${digitalScaleG} г`
+    stepHint = digitalScaleG === 0
+      ? '→ Поклади предмет на платформу'
+      : '✓ Прочитай значення зі шкали і впиши нижче'
+  } else if (current.instrumentId === 'dynamometer') {
+    liveReadingText = 'Сила на пружині:'
+    liveReadingValue = `${dynamometerN.toFixed(2)} N`
+    stepHint = dynamometerN === 0
+      ? '→ Підвісь предмет на гачок'
+      : '✓ Прочитай показання в Ньютонах і впиши нижче'
+  } else if (current.instrumentId === 'lever-balance') {
+    liveReadingText = 'Стан балансу:'
+    const balanced = Math.abs(leverTilt) < 0.05
+    liveReadingValue = balanced ? '⚖️ урівноважено' : (leverTilt < 0 ? '↘ ліва важче' : '↙ права важче')
+    if (leverRightG === 0) {
+      stepHint = '→ Поклади предмет на ЛІВУ чашу, потім гирьки на праву'
+    } else if (!balanced) {
+      stepHint = `→ На правій ${leverRightG} г — додай/прибери гирьки`
+    } else {
+      stepHint = `✓ Балка вирівняна! Маса предмета = ${leverRightG} г. Впиши значення нижче.`
+    }
+  }
 
   return (
     <>
@@ -42,22 +76,35 @@ export function HUD() {
 
       {/* Task panel (left) */}
       <div style={{
-        position: 'fixed', top: 80, left: 16, width: 320,
+        position: 'fixed', top: 80, left: 16, width: 360,
         background: PANEL_BG, color: '#fff',
         padding: 16, borderRadius: 8, backdropFilter: 'blur(8px)',
         zIndex: 10,
       }}>
         <div style={{ fontSize: 11, opacity: 0.6, textTransform: 'uppercase' }}>
-          Завдання {idx + 1}
+          Завдання {idx + 1} з {TOTAL}
         </div>
         <div style={{ fontSize: 14, fontWeight: 500, margin: '8px 0', lineHeight: 1.4 }}>
           {current.prompt}
         </div>
         <div style={{
           fontSize: 12, opacity: 0.7, lineHeight: 1.4,
-          paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.1)',
+          paddingTop: 8, paddingBottom: 8,
+          borderTop: '1px solid rgba(255,255,255,0.1)',
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
         }}>
           💡 {current.hint}
+        </div>
+        <div style={{ paddingTop: 10, fontSize: 13 }}>
+          <div style={{ opacity: 0.6, fontSize: 11, textTransform: 'uppercase', marginBottom: 4 }}>
+            {liveReadingText}
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: '#5DADE2', marginBottom: 8 }}>
+            {liveReadingValue}
+          </div>
+          <div style={{ fontSize: 12, opacity: 0.85, lineHeight: 1.4 }}>
+            {stepHint}
+          </div>
         </div>
       </div>
 

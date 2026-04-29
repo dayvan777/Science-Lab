@@ -4,6 +4,7 @@ import { RigidBody, RapierRigidBody } from '@react-three/rapier'
 import { CanvasTexture, Vector3 } from 'three'
 import { registerSnap } from '../../physics/snapTargets'
 import { Outlines } from '@react-three/drei'
+import { useReadings } from '../../lab/InstrumentReadings'
 
 const G = 9.81
 const SPRING_K = 50  // N/m — gives 0–10 cm range for 0–5 N
@@ -17,6 +18,7 @@ export function Dynamometer({ position, active = false }: Props) {
   const hookRef = useRef<RapierRigidBody>(null)
   const [attached, setAttached] = useState<RapierRigidBody | null>(null)
   const [hookY, setHookY] = useState(SPRING_TOP_Y - HOOK_REST_Y)
+  const setDynamometer = useReadings(s => s.setDynamometer)
 
   // Scale texture (drawn once)
   const scaleTexture = useMemo(() => {
@@ -45,6 +47,7 @@ export function Dynamometer({ position, active = false }: Props) {
     const hook = hookRef.current
     if (!hook) return
     const F = attached ? attached.mass() * G : 0
+    setDynamometer(F)
     const newY = SPRING_TOP_Y - HOOK_REST_Y - F / SPRING_K
     setHookY(newY)
     hook.setNextKinematicTranslation({

@@ -1,12 +1,18 @@
-import { useRef, RefObject } from 'react'
+import { useRef, RefObject, useEffect } from 'react'
+import { useFrame } from '@react-three/fiber'
 import {
   RigidBody,
   RapierRigidBody,
   CuboidCollider,
   useRevoluteJoint,
   useFixedJoint,
+  useRapier,
 } from '@react-three/rapier'
 import { Outlines } from '@react-three/drei'
+import { Vector3 } from 'three'
+import { RigidBodyType } from '@dimforge/rapier3d-compat'
+import { registerSnap } from '../../physics/snapTargets'
+import { useReadings } from '../../lab/InstrumentReadings'
 
 const STAND_H = 0.25
 const BEAM_LEN = 0.45
@@ -21,6 +27,10 @@ export function LeverBalance({ position, active = false }: Props) {
   const beamRef = useRef<RapierRigidBody>(null) as RefObject<RapierRigidBody>
   const leftPanRef = useRef<RapierRigidBody>(null) as RefObject<RapierRigidBody>
   const rightPanRef = useRef<RapierRigidBody>(null) as RefObject<RapierRigidBody>
+
+  const { world } = useRapier()
+  const setLeverTilt = useReadings(s => s.setLeverTilt)
+  const setLeverRightPanGrams = useReadings(s => s.setLeverRightPanGrams)
 
   // Revolute joint: stand top ↔ beam center, axis along Z (beam tilts in XY plane)
   // RevoluteJointParams = [body1Anchor: Vector3, body2Anchor: Vector3, axis: Vector3]
@@ -45,6 +55,65 @@ export function LeverBalance({ position, active = false }: Props) {
     [0, PAN_DEPTH / 2, 0],            // anchor on pan top-center
     [0, 0, 0, 1],                      // identity quaternion for pan frame
   ])
+
+  // Register snap targets for left and right pans (rest positions)
+  useEffect(() => {
+    const leftPos = new Vector3(position[0] - BEAM_LEN / 2, position[1] + STAND_H + 0.02, position[2])
+    const rightPos = new Vector3(position[0] + BEAM_LEN / 2, position[1] + STAND_H + 0.02, position[2])
+
+    const unregLeft = registerSnap({
+      id: `lever-left-${position[0]}-${position[1]}-${position[2]}`,
+      position: leftPos,
+      radius: 0.08,
+      onAttach: (body) => {
+        body.setBodyType(0 /* Dynamic */, true)
+        body.setTranslation({ x: leftPos.x, y: leftPos.y, z: leftPos.z }, true)
+        body.setLinvel({ x: 0, y: 0, z: 0 }, true)
+        body.setAngvel({ x: 0, y: 0, z: 0 }, true)
+      },
+    })
+
+    const unregRight = registerSnap({
+      id: `lever-right-${position[0]}-${position[1]}-${position[2]}`,
+      position: rightPos,
+      radius: 0.08,
+      onAttach: (body) => {
+        body.setBodyType(0 /* Dynamic */, true)
+        body.setTranslation({ x: rightPos.x, y: rightPos.y, z: rightPos.z }, true)
+        body.setLinvel({ x: 0, y: 0, z: 0 }, true)
+        body.setAngvel({ x: 0, y: 0, z: 0 }, true)
+      },
+    })
+
+    return () => { unregLeft(); unregRight() }
+  }, [position])
+
+  // Live readings: beam tilt and right-pan mass
+  useFrame(() => {
+    const beam = beamRef.current
+    if (beam) {
+      const rot = beam.rotation()
+      // For small angles: tilt ≈ 2 * asin(clamp(rot.z))
+      const tilt = 2 * Math.asin(Math.min(1, Math.max(-1, rot.z)))
+      setLeverTilt(tilt)
+    }
+
+    const rightPan = rightPanRef.current
+    if (rightPan) {
+      let totalKg = 0
+      try {
+        const collider = rightPan.collider(0)
+        world.contactPairsWith(collider, (other) => {
+          const body = other.parent()
+          if (!body || body.handle === rightPan.handle) return
+          if (body.bodyType() === RigidBodyType.Dynamic) {
+            totalKg += body.mass()
+          }
+        })
+      } catch (_) { /* ignore if collider not ready */ }
+      setLeverRightPanGrams(Math.max(0, Math.round(totalKg * 1000)))
+    }
+  })
 
   return (
     <group position={position}>

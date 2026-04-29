@@ -2,9 +2,11 @@ import { useRef, useState, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RigidBody, CuboidCollider, useRapier } from '@react-three/rapier'
 import { RapierRigidBody } from '@react-three/rapier'
-import { CanvasTexture } from 'three'
+import { CanvasTexture, Vector3 } from 'three'
 import { RigidBodyType } from '@dimforge/rapier3d-compat'
 import { Outlines } from '@react-three/drei'
+import { registerSnap } from '../../physics/snapTargets'
+import { useReadings } from '../../lab/InstrumentReadings'
 
 const PLATFORM_W = 0.20
 const PLATFORM_D = 0.20
@@ -20,6 +22,7 @@ export function DigitalScale({ position, active = false }: Props) {
   const { world } = useRapier()
   const [reading, setReading] = useState(0)
   const [tareOffset, setTareOffset] = useState(0)
+  const setDigitalScale = useReadings(s => s.setDigitalScale)
 
   const lcdTexture = useMemo(() => {
     const canvas = document.createElement('canvas')
@@ -63,7 +66,25 @@ export function DigitalScale({ position, active = false }: Props) {
     const grams = totalMassKg * 1000 - tareOffset
     // Smooth the reading slightly to reduce flicker as objects settle
     setReading(prev => prev * 0.7 + Math.max(0, grams) * 0.3)
+    setDigitalScale(Math.max(0, Math.round(grams)))
   })
+
+  // Register snap target for platform top
+  useEffect(() => {
+    const platformTopY = position[1] + HOUSING_H + PLATFORM_T + 0.05
+    const snapPos = new Vector3(position[0], platformTopY, position[2])
+    return registerSnap({
+      id: `digital-scale-${position[0]}-${position[1]}-${position[2]}`,
+      position: snapPos,
+      radius: 0.12,
+      onAttach: (body) => {
+        body.setBodyType(0 /* Dynamic */, true)
+        body.setTranslation({ x: snapPos.x, y: snapPos.y + 0.02, z: snapPos.z }, true)
+        body.setLinvel({ x: 0, y: 0, z: 0 }, true)
+        body.setAngvel({ x: 0, y: 0, z: 0 }, true)
+      },
+    })
+  }, [position])
 
   const onTare = () => setTareOffset(prev => prev + reading)
 
