@@ -8,6 +8,7 @@ import { TennisBall } from './objects/TennisBall'
 import { Apple } from './objects/Apple'
 import { Baseball } from './objects/Baseball'
 import { Button } from '../ui/Button'
+import { DigitalScale } from './instruments/DigitalScale'
 
 export function LabScene() {
   const [preset, setPreset] = useState<CameraPreset>('overview')
@@ -26,6 +27,7 @@ export function LabScene() {
           <TennisBall position={[-0.3, 1.2, 0]} />
           <Apple position={[0, 1.2, 0]} />
           <Baseball position={[0.3, 1.2, 0]} />
+          <DigitalScale position={[0.6, 0.85, 0]} />
         </Physics>
       </Canvas>
       <div style={{ position: 'fixed', bottom: 16, right: 16, display: 'flex', gap: 8, zIndex: 10 }}>
