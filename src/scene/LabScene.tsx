@@ -4,6 +4,9 @@ import { Physics } from '@react-three/rapier'
 import { Lighting } from './Lighting'
 import { CameraRig, CameraPreset } from './CameraRig'
 import { Table } from './Table'
+import { TennisBall } from './objects/TennisBall'
+import { Apple } from './objects/Apple'
+import { Baseball } from './objects/Baseball'
 import { Button } from '../ui/Button'
 
 export function LabScene() {
@@ -20,6 +23,9 @@ export function LabScene() {
         <CameraRig preset={preset} />
         <Physics gravity={[0, -9.81, 0]}>
           <Table />
+          <TennisBall position={[-0.3, 1.2, 0]} />
+          <Apple position={[0, 1.2, 0]} />
+          <Baseball position={[0.3, 1.2, 0]} />
         </Physics>
       </Canvas>
       <div style={{ position: 'fixed', bottom: 16, right: 16, display: 'flex', gap: 8, zIndex: 10 }}>
