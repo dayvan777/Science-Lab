@@ -20,6 +20,7 @@ export function LabScene() {
   const [preset, setPreset] = useState<CameraPreset>('overview')
   const phase = useLabState(s => s.phase)
   const idx = useLabState(s => s.currentTaskIndex)
+  const resetKey = useLabState(s => s.sessionId)
   const activeInstrument = phase === 'in-progress' ? tasks[idx]?.instrumentId : null
 
   return (
@@ -31,15 +32,18 @@ export function LabScene() {
       >
         <Lighting />
         <CameraRig preset={preset} />
-        <Physics gravity={[0, -9.81, 0]}>
+        <Physics key={resetKey} gravity={[0, -9.81, 0]}>
           <Table />
-          <TennisBall position={[-0.3, 1.2, 0]} />
-          <Apple position={[0, 1.2, 0]} />
-          <Baseball position={[0.3, 1.2, 0]} />
-          <DigitalScale position={[0.6, 0.85, 0]} active={activeInstrument === 'digital-scale'} />
-          <Dynamometer position={[-0.5, 0.85, 0]} active={activeInstrument === 'dynamometer'} />
-          <LeverBalance position={[0, 0.85, 0]} active={activeInstrument === 'lever-balance'} />
-          <Weights startPosition={[0.5, 0.86, 0.45]} />
+          {/* Objects spawn in left zone — clear of instruments */}
+          <TennisBall position={[-1.05, 0.95, 0]} />
+          <Apple position={[-1.05, 0.95, 0.18]} />
+          <Baseball position={[-1.05, 0.95, -0.18]} />
+          {/* Instruments spread across the table, away from object spawn */}
+          <Dynamometer position={[-0.55, 0.85, 0]} active={activeInstrument === 'dynamometer'} />
+          <LeverBalance position={[0.05, 0.85, 0]} active={activeInstrument === 'lever-balance'} />
+          <DigitalScale position={[0.75, 0.85, 0]} active={activeInstrument === 'digital-scale'} />
+          {/* Weights in front of lever balance for easy reach */}
+          <Weights startPosition={[0.05, 0.86, 0.4]} />
         </Physics>
       </Canvas>
       <HUD />

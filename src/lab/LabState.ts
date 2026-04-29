@@ -12,6 +12,7 @@ type LabState = {
   phase: LabPhase
   currentTaskIndex: number
   journal: JournalEntry[]
+  sessionId: number
   start: () => void
   setMeasurement: (taskId: string, value: number) => void
   reset: () => void
@@ -23,6 +24,7 @@ export const useLabState = create<LabState>((set, get) => ({
   phase: 'intro',
   currentTaskIndex: 0,
   journal: [],
+  sessionId: 0,
 
   start: () => set({ phase: 'in-progress' }),
 
@@ -37,5 +39,10 @@ export const useLabState = create<LabState>((set, get) => ({
     })
   },
 
-  reset: () => set({ phase: 'intro', currentTaskIndex: 0, journal: [] }),
+  reset: () => set(s => ({
+    phase: 'intro',
+    currentTaskIndex: 0,
+    journal: [],
+    sessionId: s.sessionId + 1,
+  })),
 }))
