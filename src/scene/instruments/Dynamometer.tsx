@@ -1,14 +1,14 @@
 import { useRef, useState, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { RigidBody, RapierRigidBody, BallCollider } from '@react-three/rapier'
-import { CanvasTexture } from 'three'
+import { RigidBody, RapierRigidBody } from '@react-three/rapier'
+import { CanvasTexture, Vector3 } from 'three'
+import { registerSnap } from '../../physics/snapTargets'
 
 const G = 9.81
 const SPRING_K = 50  // N/m — gives 0–10 cm range for 0–5 N
 const STAND_H = 0.4
 const SPRING_TOP_Y = 0.4
 const HOOK_REST_Y = 0.2
-const SNAP_RADIUS = 0.05
 
 type Props = { position: [number, number, number] }
 
@@ -63,10 +63,16 @@ export function Dynamometer({ position }: Props) {
     }
   })
 
-  const handleSnap = (body: RapierRigidBody) => {
-    if (attached) return
-    setAttached(body)
-  }
+  useEffect(() => {
+    const hookWorldPos = new Vector3(position[0] + 0.05, position[1] + hookY, position[2])
+    const unregister = registerSnap({
+      id: 'dynamometer-hook',
+      position: hookWorldPos,
+      radius: 0.06,
+      onAttach: (body) => setAttached(body),
+    })
+    return unregister
+  }, [position, hookY])
 
   return (
     <group position={position}>
@@ -92,23 +98,6 @@ export function Dynamometer({ position }: Props) {
         colliders={false}
         position={[position[0] + 0.05, position[1] + hookY, position[2]]}
       >
-        <BallCollider
-          args={[0.012]}
-          sensor
-          onIntersectionEnter={({ other }) => {
-            const body = other.rigidBody
-            if (!body || attached) return
-            // Only attach dynamic bodies
-            if (body.bodyType() !== 0 /* Dynamic */) return
-            // Check distance to hook position
-            const t = body.translation()
-            const dx = t.x - (position[0] + 0.05)
-            const dy = t.y - (position[1] + hookY)
-            const dz = t.z - position[2]
-            const dist = Math.sqrt(dx * dx + dy * dy + dz * dz)
-            if (dist < SNAP_RADIUS) handleSnap(body)
-          }}
-        />
         <mesh castShadow>
           <torusGeometry args={[0.012, 0.003, 8, 16]} />
           <meshStandardMaterial color="#888" metalness={0.7} />

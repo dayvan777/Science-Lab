@@ -3,6 +3,7 @@ import { ThreeEvent, useThree } from '@react-three/fiber'
 import { Vector3 } from 'three'
 import { RapierRigidBody } from '@react-three/rapier'
 import { RigidBodyType } from '@dimforge/rapier3d-compat'
+import { findSnapNear } from './snapTargets'
 
 const DRAG_HEIGHT = 1.0
 const SMOOTHING = 0.3
@@ -55,7 +56,14 @@ export function useDrag({ rigidBody }: Props) {
     isDragging.current = false
     pointerId.current = null
     if (rigidBody.current) {
-      rigidBody.current.setBodyType(RigidBodyType.Dynamic, true)
+      const t = rigidBody.current.translation()
+      const snap = findSnapNear(new Vector3(t.x, t.y, t.z))
+      if (snap) {
+        // Don't return to dynamic — let the snap target handle the body
+        snap.onAttach(rigidBody.current)
+      } else {
+        rigidBody.current.setBodyType(RigidBodyType.Dynamic, true)
+      }
     }
     ;(ev.target as Element).releasePointerCapture(ev.pointerId)
   }
