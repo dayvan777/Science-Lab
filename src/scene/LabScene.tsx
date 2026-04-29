@@ -13,9 +13,14 @@ import { DigitalScale } from './instruments/DigitalScale'
 import { Dynamometer } from './instruments/Dynamometer'
 import { LeverBalance } from './instruments/LeverBalance'
 import { Weights } from './objects/Weights'
+import { useLabState } from '../lab/LabState'
+import { tasks } from '../lab/tasks'
 
 export function LabScene() {
   const [preset, setPreset] = useState<CameraPreset>('overview')
+  const phase = useLabState(s => s.phase)
+  const idx = useLabState(s => s.currentTaskIndex)
+  const activeInstrument = phase === 'in-progress' ? tasks[idx]?.instrumentId : null
 
   return (
     <>
@@ -31,9 +36,9 @@ export function LabScene() {
           <TennisBall position={[-0.3, 1.2, 0]} />
           <Apple position={[0, 1.2, 0]} />
           <Baseball position={[0.3, 1.2, 0]} />
-          <DigitalScale position={[0.6, 0.85, 0]} />
-          <Dynamometer position={[-0.5, 0.85, 0]} />
-          <LeverBalance position={[0, 0.85, 0]} />
+          <DigitalScale position={[0.6, 0.85, 0]} active={activeInstrument === 'digital-scale'} />
+          <Dynamometer position={[-0.5, 0.85, 0]} active={activeInstrument === 'dynamometer'} />
+          <LeverBalance position={[0, 0.85, 0]} active={activeInstrument === 'lever-balance'} />
           <Weights startPosition={[0.5, 0.86, 0.45]} />
         </Physics>
       </Canvas>

@@ -4,6 +4,7 @@ import { RigidBody, CuboidCollider, useRapier } from '@react-three/rapier'
 import { RapierRigidBody } from '@react-three/rapier'
 import { CanvasTexture } from 'three'
 import { RigidBodyType } from '@dimforge/rapier3d-compat'
+import { Outlines } from '@react-three/drei'
 
 const PLATFORM_W = 0.20
 const PLATFORM_D = 0.20
@@ -12,9 +13,9 @@ const HOUSING_H = 0.04
 const LCD_W = 0.12
 const LCD_H = 0.04
 
-type Props = { position: [number, number, number] }
+type Props = { position: [number, number, number]; active?: boolean }
 
-export function DigitalScale({ position }: Props) {
+export function DigitalScale({ position, active = false }: Props) {
   const platformRef = useRef<RapierRigidBody>(null)
   const { world } = useRapier()
   const [reading, setReading] = useState(0)
@@ -72,6 +73,7 @@ export function DigitalScale({ position }: Props) {
       <mesh castShadow position={[0, HOUSING_H / 2, 0]}>
         <boxGeometry args={[PLATFORM_W * 1.1, HOUSING_H, PLATFORM_D * 1.1]} />
         <meshStandardMaterial color="#2a2a2a" roughness={0.4} metalness={0.2} />
+        {active && <Outlines thickness={3} color="#f4d03f" />}
       </mesh>
 
       {/* Platform with collision */}

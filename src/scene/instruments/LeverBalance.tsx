@@ -6,6 +6,7 @@ import {
   useRevoluteJoint,
   useFixedJoint,
 } from '@react-three/rapier'
+import { Outlines } from '@react-three/drei'
 
 const STAND_H = 0.25
 const BEAM_LEN = 0.45
@@ -13,9 +14,9 @@ const BEAM_T = 0.012
 const PAN_R = 0.07
 const PAN_DEPTH = 0.015
 
-type Props = { position: [number, number, number] }
+type Props = { position: [number, number, number]; active?: boolean }
 
-export function LeverBalance({ position }: Props) {
+export function LeverBalance({ position, active = false }: Props) {
   const standRef = useRef<RapierRigidBody>(null) as RefObject<RapierRigidBody>
   const beamRef = useRef<RapierRigidBody>(null) as RefObject<RapierRigidBody>
   const leftPanRef = useRef<RapierRigidBody>(null) as RefObject<RapierRigidBody>
@@ -52,6 +53,7 @@ export function LeverBalance({ position }: Props) {
         <mesh castShadow position={[0, STAND_H / 2, 0]}>
           <boxGeometry args={[0.04, STAND_H, 0.04]} />
           <meshStandardMaterial color="#444" metalness={0.4} roughness={0.4} />
+          {active && <Outlines thickness={3} color="#f4d03f" />}
         </mesh>
       </RigidBody>
 

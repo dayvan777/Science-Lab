@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { RigidBody, RapierRigidBody } from '@react-three/rapier'
 import { CanvasTexture, Vector3 } from 'three'
 import { registerSnap } from '../../physics/snapTargets'
+import { Outlines } from '@react-three/drei'
 
 const G = 9.81
 const SPRING_K = 50  // N/m — gives 0–10 cm range for 0–5 N
@@ -10,9 +11,9 @@ const STAND_H = 0.4
 const SPRING_TOP_Y = 0.4
 const HOOK_REST_Y = 0.2
 
-type Props = { position: [number, number, number] }
+type Props = { position: [number, number, number]; active?: boolean }
 
-export function Dynamometer({ position }: Props) {
+export function Dynamometer({ position, active = false }: Props) {
   const hookRef = useRef<RapierRigidBody>(null)
   const [attached, setAttached] = useState<RapierRigidBody | null>(null)
   const [hookY, setHookY] = useState(SPRING_TOP_Y - HOOK_REST_Y)
@@ -80,6 +81,7 @@ export function Dynamometer({ position }: Props) {
       <mesh castShadow position={[0, STAND_H / 2, 0]}>
         <boxGeometry args={[0.04, STAND_H, 0.04]} />
         <meshStandardMaterial color="#333" metalness={0.5} roughness={0.4} />
+        {active && <Outlines thickness={3} color="#f4d03f" />}
       </mesh>
       {/* Top horizontal arm */}
       <mesh castShadow position={[0.05, STAND_H + 0.01, 0]}>
