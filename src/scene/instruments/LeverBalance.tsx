@@ -121,7 +121,7 @@ export function LeverBalance({ position, active = false }: Props) {
       <RigidBody ref={standRef} type="fixed" colliders="cuboid">
         <mesh castShadow position={[0, STAND_H / 2, 0]}>
           <boxGeometry args={[0.04, STAND_H, 0.04]} />
-          <meshStandardMaterial color="#444" metalness={0.4} roughness={0.4} />
+          <meshStandardMaterial color="#444" metalness={0.85} roughness={0.25} envMapIntensity={1.5} />
           {active && <Outlines thickness={3} color="#f4d03f" />}
         </mesh>
       </RigidBody>
@@ -137,7 +137,7 @@ export function LeverBalance({ position, active = false }: Props) {
         <CuboidCollider args={[BEAM_LEN / 2, BEAM_T / 2, 0.012]} />
         <mesh castShadow>
           <boxGeometry args={[BEAM_LEN, BEAM_T, 0.024]} />
-          <meshStandardMaterial color="#555" metalness={0.5} roughness={0.3} />
+          <meshStandardMaterial color="#555" metalness={0.7} roughness={0.3} envMapIntensity={1.5} />
         </mesh>
         {/* Indicator needle pointing down from center */}
         <mesh position={[0, -BEAM_T / 2 - 0.04, 0]}>
@@ -157,7 +157,7 @@ export function LeverBalance({ position, active = false }: Props) {
         <CuboidCollider args={[PAN_R, PAN_DEPTH / 2, PAN_R]} />
         <mesh castShadow>
           <cylinderGeometry args={[PAN_R, PAN_R * 0.9, PAN_DEPTH, 24]} />
-          <meshStandardMaterial color="#666" metalness={0.6} roughness={0.4} />
+          <meshStandardMaterial color="#666" metalness={0.6} roughness={0.4} envMapIntensity={1.4} />
         </mesh>
       </RigidBody>
 
@@ -172,7 +172,7 @@ export function LeverBalance({ position, active = false }: Props) {
         <CuboidCollider args={[PAN_R, PAN_DEPTH / 2, PAN_R]} />
         <mesh castShadow>
           <cylinderGeometry args={[PAN_R, PAN_R * 0.9, PAN_DEPTH, 24]} />
-          <meshStandardMaterial color="#666" metalness={0.6} roughness={0.4} />
+          <meshStandardMaterial color="#666" metalness={0.6} roughness={0.4} envMapIntensity={1.4} />
         </mesh>
       </RigidBody>
     </group>

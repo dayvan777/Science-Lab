@@ -10,7 +10,7 @@ export function TennisBall({ position }: Props) {
     <Draggable position={position} mass={MASS_GRAMS} shape={{ type: 'ball', radius: RADIUS }}>
       <mesh castShadow>
         <sphereGeometry args={[RADIUS, 24, 16]} />
-        <meshStandardMaterial color="#d8e043" roughness={0.85} />
+        <meshStandardMaterial color="#d8e043" roughness={0.85} metalness={0} />
       </mesh>
     </Draggable>
   )

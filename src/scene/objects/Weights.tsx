@@ -27,7 +27,7 @@ export function Weights({ startPosition }: Props) {
           >
             <mesh castShadow>
               <cylinderGeometry args={[w.radius, w.radius * 0.95, w.height, 16]} />
-              <meshStandardMaterial color={w.color} metalness={0.7} roughness={0.4} />
+              <meshStandardMaterial color={w.color} metalness={0.7} roughness={0.45} envMapIntensity={1.2} />
             </mesh>
           </Draggable>
         )
