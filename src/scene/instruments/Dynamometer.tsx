@@ -83,18 +83,18 @@ export function Dynamometer({ position, active = false }: Props) {
       {/* Vertical stand */}
       <mesh castShadow position={[0, STAND_H / 2, 0]}>
         <boxGeometry args={[0.04, STAND_H, 0.04]} />
-        <meshStandardMaterial color="#3a3a3d" metalness={0.85} roughness={0.25} envMapIntensity={1.5} />
+        <meshStandardMaterial color="#333" metalness={0.5} roughness={0.4} />
         {active && <Outlines thickness={3} color="#f4d03f" />}
       </mesh>
       {/* Top horizontal arm */}
       <mesh castShadow position={[0.05, STAND_H + 0.01, 0]}>
         <boxGeometry args={[0.14, 0.02, 0.04]} />
-        <meshStandardMaterial color="#3a3a3d" metalness={0.85} roughness={0.25} envMapIntensity={1.5} />
+        <meshStandardMaterial color="#333" metalness={0.5} roughness={0.4} />
       </mesh>
       {/* Spring (visual) — cylinder length follows extension */}
       <mesh position={[0.05, (SPRING_TOP_Y + hookY) / 2, 0]}>
         <cylinderGeometry args={[0.008, 0.008, Math.max(0.02, SPRING_TOP_Y - hookY), 8]} />
-        <meshStandardMaterial color="#aaa" metalness={0.9} roughness={0.15} envMapIntensity={1.5} />
+        <meshStandardMaterial color="#aaa" metalness={0.7} roughness={0.3} />
       </mesh>
       {/* Hook (kinematic) */}
       <RigidBody

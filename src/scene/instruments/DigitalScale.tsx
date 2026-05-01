@@ -93,7 +93,7 @@ export function DigitalScale({ position, active = false }: Props) {
       {/* Housing */}
       <mesh castShadow position={[0, HOUSING_H / 2, 0]}>
         <boxGeometry args={[PLATFORM_W * 1.1, HOUSING_H, PLATFORM_D * 1.1]} />
-        <meshStandardMaterial color="#3a3a3d" metalness={0.85} roughness={0.25} envMapIntensity={1.5} />
+        <meshStandardMaterial color="#2a2a2a" roughness={0.4} metalness={0.2} />
         {active && <Outlines thickness={3} color="#f4d03f" />}
       </mesh>
 
@@ -107,7 +107,7 @@ export function DigitalScale({ position, active = false }: Props) {
         <CuboidCollider args={[PLATFORM_W / 2, PLATFORM_T / 2, PLATFORM_D / 2]} />
         <mesh castShadow receiveShadow>
           <boxGeometry args={[PLATFORM_W, PLATFORM_T, PLATFORM_D]} />
-          <meshStandardMaterial color="#888" metalness={0.7} roughness={0.3} />
+          <meshStandardMaterial color="#888" metalness={0.6} roughness={0.3} />
         </mesh>
       </RigidBody>
 

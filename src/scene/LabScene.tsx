@@ -3,7 +3,7 @@ import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
 import { Lighting } from './Lighting'
 import { CameraRig, CameraPreset } from './CameraRig'
-import { StudioBackdrop } from './StudioBackdrop'
+import { Table } from './Table'
 import { TennisBall } from './objects/TennisBall'
 import { Apple } from './objects/Apple'
 import { Baseball } from './objects/Baseball'
@@ -15,7 +15,6 @@ import { LeverBalance } from './instruments/LeverBalance'
 import { Weights } from './objects/Weights'
 import { useLabState } from '../lab/LabState'
 import { tasks } from '../lab/tasks'
-// import { PostProcessing } from './PostProcessing'  // Disabled — too heavy for typical hardware. Re-enable in Task 29 (adaptive quality).
 
 export function LabScene() {
   const [preset, setPreset] = useState<CameraPreset>('overview')
@@ -28,29 +27,24 @@ export function LabScene() {
     <>
       <Canvas
         camera={{ position: [0, 1.5, 2.0], fov: 50 }}
-        dpr={[1, 1.5]}
-        style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'linear-gradient(180deg, #fafafa 0%, #e8e8ed 50%, #cdcdd2 100%)',
-        }}
+        shadows
+        style={{ position: 'fixed', inset: 0, background: '#2a2a2a' }}
       >
         <Lighting />
         <CameraRig preset={preset} />
         <Physics key={resetKey} gravity={[0, -9.81, 0]}>
-          <StudioBackdrop />
+          <Table />
           {/* Objects spawn in left zone — clear of instruments */}
-          <TennisBall position={[-1.05, 0.1, 0]} />
-          <Apple position={[-1.05, 0.1, 0.18]} />
-          <Baseball position={[-1.05, 0.1, -0.18]} />
-          {/* Instruments spread across the floor, away from object spawn */}
-          <Dynamometer position={[-0.55, 0, 0]} active={activeInstrument === 'dynamometer'} />
-          <LeverBalance position={[0.05, 0, 0]} active={activeInstrument === 'lever-balance'} />
-          <DigitalScale position={[0.75, 0, 0]} active={activeInstrument === 'digital-scale'} />
+          <TennisBall position={[-1.05, 0.95, 0]} />
+          <Apple position={[-1.05, 0.95, 0.18]} />
+          <Baseball position={[-1.05, 0.95, -0.18]} />
+          {/* Instruments spread across the table, away from object spawn */}
+          <Dynamometer position={[-0.55, 0.85, 0]} active={activeInstrument === 'dynamometer'} />
+          <LeverBalance position={[0.05, 0.85, 0]} active={activeInstrument === 'lever-balance'} />
+          <DigitalScale position={[0.75, 0.85, 0]} active={activeInstrument === 'digital-scale'} />
           {/* Weights in front of lever balance for easy reach */}
-          <Weights startPosition={[0.05, 0.01, 0.4]} />
+          <Weights startPosition={[0.05, 0.86, 0.4]} />
         </Physics>
-        {/* <PostProcessing /> — disabled for performance, re-enable per-device in Task 29 */}
       </Canvas>
       <HUD />
       <div style={{ position: 'fixed', bottom: 16, right: 16, display: 'flex', gap: 8, zIndex: 10 }}>

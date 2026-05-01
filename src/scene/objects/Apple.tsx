@@ -10,7 +10,7 @@ export function Apple({ position }: Props) {
     <Draggable position={position} mass={MASS_GRAMS} shape={{ type: 'ball', radius: RADIUS }}>
       <mesh castShadow>
         <sphereGeometry args={[RADIUS, 24, 16]} />
-        <meshStandardMaterial color="#c0392b" roughness={0.4} metalness={0} envMapIntensity={1.5} />
+        <meshStandardMaterial color="#c0392b" roughness={0.5} />
       </mesh>
     </Draggable>
   )
