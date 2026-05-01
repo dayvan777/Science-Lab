@@ -19,6 +19,7 @@ type Props = { position: [number, number, number]; active?: boolean }
 
 export function DigitalScale({ position, active = false }: Props) {
   const platformRef = useRef<RapierRigidBody>(null)
+  const frameCounter = useRef(0)
   const { world } = useRapier()
   const [reading, setReading] = useState(0)
   const [tareOffset, setTareOffset] = useState(0)
@@ -44,6 +45,8 @@ export function DigitalScale({ position, active = false }: Props) {
   }, [reading, lcdTexture])
 
   useFrame(() => {
+    frameCounter.current++
+    if (frameCounter.current % 6 !== 0) return
     const platform = platformRef.current
     if (!platform) return
 
@@ -91,7 +94,7 @@ export function DigitalScale({ position, active = false }: Props) {
   return (
     <group position={position}>
       {/* Housing */}
-      <mesh castShadow position={[0, HOUSING_H / 2, 0]}>
+      <mesh position={[0, HOUSING_H / 2, 0]}>
         <boxGeometry args={[PLATFORM_W * 1.1, HOUSING_H, PLATFORM_D * 1.1]} />
         <meshStandardMaterial color="#2a2a2a" roughness={0.4} metalness={0.2} />
         {active && <Outlines thickness={3} color="#f4d03f" />}
@@ -105,7 +108,7 @@ export function DigitalScale({ position, active = false }: Props) {
         position={[0, HOUSING_H + PLATFORM_T / 2, 0]}
       >
         <CuboidCollider args={[PLATFORM_W / 2, PLATFORM_T / 2, PLATFORM_D / 2]} />
-        <mesh castShadow receiveShadow>
+        <mesh>
           <boxGeometry args={[PLATFORM_W, PLATFORM_T, PLATFORM_D]} />
           <meshStandardMaterial color="#888" metalness={0.6} roughness={0.3} />
         </mesh>

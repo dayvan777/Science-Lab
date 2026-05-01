@@ -23,6 +23,7 @@ const PAN_DEPTH = 0.015
 type Props = { position: [number, number, number]; active?: boolean }
 
 export function LeverBalance({ position, active = false }: Props) {
+  const frameCounter = useRef(0)
   const standRef = useRef<RapierRigidBody>(null) as RefObject<RapierRigidBody>
   const beamRef = useRef<RapierRigidBody>(null) as RefObject<RapierRigidBody>
   const leftPanRef = useRef<RapierRigidBody>(null) as RefObject<RapierRigidBody>
@@ -90,6 +91,8 @@ export function LeverBalance({ position, active = false }: Props) {
 
   // Live readings: beam tilt and right-pan mass
   useFrame(() => {
+    frameCounter.current++
+    if (frameCounter.current % 6 !== 0) return
     const beam = beamRef.current
     if (beam) {
       const rot = beam.rotation()
@@ -119,7 +122,7 @@ export function LeverBalance({ position, active = false }: Props) {
     <group position={position}>
       {/* Stand — fixed to world */}
       <RigidBody ref={standRef} type="fixed" colliders="cuboid">
-        <mesh castShadow position={[0, STAND_H / 2, 0]}>
+        <mesh position={[0, STAND_H / 2, 0]}>
           <boxGeometry args={[0.04, STAND_H, 0.04]} />
           <meshStandardMaterial color="#444" metalness={0.4} roughness={0.4} />
           {active && <Outlines thickness={3} color="#f4d03f" />}
@@ -135,7 +138,7 @@ export function LeverBalance({ position, active = false }: Props) {
         mass={0.05}
       >
         <CuboidCollider args={[BEAM_LEN / 2, BEAM_T / 2, 0.012]} />
-        <mesh castShadow>
+        <mesh>
           <boxGeometry args={[BEAM_LEN, BEAM_T, 0.024]} />
           <meshStandardMaterial color="#555" metalness={0.5} roughness={0.3} />
         </mesh>
@@ -155,8 +158,8 @@ export function LeverBalance({ position, active = false }: Props) {
         mass={0.02}
       >
         <CuboidCollider args={[PAN_R, PAN_DEPTH / 2, PAN_R]} />
-        <mesh castShadow>
-          <cylinderGeometry args={[PAN_R, PAN_R * 0.9, PAN_DEPTH, 24]} />
+        <mesh>
+          <cylinderGeometry args={[PAN_R, PAN_R * 0.9, PAN_DEPTH, 12]} />
           <meshStandardMaterial color="#666" metalness={0.6} roughness={0.4} />
         </mesh>
       </RigidBody>
@@ -170,8 +173,8 @@ export function LeverBalance({ position, active = false }: Props) {
         mass={0.02}
       >
         <CuboidCollider args={[PAN_R, PAN_DEPTH / 2, PAN_R]} />
-        <mesh castShadow>
-          <cylinderGeometry args={[PAN_R, PAN_R * 0.9, PAN_DEPTH, 24]} />
+        <mesh>
+          <cylinderGeometry args={[PAN_R, PAN_R * 0.9, PAN_DEPTH, 12]} />
           <meshStandardMaterial color="#666" metalness={0.6} roughness={0.4} />
         </mesh>
       </RigidBody>

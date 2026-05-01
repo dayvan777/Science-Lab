@@ -28,6 +28,8 @@ export function useDrag({ rigidBody }: Props) {
   }, [camera, gl])
 
   const onPointerDown = (ev: ThreeEvent<PointerEvent>) => {
+    // Filter: for mouse pointers, require an actual button press (prevents hover-induced drags)
+    if (ev.pointerType === 'mouse' && (ev as unknown as { buttons: number }).buttons === 0) return
     if (!rigidBody.current) return
     ev.stopPropagation()
     isDragging.current = true

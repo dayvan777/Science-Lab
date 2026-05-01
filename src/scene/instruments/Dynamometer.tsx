@@ -81,13 +81,13 @@ export function Dynamometer({ position, active = false }: Props) {
   return (
     <group position={position}>
       {/* Vertical stand */}
-      <mesh castShadow position={[0, STAND_H / 2, 0]}>
+      <mesh position={[0, STAND_H / 2, 0]}>
         <boxGeometry args={[0.04, STAND_H, 0.04]} />
         <meshStandardMaterial color="#333" metalness={0.5} roughness={0.4} />
         {active && <Outlines thickness={3} color="#f4d03f" />}
       </mesh>
       {/* Top horizontal arm */}
-      <mesh castShadow position={[0.05, STAND_H + 0.01, 0]}>
+      <mesh position={[0.05, STAND_H + 0.01, 0]}>
         <boxGeometry args={[0.14, 0.02, 0.04]} />
         <meshStandardMaterial color="#333" metalness={0.5} roughness={0.4} />
       </mesh>
@@ -103,7 +103,7 @@ export function Dynamometer({ position, active = false }: Props) {
         colliders={false}
         position={[position[0] + 0.05, position[1] + hookY, position[2]]}
       >
-        <mesh castShadow>
+        <mesh>
           <torusGeometry args={[0.012, 0.003, 8, 16]} />
           <meshStandardMaterial color="#888" metalness={0.7} />
         </mesh>

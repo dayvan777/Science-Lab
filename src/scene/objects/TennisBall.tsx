@@ -8,8 +8,8 @@ type Props = { position: [number, number, number] }
 export function TennisBall({ position }: Props) {
   return (
     <Draggable position={position} mass={MASS_GRAMS} shape={{ type: 'ball', radius: RADIUS }}>
-      <mesh castShadow>
-        <sphereGeometry args={[RADIUS, 24, 16]} />
+      <mesh>
+        <sphereGeometry args={[RADIUS, 16, 12]} />
         <meshStandardMaterial color="#d8e043" roughness={0.85} />
       </mesh>
     </Draggable>

@@ -27,12 +27,12 @@ export function LabScene() {
     <>
       <Canvas
         camera={{ position: [0, 1.5, 2.0], fov: 50 }}
-        shadows
+        dpr={[1, 1.5]}
         style={{ position: 'fixed', inset: 0, background: '#2a2a2a' }}
       >
         <Lighting />
         <CameraRig preset={preset} />
-        <Physics key={resetKey} gravity={[0, -9.81, 0]}>
+        <Physics key={resetKey} gravity={[0, -9.81, 0]} timeStep={1/60}>
           <Table />
           {/* Objects spawn in left zone — clear of instruments */}
           <TennisBall position={[-1.05, 0.95, 0]} />
