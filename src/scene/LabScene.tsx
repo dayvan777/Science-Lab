@@ -15,6 +15,7 @@ import { LeverBalance } from './instruments/LeverBalance'
 import { Weights } from './objects/Weights'
 import { useLabState } from '../lab/LabState'
 import { tasks } from '../lab/tasks'
+import { PostProcessing } from './PostProcessing'
 
 export function LabScene() {
   const [preset, setPreset] = useState<CameraPreset>('overview')
@@ -26,7 +27,7 @@ export function LabScene() {
   return (
     <>
       <Canvas
-        camera={{ position: [0, 1.5, 2.0], fov: 50 }}
+        camera={{ position: [0, 1.5, 2.0], fov: 35 }}
         shadows
         style={{ position: 'fixed', inset: 0, background: '#fafafa' }}
       >
@@ -45,6 +46,7 @@ export function LabScene() {
           {/* Weights in front of lever balance for easy reach */}
           <Weights startPosition={[0.05, 0.01, 0.4]} />
         </Physics>
+        <PostProcessing />
       </Canvas>
       <HUD />
       <div style={{ position: 'fixed', bottom: 16, right: 16, display: 'flex', gap: 8, zIndex: 10 }}>
