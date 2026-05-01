@@ -28,9 +28,12 @@ export function LabScene() {
     <>
       <Canvas
         camera={{ position: [0, 1.5, 2.0], fov: 50 }}
-        shadows
         dpr={[1, 1.5]}
-        style={{ position: 'fixed', inset: 0, background: '#fafafa' }}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'linear-gradient(180deg, #fafafa 0%, #e8e8ed 50%, #cdcdd2 100%)',
+        }}
       >
         <Lighting />
         <CameraRig preset={preset} />
