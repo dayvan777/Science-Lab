@@ -3,7 +3,7 @@ import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
 import { Lighting } from './Lighting'
 import { CameraRig, CameraPreset } from './CameraRig'
-import { Table } from './Table'
+import { StudioBackdrop } from './StudioBackdrop'
 import { TennisBall } from './objects/TennisBall'
 import { Apple } from './objects/Apple'
 import { Baseball } from './objects/Baseball'
@@ -28,22 +28,22 @@ export function LabScene() {
       <Canvas
         camera={{ position: [0, 1.5, 2.0], fov: 50 }}
         shadows
-        style={{ position: 'fixed', inset: 0, background: '#2a2a2a' }}
+        style={{ position: 'fixed', inset: 0, background: '#fafafa' }}
       >
         <Lighting />
         <CameraRig preset={preset} />
         <Physics key={resetKey} gravity={[0, -9.81, 0]}>
-          <Table />
+          <StudioBackdrop />
           {/* Objects spawn in left zone — clear of instruments */}
-          <TennisBall position={[-1.05, 0.95, 0]} />
-          <Apple position={[-1.05, 0.95, 0.18]} />
-          <Baseball position={[-1.05, 0.95, -0.18]} />
-          {/* Instruments spread across the table, away from object spawn */}
-          <Dynamometer position={[-0.55, 0.85, 0]} active={activeInstrument === 'dynamometer'} />
-          <LeverBalance position={[0.05, 0.85, 0]} active={activeInstrument === 'lever-balance'} />
-          <DigitalScale position={[0.75, 0.85, 0]} active={activeInstrument === 'digital-scale'} />
+          <TennisBall position={[-1.05, 0.1, 0]} />
+          <Apple position={[-1.05, 0.1, 0.18]} />
+          <Baseball position={[-1.05, 0.1, -0.18]} />
+          {/* Instruments spread across the floor, away from object spawn */}
+          <Dynamometer position={[-0.55, 0, 0]} active={activeInstrument === 'dynamometer'} />
+          <LeverBalance position={[0.05, 0, 0]} active={activeInstrument === 'lever-balance'} />
+          <DigitalScale position={[0.75, 0, 0]} active={activeInstrument === 'digital-scale'} />
           {/* Weights in front of lever balance for easy reach */}
-          <Weights startPosition={[0.05, 0.86, 0.4]} />
+          <Weights startPosition={[0.05, 0.01, 0.4]} />
         </Physics>
       </Canvas>
       <HUD />
