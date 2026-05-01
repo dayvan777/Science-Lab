@@ -15,7 +15,7 @@ import { LeverBalance } from './instruments/LeverBalance'
 import { Weights } from './objects/Weights'
 import { useLabState } from '../lab/LabState'
 import { tasks } from '../lab/tasks'
-import { PostProcessing } from './PostProcessing'
+// import { PostProcessing } from './PostProcessing'  // Disabled — too heavy for typical hardware. Re-enable in Task 29 (adaptive quality).
 
 export function LabScene() {
   const [preset, setPreset] = useState<CameraPreset>('overview')
@@ -27,8 +27,9 @@ export function LabScene() {
   return (
     <>
       <Canvas
-        camera={{ position: [0, 1.5, 2.0], fov: 35 }}
+        camera={{ position: [0, 1.5, 2.0], fov: 50 }}
         shadows
+        dpr={[1, 1.5]}
         style={{ position: 'fixed', inset: 0, background: '#fafafa' }}
       >
         <Lighting />
@@ -46,7 +47,7 @@ export function LabScene() {
           {/* Weights in front of lever balance for easy reach */}
           <Weights startPosition={[0.05, 0.01, 0.4]} />
         </Physics>
-        <PostProcessing />
+        {/* <PostProcessing /> — disabled for performance, re-enable per-device in Task 29 */}
       </Canvas>
       <HUD />
       <div style={{ position: 'fixed', bottom: 16, right: 16, display: 'flex', gap: 8, zIndex: 10 }}>
