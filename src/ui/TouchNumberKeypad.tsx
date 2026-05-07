@@ -7,7 +7,7 @@ type Props = {
   onCancel: () => void
 }
 
-const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', '✓']
+const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', 'OK']
 
 export function TouchNumberKeypad({ initialValue = '', onConfirm, onCancel }: Props) {
   const [text, setText] = useState(initialValue)
@@ -25,7 +25,7 @@ export function TouchNumberKeypad({ initialValue = '', onConfirm, onCancel }: Pr
 
   const handleKey = (key: string) => {
     if (key === '⌫') setText(t => t.slice(0, -1))
-    else if (key === '✓') confirm()
+    else if (key === 'OK') confirm()
     else setText(t => t + key)
   }
 
@@ -64,12 +64,13 @@ export function TouchNumberKeypad({ initialValue = '', onConfirm, onCancel }: Pr
               <button
                 key={k}
                 onClick={() => handleKey(k)}
+                disabled={k === 'OK' && !text}
                 style={{
-                  height: 52, fontSize: 20, fontWeight: 500,
+                  height: 52, fontSize: k === 'OK' ? 16 : 20, fontWeight: k === 'OK' ? 700 : 500,
                   border: 'none', borderRadius: 10,
-                  background: k === '✓' ? '#0071e3' : 'rgba(255,255,255,0.95)',
-                  color: k === '✓' ? '#fff' : '#1d1d1f',
-                  cursor: 'pointer',
+                  background: k === 'OK' ? (text ? '#0071e3' : '#a0a0a8') : 'rgba(255,255,255,0.95)',
+                  color: k === 'OK' ? '#fff' : '#1d1d1f',
+                  cursor: k === 'OK' && !text ? 'not-allowed' : 'pointer',
                   boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
                   fontFamily: '"SF Pro Display", "Inter", system-ui',
                 }}

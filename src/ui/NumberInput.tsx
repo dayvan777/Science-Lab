@@ -15,49 +15,34 @@ export function NumberInput({ unit, onSubmit }: Props) {
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <span style={{ fontSize: 14, opacity: 0.7, color: '#1d1d1f' }}>Значення:</span>
+        <span style={{ fontSize: 14, opacity: 0.7, color: '#1d1d1f' }}>
+          Значення в {unit === 'g' ? 'грамах' : 'Ньютонах'}:
+        </span>
         <button
           onClick={() => { setKeypadOpen(true); setInputFocused(true) }}
           style={{
-            background: '#fff', color: '#1d1d1f',
-            padding: '12px 20px', fontSize: 22, fontWeight: 600,
-            border: '1px solid #d1d1d6', borderRadius: 12,
-            minWidth: 120, textAlign: 'right', cursor: 'pointer',
-            fontFamily: 'monospace',
-          }}
-        >
-          {pendingValue || '—'}
-        </button>
-        <span style={{ fontSize: 14, opacity: 0.7, color: '#1d1d1f' }}>
-          {unit === 'g' ? 'грамів' : 'Ньютонів'}
-        </span>
-        <button
-          onClick={() => {
-            const v = parseFloat(pendingValue.replace(',', '.'))
-            if (Number.isFinite(v) && v >= 0) {
-              onSubmit(v)
-              setPendingValue('')
-            }
-          }}
-          disabled={!pendingValue}
-          style={{
-            background: pendingValue ? '#0071e3' : '#a0a0a8',
-            color: '#fff', border: 'none',
+            background: '#0071e3', color: '#fff',
             padding: '12px 24px', fontSize: 16, fontWeight: 600,
-            borderRadius: 12, cursor: pendingValue ? 'pointer' : 'not-allowed',
+            border: 'none', borderRadius: 12,
+            minWidth: 200, textAlign: 'center', cursor: 'pointer',
             minHeight: 48,
+            boxShadow: '0 2px 8px rgba(0,113,227,0.3)',
           }}
         >
-          Записати → Далі
+          ✏️ Ввести і записати
         </button>
       </div>
       {keypadOpen && (
         <TouchNumberKeypad
           initialValue={pendingValue}
           onConfirm={(v) => {
-            setPendingValue(String(v))
+            // Confirm = submit immediately. No need to click separate button.
+            setPendingValue('')
             setKeypadOpen(false)
             setInputFocused(false)
+            if (Number.isFinite(v) && v >= 0) {
+              onSubmit(v)
+            }
           }}
           onCancel={() => { setKeypadOpen(false); setInputFocused(false) }}
         />
