@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { createBaseballSeamTexture } from '../textures/seamTexture'
 import { Draggable } from './Draggable'
 
-const RADIUS = 0.0365
+const RADIUS = 0.075  // 2x real for demo visibility
 const MASS_GRAMS = 145
 
 type Props = { position: [number, number, number] }

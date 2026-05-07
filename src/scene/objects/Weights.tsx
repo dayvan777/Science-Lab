@@ -2,14 +2,15 @@ import { useMemo } from 'react'
 import { createWeightLabel } from '../textures/weightLabel'
 import { Draggable } from './Draggable'
 
+// Sizes 1.8x real for demo visibility on a 2.5m table viewed from far
 const WEIGHTS = [
-  { mass: 1000, radius: 0.030, height: 0.05, label: '1 кг' },
-  { mass: 500,  radius: 0.026, height: 0.040, label: '500 г' },
-  { mass: 200,  radius: 0.022, height: 0.032, label: '200 г' },
-  { mass: 100,  radius: 0.019, height: 0.028, label: '100 г' },
-  { mass: 50,   radius: 0.016, height: 0.022, label: '50 г' },
-  { mass: 20,   radius: 0.013, height: 0.018, label: '20 г' },
-  { mass: 10,   radius: 0.011, height: 0.014, label: '10 г' },
+  { mass: 1000, radius: 0.054, height: 0.090, label: '1 кг' },
+  { mass: 500,  radius: 0.047, height: 0.072, label: '500 г' },
+  { mass: 200,  radius: 0.040, height: 0.058, label: '200 г' },
+  { mass: 100,  radius: 0.034, height: 0.050, label: '100 г' },
+  { mass: 50,   radius: 0.029, height: 0.040, label: '50 г' },
+  { mass: 20,   radius: 0.023, height: 0.032, label: '20 г' },
+  { mass: 10,   radius: 0.020, height: 0.025, label: '10 г' },
 ]
 
 type Props = { startPosition: [number, number, number] }
@@ -21,7 +22,7 @@ export function Weights({ startPosition }: Props) {
   return (
     <>
       {WEIGHTS.map((w, i) => {
-        const x = x0 + (i - 3) * 0.06
+        const x = x0 + (i - 3) * 0.13  // wider spacing for larger weights
         return (
           <Draggable
             key={w.label}

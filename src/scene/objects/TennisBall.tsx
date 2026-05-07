@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { createFeltTexture } from '../textures/feltTexture'
 import { Draggable } from './Draggable'
 
-const RADIUS = 0.0335
+const RADIUS = 0.07  // 2x real (was 0.0335) — for visibility on demo
 const MASS_GRAMS = 58
 
 type Props = { position: [number, number, number] }

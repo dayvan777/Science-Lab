@@ -1,6 +1,6 @@
 import { Draggable } from './Draggable'
 
-const RADIUS = 0.04
+const RADIUS = 0.08  // 2x real for demo visibility
 const MASS_GRAMS = 180
 
 type Props = { position: [number, number, number] }
