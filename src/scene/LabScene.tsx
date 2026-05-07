@@ -15,6 +15,7 @@ import { LeverBalance } from './instruments/LeverBalance'
 import { Weights } from './objects/Weights'
 import { useLabState } from '../lab/LabState'
 import { tasks } from '../lab/tasks'
+import { GuidedOverlay } from '../guided/GuidedOverlay'
 
 export function LabScene() {
   const [preset, setPreset] = useState<CameraPreset>('overview')
@@ -44,6 +45,7 @@ export function LabScene() {
           <DigitalScale position={[0.75, 0.85, 0]} active={activeInstrument === 'digital-scale'} />
           {/* Weights in front of lever balance for easy reach */}
           <Weights startPosition={[0.05, 0.86, 0.4]} />
+          <GuidedOverlay />
         </Physics>
       </Canvas>
       <HUD />
