@@ -7,7 +7,7 @@ type Props = { position: [number, number, number] }
 
 export function Apple({ position }: Props) {
   return (
-    <Draggable position={position} mass={MASS_GRAMS} shape={{ type: 'ball', radius: RADIUS }}>
+    <Draggable position={position} mass={MASS_GRAMS} shape={{ type: 'ball', radius: RADIUS }} bodyId="apple">
       <group>
         {/* Body — slight vertical squash */}
         <mesh scale={[1, 0.95, 1]}>

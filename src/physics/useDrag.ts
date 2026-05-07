@@ -4,6 +4,7 @@ import { Vector3 } from 'three'
 import { RapierRigidBody } from '@react-three/rapier'
 import { RigidBodyType } from '@dimforge/rapier3d-compat'
 import { findSnapNear } from './snapTargets'
+import { useStepEngine } from '../guided/StepEngine'
 
 const DRAG_HEIGHT = 1.0
 const SMOOTHING = 0.3
@@ -15,6 +16,7 @@ export function useDrag({ rigidBody }: Props) {
   const target = useRef(new Vector3())
   const isDragging = useRef(false)
   const pointerId = useRef<number | null>(null)
+  const setLastSnap = useStepEngine.getState().setLastSnap
 
   const intersectPlane = useCallback((ev: ThreeEvent<PointerEvent>) => {
     const native = ev.nativeEvent
@@ -63,6 +65,7 @@ export function useDrag({ rigidBody }: Props) {
       if (snap) {
         // Don't return to dynamic — let the snap target handle the body
         snap.onAttach(rigidBody.current)
+        setLastSnap(snap.id)
       } else {
         rigidBody.current.setBodyType(RigidBodyType.Dynamic, true)
       }

@@ -13,6 +13,7 @@ type LabState = {
   currentTaskIndex: number
   journal: JournalEntry[]
   sessionId: number
+  lastSubmittedAtMs: number
   start: () => void
   setMeasurement: (taskId: string, value: number) => void
   reset: () => void
@@ -25,6 +26,7 @@ export const useLabState = create<LabState>((set, get) => ({
   currentTaskIndex: 0,
   journal: [],
   sessionId: 0,
+  lastSubmittedAtMs: 0,
 
   start: () => set({ phase: 'in-progress' }),
 
@@ -36,6 +38,7 @@ export const useLabState = create<LabState>((set, get) => ({
       journal: newJournal,
       currentTaskIndex: newIndex,
       phase: newIndex >= TOTAL_TASKS ? 'finished' : 'in-progress',
+      lastSubmittedAtMs: Date.now(),
     })
   },
 

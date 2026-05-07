@@ -1,8 +1,10 @@
+import { useEffect } from 'react'
 import { useLabState } from './LabState'
 import { tasks } from './tasks'
 import { NumberInput } from '../ui/NumberInput'
 import { GlassPanel } from '../ui/GlassPanel'
 import { useReadings } from './InstrumentReadings'
+import { useStepEngine } from '../guided/StepEngine'
 
 const TOTAL = 9
 const BASE_FONT = '"SF Pro Display", "Inter", system-ui, sans-serif'
@@ -17,6 +19,11 @@ export function HUD() {
   const dynamometerN = useReadings(s => s.dynamometerNewtons)
   const leverTilt = useReadings(s => s.leverBalanceTilt)
   const leverRightG = useReadings(s => s.leverRightPanGrams)
+
+  const resetForTask = useStepEngine(s => s.resetForTask)
+  useEffect(() => {
+    resetForTask(idx)
+  }, [idx, resetForTask])
 
   if (phase !== 'in-progress') return null
   const current = tasks[idx]

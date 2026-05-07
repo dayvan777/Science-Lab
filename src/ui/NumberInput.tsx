@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { TouchNumberKeypad } from './TouchNumberKeypad'
+import { useStepEngine } from '../guided/StepEngine'
 
 type Props = {
   unit: 'g' | 'N'
@@ -9,13 +10,14 @@ type Props = {
 export function NumberInput({ unit, onSubmit }: Props) {
   const [keypadOpen, setKeypadOpen] = useState(false)
   const [pendingValue, setPendingValue] = useState<string>('')
+  const setInputFocused = useStepEngine(s => s.setInputFocused)
 
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <span style={{ fontSize: 14, opacity: 0.7, color: '#1d1d1f' }}>Значення:</span>
         <button
-          onClick={() => setKeypadOpen(true)}
+          onClick={() => { setKeypadOpen(true); setInputFocused(true) }}
           style={{
             background: '#fff', color: '#1d1d1f',
             padding: '12px 20px', fontSize: 22, fontWeight: 600,
@@ -55,8 +57,9 @@ export function NumberInput({ unit, onSubmit }: Props) {
           onConfirm={(v) => {
             setPendingValue(String(v))
             setKeypadOpen(false)
+            setInputFocused(false)
           }}
-          onCancel={() => setKeypadOpen(false)}
+          onCancel={() => { setKeypadOpen(false); setInputFocused(false) }}
         />
       )}
     </>

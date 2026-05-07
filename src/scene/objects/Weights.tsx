@@ -28,6 +28,7 @@ export function Weights({ startPosition }: Props) {
             position={[x, y0 + w.height / 2, z0]}
             mass={w.mass}
             shape={{ type: 'cuboid', halfExtents: [w.radius, w.height / 2, w.radius] }}
+            bodyId={`weight-${w.label}`}
           >
             {/* Body — slight conical taper for premium look */}
             <mesh>
