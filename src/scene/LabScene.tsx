@@ -23,6 +23,7 @@ export function LabScene() {
   const phase = useLabState(s => s.phase)
   const idx = useLabState(s => s.currentTaskIndex)
   const resetKey = useLabState(s => s.sessionId)
+  const respawnObjects = useLabState(s => s.respawnObjects)
   const activeInstrument = phase === 'in-progress' ? tasks[idx]?.instrumentId : null
   const guidanceOn = useGuidance(s => s.enabled)
 
@@ -45,16 +46,16 @@ export function LabScene() {
           <Dynamometer position={[-0.55, 0.85, 0]} active={activeInstrument === 'dynamometer'} />
           <LeverBalance position={[0.05, 0.85, 0]} active={activeInstrument === 'lever-balance'} />
           <DigitalScale position={[0.75, 0.85, 0]} active={activeInstrument === 'digital-scale'} />
-          {/* Weights in front of lever balance for easy reach */}
-          <Weights startPosition={[0.05, 0.86, 0.4]} />
+          {/* Weights at front of table, spread for visibility */}
+          <Weights startPosition={[-0.2, 1.0, -0.3]} />
           {guidanceOn && <GuidedOverlay />}
         </Physics>
       </Canvas>
       <HUD />
       <SkipGuidanceToggle />
       <div style={{ position: 'fixed', bottom: 16, right: 16, display: 'flex', gap: 8, zIndex: 10 }}>
-        <Button variant="secondary" onClick={() => setPreset('overview')}>Скинути</Button>
-        <Button variant="secondary" onClick={() => setPreset('digital-scale')}>Наблизити</Button>
+        <Button variant="secondary" onClick={() => respawnObjects()}>↻ Скинути предмети</Button>
+        <Button variant="secondary" onClick={() => setPreset('overview')}>Камера</Button>
       </div>
     </>
   )

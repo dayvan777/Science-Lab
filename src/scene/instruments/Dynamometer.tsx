@@ -58,6 +58,7 @@ export function Dynamometer({ position, active = false }: Props) {
       id: 'dynamometer-hook',
       position: hookWorldPos,
       radius: 0.06,
+      keepKinematic: true,
       onAttach: (body) => setAttached(body),
     })
     return unregister

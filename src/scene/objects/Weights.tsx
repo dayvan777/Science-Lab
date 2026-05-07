@@ -22,7 +22,7 @@ export function Weights({ startPosition }: Props) {
   return (
     <>
       {WEIGHTS.map((w, i) => {
-        const x = x0 + (i - 3) * 0.13  // wider spacing for larger weights
+        const x = x0 + i * 0.13  // weights 0..6 spread to the right of x0
         return (
           <Draggable
             key={w.label}

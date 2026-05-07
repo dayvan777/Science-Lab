@@ -66,8 +66,9 @@ export function LeverBalance({ position, active = false }: Props) {
       id: `lever-left-${position[0]}-${position[1]}-${position[2]}`,
       position: leftPos,
       radius: 0.08,
+      keepKinematic: true,
       onAttach: (body) => {
-        body.setBodyType(0 /* Dynamic */, true)
+        // Keep KINEMATIC — body anchored to pan, won't fly off on impact
         body.setTranslation({ x: leftPos.x, y: leftPos.y, z: leftPos.z }, true)
         body.setLinvel({ x: 0, y: 0, z: 0 }, true)
         body.setAngvel({ x: 0, y: 0, z: 0 }, true)
@@ -78,8 +79,9 @@ export function LeverBalance({ position, active = false }: Props) {
       id: `lever-right-${position[0]}-${position[1]}-${position[2]}`,
       position: rightPos,
       radius: 0.08,
+      keepKinematic: true,
       onAttach: (body) => {
-        body.setBodyType(0 /* Dynamic */, true)
+        // Keep KINEMATIC — body anchored to pan, won't fly off on impact
         body.setTranslation({ x: rightPos.x, y: rightPos.y, z: rightPos.z }, true)
         body.setLinvel({ x: 0, y: 0, z: 0 }, true)
         body.setAngvel({ x: 0, y: 0, z: 0 }, true)
@@ -109,7 +111,9 @@ export function LeverBalance({ position, active = false }: Props) {
         world.contactPairsWith(collider, (other) => {
           const body = other.parent()
           if (!body || body.handle === rightPan.handle) return
-          if (body.bodyType() === RigidBodyType.Dynamic) {
+          // Accept Dynamic (0) AND KinematicPositionBased (2) — snapped bodies are kinematic
+          const bt = body.bodyType()
+          if (bt === RigidBodyType.Dynamic || bt === RigidBodyType.KinematicPositionBased) {
             totalKg += body.mass()
           }
         })

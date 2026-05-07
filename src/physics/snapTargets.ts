@@ -6,6 +6,7 @@ export type SnapTarget = {
   position: Vector3       // world position of the snap target center
   radius: number          // horizontal (X/Z) snap radius
   onAttach: (body: RapierRigidBody) => void
+  keepKinematic?: boolean // if true, body stays kinematic after snap (anchored to snap point)
 }
 
 const targets = new Map<string, SnapTarget>()

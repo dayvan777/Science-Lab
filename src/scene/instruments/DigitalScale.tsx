@@ -52,7 +52,9 @@ export function DigitalScale({ position, active = false }: Props) {
       const body = otherCollider.parent()
       if (!body) return
       if (body.handle === platform.handle) return
-      if (body.bodyType() === RigidBodyType.Dynamic) {
+      // Accept Dynamic (0) AND KinematicPositionBased (2) — snapped bodies are kinematic
+      const bt = body.bodyType()
+      if (bt === RigidBodyType.Dynamic || bt === RigidBodyType.KinematicPositionBased) {
         totalMassKg += body.mass()
       }
     })
@@ -71,8 +73,9 @@ export function DigitalScale({ position, active = false }: Props) {
       id: `digital-scale-${position[0]}-${position[1]}-${position[2]}`,
       position: snapPos,
       radius: 0.12,
+      keepKinematic: true,
       onAttach: (body) => {
-        body.setBodyType(0 /* Dynamic */, true)
+        // Keep KINEMATIC — body anchored, won't bounce when others land
         body.setTranslation({ x: snapPos.x, y: snapPos.y + 0.02, z: snapPos.z }, true)
         body.setLinvel({ x: 0, y: 0, z: 0 }, true)
         body.setAngvel({ x: 0, y: 0, z: 0 }, true)

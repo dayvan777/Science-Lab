@@ -63,9 +63,12 @@ export function useDrag({ rigidBody }: Props) {
       const t = rigidBody.current.translation()
       const snap = findSnapNear(new Vector3(t.x, t.y, t.z))
       if (snap) {
-        // Don't return to dynamic — let the snap target handle the body
-        snap.onAttach(rigidBody.current)
         setLastSnap(snap.id)
+        snap.onAttach(rigidBody.current)
+        // If keepKinematic, body stays kinematic after snap (anchored to snap point)
+        if (!snap.keepKinematic) {
+          rigidBody.current.setBodyType(RigidBodyType.Dynamic, true)
+        }
       } else {
         rigidBody.current.setBodyType(RigidBodyType.Dynamic, true)
       }

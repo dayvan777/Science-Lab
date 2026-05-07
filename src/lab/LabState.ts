@@ -17,6 +17,7 @@ type LabState = {
   start: () => void
   setMeasurement: (taskId: string, value: number) => void
   reset: () => void
+  respawnObjects: () => void
 }
 
 const TOTAL_TASKS = 9
@@ -48,4 +49,6 @@ export const useLabState = create<LabState>((set, get) => ({
     journal: [],
     sessionId: s.sessionId + 1,
   })),
+
+  respawnObjects: () => set(s => ({ sessionId: s.sessionId + 1 })),
 }))
