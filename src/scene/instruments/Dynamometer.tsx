@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { RigidBody, RapierRigidBody } from '@react-three/rapier'
 import { Vector3 } from 'three'
 import { registerSnap } from '../../physics/snapTargets'
+import { getBodyMass, onDragStart } from '../../physics/bodyRegistry'
 import { Outlines, RoundedBox } from '@react-three/drei'
 import { useReadings } from '../../lab/InstrumentReadings'
 import { createDialTexture } from '../textures/dialTexture'
@@ -31,7 +32,9 @@ export function Dynamometer({ position, active = false }: Props) {
   useFrame(() => {
     const hook = hookRef.current
     if (!hook) return
-    const F = attached ? attached.mass() * G : 0
+    // Use bodyRegistry — kinematic body.mass() may return 0
+    const attachedMass = attached ? getBodyMass(attached) : 0
+    const F = attachedMass * G
     setDynamometer(F)
     const newY = SPRING_TOP_Y - HOOK_REST_Y - F / SPRING_K
     setHookY(newY)
@@ -64,6 +67,13 @@ export function Dynamometer({ position, active = false }: Props) {
     })
     return unregister
   }, [position, hookY])
+
+  // Release attached body when user starts dragging it (so they can move it elsewhere)
+  useEffect(() => {
+    return onDragStart((body) => {
+      setAttached(prev => prev === body ? null : prev)
+    })
+  }, [])
 
   return (
     <group position={position}>

@@ -6,6 +6,7 @@ import { Vector3 } from 'three'
 import { RigidBodyType } from '@dimforge/rapier3d-compat'
 import { Outlines, RoundedBox } from '@react-three/drei'
 import { registerSnap } from '../../physics/snapTargets'
+import { getBodyMass } from '../../physics/bodyRegistry'
 import { useReadings } from '../../lab/InstrumentReadings'
 import { createLcdTexture, drawLcd } from '../textures/lcdTexture'
 import { createBrandLabel } from '../textures/labelTexture'
@@ -55,7 +56,8 @@ export function DigitalScale({ position, active = false }: Props) {
       // Accept Dynamic (0) AND KinematicPositionBased (2) — snapped bodies are kinematic
       const bt = body.bodyType()
       if (bt === RigidBodyType.Dynamic || bt === RigidBodyType.KinematicPositionBased) {
-        totalMassKg += body.mass()
+        // Use bodyRegistry — kinematic body.mass() may return 0
+        totalMassKg += getBodyMass(body)
       }
     })
 
