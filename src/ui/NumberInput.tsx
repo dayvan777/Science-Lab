@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { TouchNumberKeypad } from './TouchNumberKeypad'
 
 type Props = {
   unit: 'g' | 'N'
@@ -6,46 +7,58 @@ type Props = {
 }
 
 export function NumberInput({ unit, onSubmit }: Props) {
-  const [text, setText] = useState('')
-
-  const handleSubmit = () => {
-    const value = parseFloat(text.replace(',', '.'))
-    if (Number.isFinite(value) && value >= 0) {
-      onSubmit(value)
-      setText('')
-    }
-  }
+  const [keypadOpen, setKeypadOpen] = useState(false)
+  const [pendingValue, setPendingValue] = useState<string>('')
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-      <span style={{ fontSize: 14, opacity: 0.7 }}>Значення:</span>
-      <input
-        type="number"
-        inputMode="decimal"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-        style={{
-          background: '#fff', color: '#000',
-          padding: '10px 16px', fontSize: 18,
-          border: 'none', borderRadius: 8,
-          width: 100, fontWeight: 600,
-        }}
-      />
-      <span style={{ fontSize: 14, opacity: 0.7 }}>{unit === 'g' ? 'грамів' : 'Ньютонів'}</span>
-      <button
-        onClick={handleSubmit}
-        disabled={!text}
-        style={{
-          background: text ? '#2ecc71' : '#444',
-          color: '#fff',
-          padding: '10px 20px', fontSize: 14, fontWeight: 600,
-          border: 'none', borderRadius: 8,
-          cursor: text ? 'pointer' : 'not-allowed',
-        }}
-      >
-        Записати → Далі
-      </button>
-    </div>
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{ fontSize: 14, opacity: 0.7, color: '#1d1d1f' }}>Значення:</span>
+        <button
+          onClick={() => setKeypadOpen(true)}
+          style={{
+            background: '#fff', color: '#1d1d1f',
+            padding: '12px 20px', fontSize: 22, fontWeight: 600,
+            border: '1px solid #d1d1d6', borderRadius: 12,
+            minWidth: 120, textAlign: 'right', cursor: 'pointer',
+            fontFamily: 'monospace',
+          }}
+        >
+          {pendingValue || '—'}
+        </button>
+        <span style={{ fontSize: 14, opacity: 0.7, color: '#1d1d1f' }}>
+          {unit === 'g' ? 'грамів' : 'Ньютонів'}
+        </span>
+        <button
+          onClick={() => {
+            const v = parseFloat(pendingValue.replace(',', '.'))
+            if (Number.isFinite(v) && v >= 0) {
+              onSubmit(v)
+              setPendingValue('')
+            }
+          }}
+          disabled={!pendingValue}
+          style={{
+            background: pendingValue ? '#0071e3' : '#a0a0a8',
+            color: '#fff', border: 'none',
+            padding: '12px 24px', fontSize: 16, fontWeight: 600,
+            borderRadius: 12, cursor: pendingValue ? 'pointer' : 'not-allowed',
+            minHeight: 48,
+          }}
+        >
+          Записати → Далі
+        </button>
+      </div>
+      {keypadOpen && (
+        <TouchNumberKeypad
+          initialValue={pendingValue}
+          onConfirm={(v) => {
+            setPendingValue(String(v))
+            setKeypadOpen(false)
+          }}
+          onCancel={() => setKeypadOpen(false)}
+        />
+      )}
+    </>
   )
 }
