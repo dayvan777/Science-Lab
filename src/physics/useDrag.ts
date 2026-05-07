@@ -9,9 +9,9 @@ import { useStepEngine } from '../guided/StepEngine'
 const DRAG_HEIGHT = 1.0
 const SMOOTHING = 0.3
 
-type Props = { rigidBody: RefObject<RapierRigidBody | null> }
+type Props = { rigidBody: RefObject<RapierRigidBody | null>; bodyId?: string }
 
-export function useDrag({ rigidBody }: Props) {
+export function useDrag({ rigidBody, bodyId }: Props) {
   const { camera, gl } = useThree()
   const target = useRef(new Vector3())
   const isDragging = useRef(false)
@@ -61,7 +61,7 @@ export function useDrag({ rigidBody }: Props) {
     pointerId.current = null
     if (rigidBody.current) {
       const t = rigidBody.current.translation()
-      const snap = findSnapNear(new Vector3(t.x, t.y, t.z))
+      const snap = findSnapNear(new Vector3(t.x, t.y, t.z), bodyId)
       if (snap) {
         setLastSnap(snap.id)
         snap.onAttach(rigidBody.current)

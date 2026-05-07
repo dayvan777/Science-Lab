@@ -1,16 +1,8 @@
-import { useRef, RefObject, useEffect } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import {
-  RigidBody,
-  RapierRigidBody,
-  CuboidCollider,
-  useRevoluteJoint,
-  useFixedJoint,
-  useRapier,
-} from '@react-three/rapier'
+import { RapierRigidBody } from '@react-three/rapier'
 import { Outlines, RoundedBox } from '@react-three/drei'
-import { Vector3 } from 'three'
-import { RigidBodyType } from '@dimforge/rapier3d-compat'
+import { Vector3, Group } from 'three'
 import { registerSnap } from '../../physics/snapTargets'
 import { useReadings } from '../../lab/InstrumentReadings'
 
@@ -19,188 +11,161 @@ const BEAM_LEN = 0.45
 const BEAM_T = 0.012
 const PAN_R = 0.07
 const PAN_DEPTH = 0.015
+const REFERENCE_MASS = 0.2  // 200g — full tilt at this difference
 
 type Props = { position: [number, number, number]; active?: boolean }
 
 export function LeverBalance({ position, active = false }: Props) {
-  const frameCounter = useRef(0)
-  const standRef = useRef<RapierRigidBody>(null) as RefObject<RapierRigidBody>
-  const beamRef = useRef<RapierRigidBody>(null) as RefObject<RapierRigidBody>
-  const leftPanRef = useRef<RapierRigidBody>(null) as RefObject<RapierRigidBody>
-  const rightPanRef = useRef<RapierRigidBody>(null) as RefObject<RapierRigidBody>
-
-  const { world } = useRapier()
+  const beamRef = useRef<Group>(null)
+  const [leftMassKg, setLeftMassKg] = useState(0)
+  const [rightMassKg, setRightMassKg] = useState(0)
   const setLeverTilt = useReadings(s => s.setLeverTilt)
   const setLeverRightPanGrams = useReadings(s => s.setLeverRightPanGrams)
 
-  // Revolute joint: stand top ↔ beam center, axis along Z (beam tilts in XY plane)
-  // RevoluteJointParams = [body1Anchor: Vector3, body2Anchor: Vector3, axis: Vector3]
-  useRevoluteJoint(standRef, beamRef, [
-    [0, STAND_H, 0],  // anchor on stand body (top of stand)
-    [0, 0, 0],        // anchor on beam body (beam center)
-    [0, 0, 1],        // rotation axis: Z
-  ])
+  // Track which bodies are on which pan
+  const leftItems = useRef<Set<RapierRigidBody>>(new Set())
+  const rightItems = useRef<Set<RapierRigidBody>>(new Set())
 
-  // Fixed joints: beam ends ↔ pans
-  // FixedJointParams = [body1Anchor: Vector3, body1LocalFrame: Quaternion, body2Anchor: Vector3, body2LocalFrame: Quaternion]
-  useFixedJoint(beamRef, leftPanRef, [
-    [-BEAM_LEN / 2, -BEAM_T / 2, 0], // anchor on beam at left end, bottom
-    [0, 0, 0, 1],                      // identity quaternion for beam frame
-    [0, PAN_DEPTH / 2, 0],            // anchor on pan top-center
-    [0, 0, 0, 1],                      // identity quaternion for pan frame
-  ])
+  function recompute() {
+    let l = 0
+    leftItems.current.forEach(b => { try { l += b.mass() } catch (_) {} })
+    let r = 0
+    rightItems.current.forEach(b => { try { r += b.mass() } catch (_) {} })
+    setLeftMassKg(l)
+    setRightMassKg(r)
+  }
 
-  useFixedJoint(beamRef, rightPanRef, [
-    [BEAM_LEN / 2, -BEAM_T / 2, 0],  // anchor on beam at right end, bottom
-    [0, 0, 0, 1],                      // identity quaternion for beam frame
-    [0, PAN_DEPTH / 2, 0],            // anchor on pan top-center
-    [0, 0, 0, 1],                      // identity quaternion for pan frame
-  ])
-
-  // Register snap targets for left and right pans (rest positions)
-  // CRITICAL: lever balance pans MUST receive Dynamic bodies so weight pushes beam.
-  // keepKinematic=false → after snap, body falls onto pan and applies real force.
+  // Register snap targets for left and right pans
   useEffect(() => {
-    // Snap point ABOVE pan top so object falls onto it cleanly
-    const panTopY = position[1] + STAND_H - PAN_DEPTH + 0.10  // 10 cm above pan top
-    const leftPos = new Vector3(position[0] - BEAM_LEN / 2, panTopY, position[2])
-    const rightPos = new Vector3(position[0] + BEAM_LEN / 2, panTopY, position[2])
+    const leftPos = new Vector3(
+      position[0] - BEAM_LEN / 2,
+      position[1] + STAND_H + 0.05,
+      position[2]
+    )
+    const rightPos = new Vector3(
+      position[0] + BEAM_LEN / 2,
+      position[1] + STAND_H + 0.05,
+      position[2]
+    )
 
     const unregLeft = registerSnap({
-      id: `lever-left-${position[0]}-${position[1]}-${position[2]}`,
+      id: `lever-left-${position[0]}`,
+      instrumentId: 'lever-balance',
       position: leftPos,
-      radius: 0.10,  // generous horizontal radius for easy targeting
-      keepKinematic: false,  // body becomes Dynamic again — falls onto pan, applies weight
+      radius: 0.30,
+      keepKinematic: true,
       onAttach: (body) => {
-        // Position above pan, kill velocity, then physics takes over (caller restores Dynamic)
-        body.setTranslation({ x: leftPos.x, y: leftPos.y, z: leftPos.z }, true)
+        // Remove from right if it was there
+        rightItems.current.delete(body)
+        leftItems.current.add(body)
         body.setLinvel({ x: 0, y: 0, z: 0 }, true)
         body.setAngvel({ x: 0, y: 0, z: 0 }, true)
+        recompute()
       },
     })
 
     const unregRight = registerSnap({
-      id: `lever-right-${position[0]}-${position[1]}-${position[2]}`,
+      id: `lever-right-${position[0]}`,
+      instrumentId: 'lever-balance',
       position: rightPos,
-      radius: 0.10,
-      keepKinematic: false,
+      radius: 0.30,
+      keepKinematic: true,
       onAttach: (body) => {
-        body.setTranslation({ x: rightPos.x, y: rightPos.y, z: rightPos.z }, true)
+        leftItems.current.delete(body)
+        rightItems.current.add(body)
         body.setLinvel({ x: 0, y: 0, z: 0 }, true)
         body.setAngvel({ x: 0, y: 0, z: 0 }, true)
+        recompute()
       },
     })
 
     return () => { unregLeft(); unregRight() }
   }, [position])
 
-  // Live readings: beam tilt and right-pan mass
-  useFrame(() => {
-    frameCounter.current++
-    if (frameCounter.current % 6 !== 0) return
-    const beam = beamRef.current
-    if (beam) {
-      const rot = beam.rotation()
-      // For small angles: tilt ≈ 2 * asin(clamp(rot.z))
-      const tilt = 2 * Math.asin(Math.min(1, Math.max(-1, rot.z)))
-      setLeverTilt(tilt)
+  // Animate beam tilt + position snapped items on pans each frame
+  useFrame((_, delta) => {
+    const massDiff = rightMassKg - leftMassKg
+    const targetTilt = Math.max(-0.25, Math.min(0.25, (massDiff / REFERENCE_MASS) * 0.25))
+
+    if (beamRef.current) {
+      const current = beamRef.current.rotation.z
+      const next = current + (targetTilt - current) * Math.min(1, delta * 4)
+      beamRef.current.rotation.z = next
+      setLeverTilt(next)
     }
 
-    const rightPan = rightPanRef.current
-    if (rightPan) {
-      let totalKg = 0
+    // Position snapped items to follow their pans as beam tilts
+    const tiltZ = beamRef.current?.rotation.z ?? 0
+    const cosT = Math.cos(tiltZ)
+    const sinT = Math.sin(tiltZ)
+
+    const leftPanWorldX = position[0] - cosT * BEAM_LEN / 2
+    const leftPanWorldY = position[1] + STAND_H - sinT * BEAM_LEN / 2 + 0.02
+    const rightPanWorldX = position[0] + cosT * BEAM_LEN / 2
+    const rightPanWorldY = position[1] + STAND_H + sinT * BEAM_LEN / 2 + 0.02
+
+    leftItems.current.forEach(b => {
       try {
-        const collider = rightPan.collider(0)
-        world.contactPairsWith(collider, (other) => {
-          const body = other.parent()
-          if (!body || body.handle === rightPan.handle) return
-          // Accept Dynamic (0) AND KinematicPositionBased (2) — snapped bodies are kinematic
-          const bt = body.bodyType()
-          if (bt === RigidBodyType.Dynamic || bt === RigidBodyType.KinematicPositionBased) {
-            totalKg += body.mass()
-          }
-        })
-      } catch (_) { /* ignore if collider not ready */ }
-      setLeverRightPanGrams(Math.max(0, Math.round(totalKg * 1000)))
-    }
+        b.setNextKinematicTranslation({ x: leftPanWorldX, y: leftPanWorldY, z: position[2] })
+      } catch (_) {}
+    })
+    rightItems.current.forEach(b => {
+      try {
+        b.setNextKinematicTranslation({ x: rightPanWorldX, y: rightPanWorldY, z: position[2] })
+      } catch (_) {}
+    })
+
+    // Update HUD reading
+    setLeverRightPanGrams(Math.round(rightMassKg * 1000))
   })
 
   return (
     <group position={position}>
-      {/* Stand — fixed to world */}
-      <RigidBody ref={standRef} type="fixed" colliders="cuboid">
-        <RoundedBox args={[0.04, STAND_H, 0.04]} radius={0.005} smoothness={4} position={[0, STAND_H / 2, 0]}>
-          <meshStandardMaterial color="#3a3a3d" metalness={0.85} roughness={0.25} />
-          {active && <Outlines thickness={3} color="#0071e3" />}
-        </RoundedBox>
-      </RigidBody>
+      {/* Stand */}
+      <RoundedBox args={[0.04, STAND_H, 0.04]} radius={0.005} smoothness={4} position={[0, STAND_H / 2, 0]}>
+        <meshStandardMaterial color="#3a3a3d" metalness={0.85} roughness={0.25} />
+        {active && <Outlines thickness={3} color="#0071e3" />}
+      </RoundedBox>
 
-      {/* Center pivot decoration */}
+      {/* Pivot decoration */}
       <mesh position={[0, STAND_H, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.01, 0.01, 0.05, 16]} />
         <meshStandardMaterial color="#3a3a3d" metalness={0.9} roughness={0.2} />
       </mesh>
 
-      {/* Beam — dynamic, pivots around center via revolute joint */}
-      <RigidBody
-        ref={beamRef}
-        type="dynamic"
-        colliders={false}
-        position={[0, STAND_H, 0]}
-        mass={0.05}
-      >
-        <CuboidCollider args={[BEAM_LEN / 2, BEAM_T / 2, 0.012]} />
+      {/* Beam group — visual only, manually rotated */}
+      <group ref={beamRef} position={[0, STAND_H, 0]}>
         <RoundedBox args={[BEAM_LEN, BEAM_T, 0.024]} radius={0.003} smoothness={4}>
           <meshStandardMaterial color="#aaa" metalness={0.7} roughness={0.3} />
         </RoundedBox>
-        {/* Indicator arrow — thin red cone pointing down */}
+        {/* Indicator arrow */}
         <mesh position={[0, -BEAM_T / 2 - 0.05, 0]}>
           <coneGeometry args={[0.006, 0.07, 4]} />
           <meshStandardMaterial color="#ff3b30" />
         </mesh>
-      </RigidBody>
-
-      {/* Left pan — dynamic, attached to left beam end */}
-      <RigidBody
-        ref={leftPanRef}
-        type="dynamic"
-        colliders={false}
-        position={[-BEAM_LEN / 2, STAND_H - PAN_DEPTH, 0]}
-        mass={0.02}
-      >
-        <CuboidCollider args={[PAN_R, PAN_DEPTH / 2, PAN_R]} />
-        {/* Pan body — shallow concave */}
-        <mesh>
-          <cylinderGeometry args={[PAN_R, PAN_R * 0.85, PAN_DEPTH * 0.6, 32]} />
-          <meshStandardMaterial color="#888" metalness={0.6} roughness={0.4} />
-        </mesh>
-        {/* Pan rim */}
-        <mesh position={[0, PAN_DEPTH * 0.3, 0]}>
-          <torusGeometry args={[PAN_R * 0.95, 0.003, 8, 32]} />
-          <meshStandardMaterial color="#aaa" metalness={0.8} roughness={0.2} />
-        </mesh>
-      </RigidBody>
-
-      {/* Right pan — dynamic, attached to right beam end */}
-      <RigidBody
-        ref={rightPanRef}
-        type="dynamic"
-        colliders={false}
-        position={[BEAM_LEN / 2, STAND_H - PAN_DEPTH, 0]}
-        mass={0.02}
-      >
-        <CuboidCollider args={[PAN_R, PAN_DEPTH / 2, PAN_R]} />
-        {/* Pan body — shallow concave */}
-        <mesh>
-          <cylinderGeometry args={[PAN_R, PAN_R * 0.85, PAN_DEPTH * 0.6, 32]} />
-          <meshStandardMaterial color="#888" metalness={0.6} roughness={0.4} />
-        </mesh>
-        {/* Pan rim */}
-        <mesh position={[0, PAN_DEPTH * 0.3, 0]}>
-          <torusGeometry args={[PAN_R * 0.95, 0.003, 8, 32]} />
-          <meshStandardMaterial color="#aaa" metalness={0.8} roughness={0.2} />
-        </mesh>
-      </RigidBody>
+        {/* Left pan */}
+        <group position={[-BEAM_LEN / 2, -PAN_DEPTH, 0]}>
+          <mesh>
+            <cylinderGeometry args={[PAN_R, PAN_R * 0.85, PAN_DEPTH * 0.6, 32]} />
+            <meshStandardMaterial color="#888" metalness={0.6} roughness={0.4} />
+          </mesh>
+          <mesh position={[0, PAN_DEPTH * 0.3, 0]}>
+            <torusGeometry args={[PAN_R * 0.95, 0.003, 8, 32]} />
+            <meshStandardMaterial color="#aaa" metalness={0.8} roughness={0.2} />
+          </mesh>
+        </group>
+        {/* Right pan */}
+        <group position={[BEAM_LEN / 2, -PAN_DEPTH, 0]}>
+          <mesh>
+            <cylinderGeometry args={[PAN_R, PAN_R * 0.85, PAN_DEPTH * 0.6, 32]} />
+            <meshStandardMaterial color="#888" metalness={0.6} roughness={0.4} />
+          </mesh>
+          <mesh position={[0, PAN_DEPTH * 0.3, 0]}>
+            <torusGeometry args={[PAN_R * 0.95, 0.003, 8, 32]} />
+            <meshStandardMaterial color="#aaa" metalness={0.8} roughness={0.2} />
+          </mesh>
+        </group>
+      </group>
     </group>
   )
 }

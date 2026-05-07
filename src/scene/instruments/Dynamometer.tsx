@@ -56,8 +56,9 @@ export function Dynamometer({ position, active = false }: Props) {
     const hookWorldPos = new Vector3(position[0] + 0.05, position[1] + hookY, position[2])
     const unregister = registerSnap({
       id: 'dynamometer-hook',
+      instrumentId: 'dynamometer',
       position: hookWorldPos,
-      radius: 0.06,
+      radius: 0.20,  // magnetic — was 0.06
       keepKinematic: true,
       onAttach: (body) => setAttached(body),
     })

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
 import { Lighting } from './Lighting'
@@ -17,6 +17,7 @@ import { useLabState } from '../lab/LabState'
 import { tasks } from '../lab/tasks'
 import { GuidedOverlay } from '../guided/GuidedOverlay'
 import { useGuidance, SkipGuidanceToggle } from '../guided/SkipGuidanceToggle'
+import { setActiveInstrument } from '../physics/snapTargets'
 
 export function LabScene() {
   const [preset, setPreset] = useState<CameraPreset>('overview')
@@ -24,8 +25,17 @@ export function LabScene() {
   const idx = useLabState(s => s.currentTaskIndex)
   const resetKey = useLabState(s => s.sessionId)
   const respawnObjects = useLabState(s => s.respawnObjects)
-  const activeInstrument = phase === 'in-progress' ? tasks[idx]?.instrumentId : null
   const guidanceOn = useGuidance(s => s.enabled)
+
+  const currentTask = phase === 'in-progress' ? tasks[idx] : null
+  const activeObjectId = currentTask?.objectId ?? null
+  const activeInstrumentId = currentTask?.instrumentId ?? null
+
+  // Keep snap filter in sync with current task's instrument
+  useEffect(() => {
+    setActiveInstrument(activeInstrumentId)
+    return () => { setActiveInstrument(null) }
+  }, [activeInstrumentId])
 
   return (
     <>
@@ -38,16 +48,16 @@ export function LabScene() {
         <CameraRig preset={preset} />
         <Physics key={resetKey} gravity={[0, -9.81, 0]} timeStep={1/60}>
           <Table />
-          {/* DEBUG: objects spawn HIGH and CENTER for max visibility */}
-          <TennisBall position={[-0.3, 1.5, 0.3]} />
-          <Apple position={[0, 1.5, 0.3]} />
-          <Baseball position={[0.3, 1.5, 0.3]} />
+          {/* Objects — only the active object for the current task is pickable */}
+          <TennisBall position={[-0.3, 1.5, 0.3]} enabled={activeObjectId === 'tennis-ball'} />
+          <Apple position={[0, 1.5, 0.3]} enabled={activeObjectId === 'apple'} />
+          <Baseball position={[0.3, 1.5, 0.3]} enabled={activeObjectId === 'baseball'} />
           {/* Instruments spread across the table, away from object spawn */}
-          <Dynamometer position={[-0.55, 0.85, 0]} active={activeInstrument === 'dynamometer'} />
-          <LeverBalance position={[0.05, 0.85, 0]} active={activeInstrument === 'lever-balance'} />
-          <DigitalScale position={[0.75, 0.85, 0]} active={activeInstrument === 'digital-scale'} />
-          {/* Weights at front of table, spread for visibility */}
-          <Weights startPosition={[-0.2, 1.0, -0.3]} />
+          <Dynamometer position={[-0.55, 0.85, 0]} active={activeInstrumentId === 'dynamometer'} />
+          <LeverBalance position={[0.05, 0.85, 0]} active={activeInstrumentId === 'lever-balance'} />
+          <DigitalScale position={[0.75, 0.85, 0]} active={activeInstrumentId === 'digital-scale'} />
+          {/* Weights — only usable during lever-balance tasks */}
+          <Weights startPosition={[-0.2, 1.0, -0.3]} weightsEnabled={activeInstrumentId === 'lever-balance'} />
           {guidanceOn && <GuidedOverlay />}
         </Physics>
       </Canvas>

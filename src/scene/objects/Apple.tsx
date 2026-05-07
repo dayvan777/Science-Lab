@@ -3,11 +3,11 @@ import { Draggable } from './Draggable'
 const RADIUS = 0.08  // 2x real for demo visibility
 const MASS_GRAMS = 180
 
-type Props = { position: [number, number, number] }
+type Props = { position: [number, number, number]; enabled?: boolean }
 
-export function Apple({ position }: Props) {
+export function Apple({ position, enabled = true }: Props) {
   return (
-    <Draggable position={position} mass={MASS_GRAMS} shape={{ type: 'ball', radius: RADIUS }} bodyId="apple">
+    <Draggable position={position} mass={MASS_GRAMS} shape={{ type: 'ball', radius: RADIUS }} bodyId="apple" enabled={enabled}>
       <group>
         {/* Body — slight vertical squash */}
         <mesh scale={[1, 0.95, 1]}>

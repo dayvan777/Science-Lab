@@ -71,8 +71,9 @@ export function DigitalScale({ position, active = false }: Props) {
     const snapPos = new Vector3(position[0], platformTopY, position[2])
     return registerSnap({
       id: `digital-scale-${position[0]}-${position[1]}-${position[2]}`,
+      instrumentId: 'digital-scale',
       position: snapPos,
-      radius: 0.12,
+      radius: 0.30,  // magnetic — was 0.12
       keepKinematic: true,
       onAttach: (body) => {
         // Keep KINEMATIC — body anchored, won't bounce when others land

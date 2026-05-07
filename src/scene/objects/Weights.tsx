@@ -13,9 +13,9 @@ const WEIGHTS = [
   { mass: 10,   radius: 0.020, height: 0.025, label: '10 г' },
 ]
 
-type Props = { startPosition: [number, number, number] }
+type Props = { startPosition: [number, number, number]; weightsEnabled?: boolean }
 
-export function Weights({ startPosition }: Props) {
+export function Weights({ startPosition, weightsEnabled = true }: Props) {
   const [x0, y0, z0] = startPosition
   const labelTextures = useMemo(() => WEIGHTS.map(w => createWeightLabel(w.label)), [])
 
@@ -30,6 +30,7 @@ export function Weights({ startPosition }: Props) {
             mass={w.mass}
             shape={{ type: 'cuboid', halfExtents: [w.radius, w.height / 2, w.radius] }}
             bodyId={`weight-${w.label}`}
+            enabled={weightsEnabled}
           >
             {/* Body — slight conical taper for premium look */}
             <mesh>

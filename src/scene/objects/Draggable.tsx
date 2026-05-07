@@ -10,16 +10,18 @@ type Props = {
   mass: number          // grams
   shape: Shape
   bodyId?: string       // for guided step detection
+  enabled?: boolean     // if false, pointer-down is blocked (object not pickable)
   children: ReactNode
 }
 
-export function Draggable({ position, mass, shape, bodyId, children }: Props) {
+export function Draggable({ position, mass, shape, bodyId, enabled = true, children }: Props) {
   const ref = useRef<RapierRigidBody>(null)
   const setDragging = useStepEngine(s => s.setDragging)
-  const { onPointerDown: rawDown, onPointerMove, onPointerUp: rawUp } = useDrag({ rigidBody: ref })
+  const { onPointerDown: rawDown, onPointerMove, onPointerUp: rawUp } = useDrag({ rigidBody: ref, bodyId })
   const massKg = mass / 1000
 
   const onPointerDown = (ev: React.PointerEvent) => {
+    if (!enabled) return  // BLOCK pickup when not the active object
     if (bodyId) setDragging(bodyId)
     rawDown(ev as unknown as Parameters<typeof rawDown>[0])
   }
