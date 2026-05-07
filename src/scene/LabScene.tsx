@@ -37,10 +37,10 @@ export function LabScene() {
         <CameraRig preset={preset} />
         <Physics key={resetKey} gravity={[0, -9.81, 0]} timeStep={1/60}>
           <Table />
-          {/* Objects spawn in left zone — clear of instruments */}
-          <TennisBall position={[-1.05, 0.95, 0]} />
-          <Apple position={[-1.05, 0.95, 0.18]} />
-          <Baseball position={[-1.05, 0.95, -0.18]} />
+          {/* DEBUG: objects spawn HIGH and CENTER for max visibility */}
+          <TennisBall position={[-0.3, 1.5, 0.3]} />
+          <Apple position={[0, 1.5, 0.3]} />
+          <Baseball position={[0.3, 1.5, 0.3]} />
           {/* Instruments spread across the table, away from object spawn */}
           <Dynamometer position={[-0.55, 0.85, 0]} active={activeInstrument === 'dynamometer'} />
           <LeverBalance position={[0.05, 0.85, 0]} active={activeInstrument === 'lever-balance'} />
