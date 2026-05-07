@@ -1,10 +1,11 @@
 import { useRef, useState, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RigidBody, RapierRigidBody } from '@react-three/rapier'
-import { CanvasTexture, Vector3 } from 'three'
+import { Vector3 } from 'three'
 import { registerSnap } from '../../physics/snapTargets'
 import { Outlines } from '@react-three/drei'
 import { useReadings } from '../../lab/InstrumentReadings'
+import { createDialTexture } from '../textures/dialTexture'
 
 const G = 9.81
 const SPRING_K = 50  // N/m — gives 0–10 cm range for 0–5 N
@@ -21,23 +22,7 @@ export function Dynamometer({ position, active = false }: Props) {
   const setDynamometer = useReadings(s => s.setDynamometer)
 
   // Scale texture (drawn once)
-  const scaleTexture = useMemo(() => {
-    const canvas = document.createElement('canvas')
-    canvas.width = 64
-    canvas.height = 256
-    const ctx = canvas.getContext('2d')!
-    ctx.fillStyle = '#f5f5f5'
-    ctx.fillRect(0, 0, 64, 256)
-    ctx.fillStyle = '#000'
-    ctx.font = 'bold 14px sans-serif'
-    ctx.textAlign = 'right'
-    for (let i = 0; i <= 5; i++) {
-      const y = 30 + i * 40
-      ctx.fillText(`${i} N`, 50, y)
-      ctx.fillRect(8, y - 3, 18, 2)
-    }
-    return new CanvasTexture(canvas)
-  }, [])
+  const scaleTexture = useMemo(() => createDialTexture(), [])
 
   useEffect(() => {
     return () => { scaleTexture.dispose() }

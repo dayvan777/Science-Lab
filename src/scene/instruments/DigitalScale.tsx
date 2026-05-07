@@ -2,11 +2,12 @@ import { useRef, useState, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RigidBody, CuboidCollider, useRapier } from '@react-three/rapier'
 import { RapierRigidBody } from '@react-three/rapier'
-import { CanvasTexture, Vector3 } from 'three'
+import { Vector3 } from 'three'
 import { RigidBodyType } from '@dimforge/rapier3d-compat'
 import { Outlines } from '@react-three/drei'
 import { registerSnap } from '../../physics/snapTargets'
 import { useReadings } from '../../lab/InstrumentReadings'
+import { createLcdTexture, drawLcd } from '../textures/lcdTexture'
 
 const PLATFORM_W = 0.20
 const PLATFORM_D = 0.20
@@ -25,23 +26,11 @@ export function DigitalScale({ position, active = false }: Props) {
   const [tareOffset, setTareOffset] = useState(0)
   const setDigitalScale = useReadings(s => s.setDigitalScale)
 
-  const lcdTexture = useMemo(() => {
-    const canvas = document.createElement('canvas')
-    canvas.width = 256
-    canvas.height = 96
-    return new CanvasTexture(canvas)
-  }, [])
+  const lcdTexture = useMemo(() => createLcdTexture(), [])
 
   // Update LCD texture when reading changes
   useEffect(() => {
-    const ctx = (lcdTexture.image as HTMLCanvasElement).getContext('2d')!
-    ctx.fillStyle = '#a0c0a0'
-    ctx.fillRect(0, 0, 256, 96)
-    ctx.fillStyle = '#1a1a1a'
-    ctx.font = 'bold 56px monospace'
-    ctx.textAlign = 'right'
-    ctx.fillText(`${Math.round(reading)} g`, 240, 70)
-    lcdTexture.needsUpdate = true
+    drawLcd(lcdTexture, reading)
   }, [reading, lcdTexture])
 
   useFrame(() => {
