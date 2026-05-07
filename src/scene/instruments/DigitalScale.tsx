@@ -17,9 +17,9 @@ const HOUSING_H = 0.04
 const LCD_W = 0.12
 const LCD_H = 0.04
 
-type Props = { position: [number, number, number]; active?: boolean; dimmed?: boolean }
+type Props = { position: [number, number, number]; active?: boolean }
 
-export function DigitalScale({ position, active = false, dimmed = false }: Props) {
+export function DigitalScale({ position, active = false }: Props) {
   const platformRef = useRef<RapierRigidBody>(null)
   const frameCounter = useRef(0)
   const { world } = useRapier()
@@ -87,7 +87,7 @@ export function DigitalScale({ position, active = false, dimmed = false }: Props
       {/* Housing — rounded box */}
       <RoundedBox args={[PLATFORM_W * 1.1, HOUSING_H, PLATFORM_D * 1.1]} radius={0.005} smoothness={4}
         position={[0, HOUSING_H / 2, 0]}>
-        <meshStandardMaterial color="#3a3a3d" metalness={0.85} roughness={0.25} opacity={dimmed ? 0.5 : 1} transparent={dimmed} />
+        <meshStandardMaterial color="#3a3a3d" metalness={0.85} roughness={0.25} />
         {active && <Outlines thickness={3} color="#0071e3" />}
       </RoundedBox>
 

@@ -13,9 +13,9 @@ const STAND_H = 0.4
 const SPRING_TOP_Y = 0.4
 const HOOK_REST_Y = 0.2
 
-type Props = { position: [number, number, number]; active?: boolean; dimmed?: boolean }
+type Props = { position: [number, number, number]; active?: boolean }
 
-export function Dynamometer({ position, active = false, dimmed = false }: Props) {
+export function Dynamometer({ position, active = false }: Props) {
   const hookRef = useRef<RapierRigidBody>(null)
   const [attached, setAttached] = useState<RapierRigidBody | null>(null)
   const [hookY, setHookY] = useState(SPRING_TOP_Y - HOOK_REST_Y)
@@ -67,7 +67,7 @@ export function Dynamometer({ position, active = false, dimmed = false }: Props)
     <group position={position}>
       {/* Vertical stand — rounded box */}
       <RoundedBox args={[0.04, STAND_H, 0.04]} radius={0.005} smoothness={4} position={[0, STAND_H / 2, 0]}>
-        <meshStandardMaterial color="#3a3a3d" metalness={0.85} roughness={0.25} opacity={dimmed ? 0.5 : 1} transparent={dimmed} />
+        <meshStandardMaterial color="#3a3a3d" metalness={0.85} roughness={0.25} />
         {active && <Outlines thickness={3} color="#0071e3" />}
       </RoundedBox>
       {/* Top horizontal arm — rounded box */}
