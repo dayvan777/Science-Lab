@@ -1,7 +1,8 @@
-import { ReactNode, useRef } from 'react'
+import { ReactNode, useRef, useEffect } from 'react'
 import { RigidBody, RapierRigidBody, BallCollider, CuboidCollider } from '@react-three/rapier'
 import { useDrag } from '../../physics/useDrag'
 import { useStepEngine } from '../../guided/StepEngine'
+import { registerBody, notifyDragStart } from '../../physics/bodyRegistry'
 
 type Shape = { type: 'ball'; radius: number } | { type: 'cuboid'; halfExtents: [number, number, number] }
 
@@ -20,9 +21,31 @@ export function Draggable({ position, mass, shape, bodyId, enabled = true, child
   const { onPointerDown: rawDown, onPointerMove, onPointerUp: rawUp } = useDrag({ rigidBody: ref, bodyId })
   const massKg = mass / 1000
 
+  // Register body→mass on mount so other systems can look up mass even for kinematic bodies.
+  // RigidBody ref may not be ready immediately — poll until it is.
+  useEffect(() => {
+    let cancelled = false
+    let unregister: (() => void) | null = null
+    const tryRegister = () => {
+      if (cancelled) return
+      if (ref.current) {
+        unregister = registerBody(ref.current, massKg)
+      } else {
+        requestAnimationFrame(tryRegister)
+      }
+    }
+    tryRegister()
+    return () => {
+      cancelled = true
+      unregister?.()
+    }
+  }, [massKg])
+
   const onPointerDown = (ev: React.PointerEvent) => {
     if (!enabled) return  // BLOCK pickup when not the active object
     if (bodyId) setDragging(bodyId)
+    // Notify snap systems so they can release this body from any pan/platform tracking
+    if (ref.current) notifyDragStart(ref.current)
     rawDown(ev as unknown as Parameters<typeof rawDown>[0])
   }
 

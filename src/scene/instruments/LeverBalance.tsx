@@ -4,6 +4,7 @@ import { RapierRigidBody } from '@react-three/rapier'
 import { Outlines, RoundedBox } from '@react-three/drei'
 import { Vector3, Group } from 'three'
 import { registerSnap } from '../../physics/snapTargets'
+import { getBodyMass, onDragStart } from '../../physics/bodyRegistry'
 import { useReadings } from '../../lab/InstrumentReadings'
 
 const STAND_H = 0.25
@@ -28,12 +29,23 @@ export function LeverBalance({ position, active = false }: Props) {
 
   function recompute() {
     let l = 0
-    leftItems.current.forEach(b => { try { l += b.mass() } catch (_) {} })
+    leftItems.current.forEach(b => { l += getBodyMass(b) })
     let r = 0
-    rightItems.current.forEach(b => { try { r += b.mass() } catch (_) {} })
+    rightItems.current.forEach(b => { r += getBodyMass(b) })
     setLeftMassKg(l)
     setRightMassKg(r)
   }
+
+  // Subscribe to drag-start: when ANY body starts being dragged,
+  // remove it from our pan tracking sets so user can move objects between instruments.
+  useEffect(() => {
+    return onDragStart((body) => {
+      let changed = false
+      if (leftItems.current.delete(body)) changed = true
+      if (rightItems.current.delete(body)) changed = true
+      if (changed) recompute()
+    })
+  }, [])
 
   // Register snap targets for left and right pans
   useEffect(() => {
