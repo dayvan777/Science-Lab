@@ -5,7 +5,7 @@ import { Vector3 } from 'three'
 export type CameraPreset = 'overview' | 'digital-scale' | 'lever-balance' | 'dynamometer'
 
 const PRESETS: Record<CameraPreset, { pos: [number, number, number]; target: [number, number, number] }> = {
-  'overview':      { pos: [0, 1.5, 2.0],    target: [0, 0.85, 0] },
+  'overview':      { pos: [0, 1.4, 1.5],    target: [0, 0.95, 0] },
   'digital-scale': { pos: [0.6, 1.2, 1.0],  target: [0.6, 0.9, 0] },
   'lever-balance': { pos: [0, 1.2, 1.0],    target: [0, 0.95, 0] },
   'dynamometer':   { pos: [-0.5, 1.3, 1.0], target: [-0.5, 1.0, 0] },

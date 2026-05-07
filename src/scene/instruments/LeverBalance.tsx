@@ -20,9 +20,9 @@ const BEAM_T = 0.012
 const PAN_R = 0.07
 const PAN_DEPTH = 0.015
 
-type Props = { position: [number, number, number]; active?: boolean }
+type Props = { position: [number, number, number]; active?: boolean; dimmed?: boolean }
 
-export function LeverBalance({ position, active = false }: Props) {
+export function LeverBalance({ position, active = false, dimmed = false }: Props) {
   const frameCounter = useRef(0)
   const standRef = useRef<RapierRigidBody>(null) as RefObject<RapierRigidBody>
   const beamRef = useRef<RapierRigidBody>(null) as RefObject<RapierRigidBody>
@@ -123,7 +123,7 @@ export function LeverBalance({ position, active = false }: Props) {
       {/* Stand — fixed to world */}
       <RigidBody ref={standRef} type="fixed" colliders="cuboid">
         <RoundedBox args={[0.04, STAND_H, 0.04]} radius={0.005} smoothness={4} position={[0, STAND_H / 2, 0]}>
-          <meshStandardMaterial color="#3a3a3d" metalness={0.85} roughness={0.25} />
+          <meshStandardMaterial color="#3a3a3d" metalness={0.85} roughness={0.25} opacity={dimmed ? 0.5 : 1} transparent={dimmed} />
           {active && <Outlines thickness={3} color="#0071e3" />}
         </RoundedBox>
       </RigidBody>
