@@ -4,10 +4,11 @@ import { RigidBody, CuboidCollider, useRapier } from '@react-three/rapier'
 import { RapierRigidBody } from '@react-three/rapier'
 import { Vector3 } from 'three'
 import { RigidBodyType } from '@dimforge/rapier3d-compat'
-import { Outlines } from '@react-three/drei'
+import { Outlines, RoundedBox } from '@react-three/drei'
 import { registerSnap } from '../../physics/snapTargets'
 import { useReadings } from '../../lab/InstrumentReadings'
 import { createLcdTexture, drawLcd } from '../textures/lcdTexture'
+import { createBrandLabel } from '../textures/labelTexture'
 
 const PLATFORM_W = 0.20
 const PLATFORM_D = 0.20
@@ -27,6 +28,7 @@ export function DigitalScale({ position, active = false }: Props) {
   const setDigitalScale = useReadings(s => s.setDigitalScale)
 
   const lcdTexture = useMemo(() => createLcdTexture(), [])
+  const brandTexture = useMemo(() => createBrandLabel('LAB SCALE'), [])
 
   // Update LCD texture when reading changes
   useEffect(() => {
@@ -82,11 +84,17 @@ export function DigitalScale({ position, active = false }: Props) {
 
   return (
     <group position={position}>
-      {/* Housing */}
-      <mesh position={[0, HOUSING_H / 2, 0]}>
-        <boxGeometry args={[PLATFORM_W * 1.1, HOUSING_H, PLATFORM_D * 1.1]} />
-        <meshStandardMaterial color="#2a2a2a" roughness={0.4} metalness={0.2} />
-        {active && <Outlines thickness={3} color="#f4d03f" />}
+      {/* Housing — rounded box */}
+      <RoundedBox args={[PLATFORM_W * 1.1, HOUSING_H, PLATFORM_D * 1.1]} radius={0.005} smoothness={4}
+        position={[0, HOUSING_H / 2, 0]}>
+        <meshStandardMaterial color="#3a3a3d" metalness={0.85} roughness={0.25} />
+        {active && <Outlines thickness={3} color="#0071e3" />}
+      </RoundedBox>
+
+      {/* Brand label on front */}
+      <mesh position={[0, HOUSING_H / 2 - 0.012, PLATFORM_D / 2 * 1.1 + 0.002]}>
+        <planeGeometry args={[0.06, 0.012]} />
+        <meshBasicMaterial map={brandTexture} transparent />
       </mesh>
 
       {/* Platform with collision */}
@@ -109,13 +117,13 @@ export function DigitalScale({ position, active = false }: Props) {
         <meshBasicMaterial map={lcdTexture} />
       </mesh>
 
-      {/* Tare button (visual + clickable) */}
+      {/* Tare button — glowing red sphere */}
       <mesh
-        position={[LCD_W / 2 + 0.015, HOUSING_H / 2, PLATFORM_D / 2 * 1.1 + 0.001]}
+        position={[LCD_W / 2 + 0.018, HOUSING_H / 2, PLATFORM_D / 2 * 1.1 + 0.001]}
         onClick={onTare}
       >
-        <boxGeometry args={[0.012, 0.012, 0.005]} />
-        <meshStandardMaterial color="#e74c3c" />
+        <sphereGeometry args={[0.006, 12, 8]} />
+        <meshStandardMaterial color="#ff3b30" emissive="#ff3b30" emissiveIntensity={0.3} roughness={0.3} />
       </mesh>
     </group>
   )
