@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { RigidBody, RapierRigidBody } from '@react-three/rapier'
 import { Vector3 } from 'three'
 import { registerSnap } from '../../physics/snapTargets'
-import { Outlines } from '@react-three/drei'
+import { Outlines, RoundedBox } from '@react-three/drei'
 import { useReadings } from '../../lab/InstrumentReadings'
 import { createDialTexture } from '../textures/dialTexture'
 
@@ -65,17 +65,15 @@ export function Dynamometer({ position, active = false }: Props) {
 
   return (
     <group position={position}>
-      {/* Vertical stand */}
-      <mesh position={[0, STAND_H / 2, 0]}>
-        <boxGeometry args={[0.04, STAND_H, 0.04]} />
-        <meshStandardMaterial color="#333" metalness={0.5} roughness={0.4} />
-        {active && <Outlines thickness={3} color="#f4d03f" />}
-      </mesh>
-      {/* Top horizontal arm */}
-      <mesh position={[0.05, STAND_H + 0.01, 0]}>
-        <boxGeometry args={[0.14, 0.02, 0.04]} />
-        <meshStandardMaterial color="#333" metalness={0.5} roughness={0.4} />
-      </mesh>
+      {/* Vertical stand — rounded box */}
+      <RoundedBox args={[0.04, STAND_H, 0.04]} radius={0.005} smoothness={4} position={[0, STAND_H / 2, 0]}>
+        <meshStandardMaterial color="#3a3a3d" metalness={0.85} roughness={0.25} />
+        {active && <Outlines thickness={3} color="#0071e3" />}
+      </RoundedBox>
+      {/* Top horizontal arm — rounded box */}
+      <RoundedBox args={[0.16, 0.025, 0.04]} radius={0.005} smoothness={4} position={[0.05, STAND_H + 0.012, 0]}>
+        <meshStandardMaterial color="#3a3a3d" metalness={0.85} roughness={0.25} />
+      </RoundedBox>
       {/* Spring (visual) — cylinder length follows extension */}
       <mesh position={[0.05, (SPRING_TOP_Y + hookY) / 2, 0]}>
         <cylinderGeometry args={[0.008, 0.008, Math.max(0.02, SPRING_TOP_Y - hookY), 8]} />
