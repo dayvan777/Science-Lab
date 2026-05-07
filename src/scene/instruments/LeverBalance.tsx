@@ -58,17 +58,21 @@ export function LeverBalance({ position, active = false }: Props) {
   ])
 
   // Register snap targets for left and right pans (rest positions)
+  // CRITICAL: lever balance pans MUST receive Dynamic bodies so weight pushes beam.
+  // keepKinematic=false → after snap, body falls onto pan and applies real force.
   useEffect(() => {
-    const leftPos = new Vector3(position[0] - BEAM_LEN / 2, position[1] + STAND_H + 0.02, position[2])
-    const rightPos = new Vector3(position[0] + BEAM_LEN / 2, position[1] + STAND_H + 0.02, position[2])
+    // Snap point ABOVE pan top so object falls onto it cleanly
+    const panTopY = position[1] + STAND_H - PAN_DEPTH + 0.10  // 10 cm above pan top
+    const leftPos = new Vector3(position[0] - BEAM_LEN / 2, panTopY, position[2])
+    const rightPos = new Vector3(position[0] + BEAM_LEN / 2, panTopY, position[2])
 
     const unregLeft = registerSnap({
       id: `lever-left-${position[0]}-${position[1]}-${position[2]}`,
       position: leftPos,
-      radius: 0.08,
-      keepKinematic: true,
+      radius: 0.10,  // generous horizontal radius for easy targeting
+      keepKinematic: false,  // body becomes Dynamic again — falls onto pan, applies weight
       onAttach: (body) => {
-        // Keep KINEMATIC — body anchored to pan, won't fly off on impact
+        // Position above pan, kill velocity, then physics takes over (caller restores Dynamic)
         body.setTranslation({ x: leftPos.x, y: leftPos.y, z: leftPos.z }, true)
         body.setLinvel({ x: 0, y: 0, z: 0 }, true)
         body.setAngvel({ x: 0, y: 0, z: 0 }, true)
@@ -78,10 +82,9 @@ export function LeverBalance({ position, active = false }: Props) {
     const unregRight = registerSnap({
       id: `lever-right-${position[0]}-${position[1]}-${position[2]}`,
       position: rightPos,
-      radius: 0.08,
-      keepKinematic: true,
+      radius: 0.10,
+      keepKinematic: false,
       onAttach: (body) => {
-        // Keep KINEMATIC — body anchored to pan, won't fly off on impact
         body.setTranslation({ x: rightPos.x, y: rightPos.y, z: rightPos.z }, true)
         body.setLinvel({ x: 0, y: 0, z: 0 }, true)
         body.setAngvel({ x: 0, y: 0, z: 0 }, true)

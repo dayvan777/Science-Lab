@@ -45,32 +45,32 @@ export function TouchNumberKeypad({ initialValue = '', onConfirm, onCancel }: Pr
     >
       <GlassPanel
         variant="strong"
-        style={{ padding: 24, minWidth: 340 }}
+        style={{ padding: 16, width: 280, maxWidth: '90vw' }}
       >
         <div onClick={(e) => e.stopPropagation()}>
           <div style={{
             background: '#fff', color: '#1d1d1f',
-            padding: '16px 20px', borderRadius: 12,
-            fontSize: 36, fontWeight: 700, fontFamily: 'monospace',
-            textAlign: 'right', marginBottom: 16, minHeight: 56,
+            padding: '12px 16px', borderRadius: 10,
+            fontSize: 28, fontWeight: 700, fontFamily: 'monospace',
+            textAlign: 'right', marginBottom: 12, minHeight: 48,
           }}>
             {text || '0'}
           </div>
           <div style={{
             display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 8,
+            gap: 6,
           }}>
             {KEYS.map((k) => (
               <button
                 key={k}
                 onClick={() => handleKey(k)}
                 style={{
-                  height: 72, fontSize: 24, fontWeight: 500,
-                  border: 'none', borderRadius: 12,
-                  background: k === '✓' ? '#0071e3' : 'rgba(255,255,255,0.85)',
+                  height: 52, fontSize: 20, fontWeight: 500,
+                  border: 'none', borderRadius: 10,
+                  background: k === '✓' ? '#0071e3' : 'rgba(255,255,255,0.95)',
                   color: k === '✓' ? '#fff' : '#1d1d1f',
                   cursor: 'pointer',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
                   fontFamily: '"SF Pro Display", "Inter", system-ui',
                 }}
               >
@@ -78,6 +78,16 @@ export function TouchNumberKeypad({ initialValue = '', onConfirm, onCancel }: Pr
               </button>
             ))}
           </div>
+          <button
+            onClick={onCancel}
+            style={{
+              width: '100%', marginTop: 8, padding: '8px',
+              background: 'transparent', color: '#6e6e73',
+              border: 'none', fontSize: 13, cursor: 'pointer',
+            }}
+          >
+            Скасувати
+          </button>
         </div>
       </GlassPanel>
     </div>
