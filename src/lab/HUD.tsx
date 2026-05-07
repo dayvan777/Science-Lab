@@ -1,11 +1,11 @@
 import { useLabState } from './LabState'
 import { tasks } from './tasks'
 import { NumberInput } from '../ui/NumberInput'
-import { newtonsToGrams } from '../utils/units'
+import { GlassPanel } from '../ui/GlassPanel'
 import { useReadings } from './InstrumentReadings'
 
-const PANEL_BG = 'rgba(20, 20, 30, 0.92)'
 const TOTAL = 9
+const BASE_FONT = '"SF Pro Display", "Inter", system-ui, sans-serif'
 
 export function HUD() {
   const phase = useLabState(s => s.phase)
@@ -21,138 +21,133 @@ export function HUD() {
   if (phase !== 'in-progress') return null
   const current = tasks[idx]
 
-  let liveReadingText = ''
-  let liveReadingValue = ''
+  let liveLabel = ''
+  let liveValue = ''
   let stepHint = ''
   if (current.instrumentId === 'digital-scale') {
-    liveReadingText = 'Прилад показує:'
-    liveReadingValue = `${digitalScaleG} г`
+    liveLabel = 'Прилад показує'
+    liveValue = `${digitalScaleG} г`
     stepHint = digitalScaleG === 0
       ? '→ Поклади предмет на платформу'
-      : '✓ Прочитай значення зі шкали і впиши нижче'
+      : '✓ Прочитай значення і впиши'
   } else if (current.instrumentId === 'dynamometer') {
-    liveReadingText = 'Сила на пружині:'
-    liveReadingValue = `${dynamometerN.toFixed(2)} N`
+    liveLabel = 'Сила натягу'
+    liveValue = `${dynamometerN.toFixed(2)} N`
     stepHint = dynamometerN === 0
       ? '→ Підвісь предмет на гачок'
-      : '✓ Прочитай показання в Ньютонах і впиши нижче'
-  } else if (current.instrumentId === 'lever-balance') {
-    liveReadingText = 'Стан балансу:'
+      : '✓ Прочитай Ньютони і впиши'
+  } else {
+    liveLabel = 'Стан балансу'
     const balanced = Math.abs(leverTilt) < 0.05
-    liveReadingValue = balanced ? '⚖️ урівноважено' : (leverTilt < 0 ? '↘ ліва важче' : '↙ права важче')
-    if (leverRightG === 0) {
-      stepHint = '→ Поклади предмет на ЛІВУ чашу, потім гирьки на праву'
-    } else if (!balanced) {
-      stepHint = `→ На правій ${leverRightG} г — додай/прибери гирьки`
-    } else {
-      stepHint = `✓ Балка вирівняна! Маса предмета = ${leverRightG} г. Впиши значення нижче.`
-    }
+    liveValue = balanced ? '⚖️ урівноважено' : (leverTilt < 0 ? '↘ ліва важче' : '↙ права важче')
+    if (leverRightG === 0) stepHint = '→ Поклади предмет ліворуч, гирьки праворуч'
+    else if (!balanced) stepHint = `→ На правій ${leverRightG} г — додай/прибери гирьки`
+    else stepHint = `✓ Балка вирівняна! Маса = ${leverRightG} г`
   }
 
   return (
-    <>
-      {/* Header */}
-      <div style={{
-        position: 'fixed', top: 16, left: 16, right: 16,
-        background: PANEL_BG, color: '#fff',
-        padding: '12px 24px', borderRadius: 8,
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        backdropFilter: 'blur(8px)',
-        zIndex: 10,
-      }}>
-        <div style={{ fontWeight: 600, fontSize: 16 }}>
-          Лабораторна: Вимірювання маси тіл
-        </div>
-        <div style={{ display: 'flex', gap: 4 }}>
-          {Array.from({ length: TOTAL }).map((_, i) => (
-            <div key={i} style={{
-              width: 36, height: 8, borderRadius: 4,
-              background: i < idx ? '#2ecc71' : i === idx ? '#5DADE2' : 'rgba(255,255,255,0.2)',
-            }}/>
-          ))}
-        </div>
-        <div style={{ fontSize: 14, opacity: 0.7 }}>{idx + 1} / {TOTAL}</div>
-      </div>
+    <div style={{ fontFamily: BASE_FONT }}>
+      {/* Top floating pill */}
+      <GlassPanel
+        variant="strong"
+        style={{
+          position: 'fixed', top: 16, left: '50%',
+          transform: 'translateX(-50%)',
+          padding: '8px 20px', borderRadius: 100,
+          fontSize: 13, fontWeight: 500,
+          zIndex: 10,
+          color: '#1d1d1f',
+        }}
+      >
+        Лабораторна · {idx + 1} з {TOTAL}
+      </GlassPanel>
 
-      {/* Task panel (left) */}
-      <div style={{
-        position: 'fixed', top: 80, left: 16, width: 360,
-        background: PANEL_BG, color: '#fff',
-        padding: 16, borderRadius: 8, backdropFilter: 'blur(8px)',
-        zIndex: 10,
-      }}>
-        <div style={{ fontSize: 11, opacity: 0.6, textTransform: 'uppercase' }}>
-          Завдання {idx + 1} з {TOTAL}
+      {/* Left: current step + live reading */}
+      <GlassPanel
+        variant="strong"
+        style={{
+          position: 'fixed', top: 80, left: 16, width: 360,
+          padding: 20, zIndex: 10,
+          color: '#1d1d1f',
+        }}
+      >
+        <div style={{ fontSize: 11, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 1 }}>
+          Зараз робимо
         </div>
-        <div style={{ fontSize: 14, fontWeight: 500, margin: '8px 0', lineHeight: 1.4 }}>
+        <div style={{ fontSize: 18, fontWeight: 500, margin: '8px 0 12px', lineHeight: 1.4 }}>
           {current.prompt}
         </div>
         <div style={{
-          fontSize: 12, opacity: 0.7, lineHeight: 1.4,
-          paddingTop: 8, paddingBottom: 8,
-          borderTop: '1px solid rgba(255,255,255,0.1)',
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          fontSize: 13, color: '#6e6e73', lineHeight: 1.5,
+          padding: '12px 0', borderTop: '1px solid rgba(0,0,0,0.08)', borderBottom: '1px solid rgba(0,0,0,0.08)',
         }}>
           💡 {current.hint}
         </div>
-        <div style={{ paddingTop: 10, fontSize: 13 }}>
-          <div style={{ opacity: 0.6, fontSize: 11, textTransform: 'uppercase', marginBottom: 4 }}>
-            {liveReadingText}
+        <div style={{ paddingTop: 16 }}>
+          <div style={{ fontSize: 11, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
+            {liveLabel}
           </div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: '#5DADE2', marginBottom: 8 }}>
-            {liveReadingValue}
+          <div style={{
+            fontSize: 36, fontWeight: 700, color: '#0071e3',
+            fontVariantNumeric: 'tabular-nums', lineHeight: 1, marginBottom: 12,
+          }}>
+            {liveValue}
           </div>
-          <div style={{ fontSize: 12, opacity: 0.85, lineHeight: 1.4 }}>
+          <div style={{ fontSize: 14, color: '#1d1d1f', lineHeight: 1.4, fontWeight: 500 }}>
             {stepHint}
           </div>
         </div>
-      </div>
+      </GlassPanel>
 
-      {/* Journal (right) */}
-      <div style={{
-        position: 'fixed', top: 80, right: 16, width: 320,
-        background: PANEL_BG, color: '#fff',
-        padding: 16, borderRadius: 8, backdropFilter: 'blur(8px)',
-        maxHeight: '70vh', overflow: 'auto',
-        zIndex: 10,
-      }}>
-        <div style={{ fontSize: 11, opacity: 0.7, textTransform: 'uppercase', marginBottom: 8 }}>
+      {/* Right: journal */}
+      <GlassPanel
+        variant="strong"
+        style={{
+          position: 'fixed', top: 80, right: 16, width: 320,
+          padding: 16, zIndex: 10, maxHeight: '70vh', overflow: 'auto',
+          color: '#1d1d1f',
+        }}
+      >
+        <div style={{ fontSize: 11, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>
           Лабжурнал
         </div>
         {tasks.map((t, i) => {
           const entry = journal.find(e => e.taskId === t.id)
-          const opacity = i < idx ? 1 : i === idx ? 0.7 : 0.4
+          const opacity = i < idx ? 1 : i === idx ? 0.6 : 0.35
           const valueText = entry
             ? t.inputUnit === 'N'
-              ? `${entry.userValue.toFixed(2)} N (≈${Math.round(newtonsToGrams(entry.userValue))} г)`
+              ? `${entry.userValue.toFixed(2)} N`
               : `${entry.userValue} г`
             : '— —'
           return (
             <div key={t.id} style={{
               display: 'flex', justifyContent: 'space-between',
-              padding: '6px 0',
-              borderBottom: '1px dashed rgba(255,255,255,0.1)',
-              fontSize: 12, opacity,
+              padding: '8px 0',
+              borderBottom: '1px dashed rgba(0,0,0,0.08)',
+              fontSize: 13, opacity,
             }}>
-              <span>{t.objectId} ({t.instrumentId})</span>
-              <span style={{ fontWeight: 600, color: entry ? '#5DADE2' : '#888' }}>{valueText}</span>
+              <span>{i < idx ? '✓ ' : i === idx ? '→ ' : '  '}{t.objectId}</span>
+              <span style={{ fontWeight: 600, color: entry ? '#0071e3' : '#999' }}>{valueText}</span>
             </div>
           )
         })}
-      </div>
+      </GlassPanel>
 
-      {/* Input bar (bottom center) */}
-      <div style={{
-        position: 'fixed', bottom: 16, left: '50%', transform: 'translateX(-50%)',
-        background: PANEL_BG, color: '#fff',
-        padding: '12px 24px', borderRadius: 8, backdropFilter: 'blur(8px)',
-        zIndex: 10,
-      }}>
+      {/* Bottom center: input bar */}
+      <GlassPanel
+        variant="strong"
+        style={{
+          position: 'fixed', bottom: 16, left: '50%',
+          transform: 'translateX(-50%)',
+          padding: '14px 24px', zIndex: 10,
+          color: '#1d1d1f',
+        }}
+      >
         <NumberInput
           unit={current.inputUnit}
           onSubmit={(value) => setMeasurement(current.id, value)}
         />
-      </div>
-    </>
+      </GlassPanel>
+    </div>
   )
 }
