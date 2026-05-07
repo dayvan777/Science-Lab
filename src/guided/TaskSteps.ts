@@ -26,7 +26,7 @@ const objectIdToTarget = (objId: string): StepTarget =>
     ? { kind: 'object', id: objId as 'tennis-ball' | 'apple' | 'baseball' }
     : { kind: 'object', id: 'tennis-ball' }
 
-function makeDigitalScaleSteps(taskId: string, objectId: string): Step[] {
+function makeDigitalScaleSteps(_taskId: string, objectId: string): Step[] {
   const obj = objectIdToTarget(objectId)
   return [
     { id: 'pickup', target: obj, visualHint: 'arrow',
@@ -47,7 +47,7 @@ function makeDigitalScaleSteps(taskId: string, objectId: string): Step[] {
   ]
 }
 
-function makeDynamometerSteps(taskId: string, objectId: string): Step[] {
+function makeDynamometerSteps(_taskId: string, objectId: string): Step[] {
   const obj = objectIdToTarget(objectId)
   return [
     { id: 'pickup', target: obj, visualHint: 'arrow',
@@ -68,7 +68,7 @@ function makeDynamometerSteps(taskId: string, objectId: string): Step[] {
   ]
 }
 
-function makeLeverBalanceSteps(taskId: string, objectId: string): Step[] {
+function makeLeverBalanceSteps(_taskId: string, objectId: string): Step[] {
   const obj = objectIdToTarget(objectId)
   return [
     { id: 'pickup-object', target: obj, visualHint: 'arrow',
