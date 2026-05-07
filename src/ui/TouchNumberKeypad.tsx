@@ -38,7 +38,8 @@ export function TouchNumberKeypad({ initialValue = '', onConfirm, onCancel }: Pr
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 100,
-        background: 'rgba(0,0,0,0.3)',
+        background: 'rgba(0,0,0,0.75)',
+        backdropFilter: 'blur(12px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
       onClick={onCancel}
