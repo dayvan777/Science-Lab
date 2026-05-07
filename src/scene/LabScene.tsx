@@ -16,6 +16,7 @@ import { Weights } from './objects/Weights'
 import { useLabState } from '../lab/LabState'
 import { tasks } from '../lab/tasks'
 import { GuidedOverlay } from '../guided/GuidedOverlay'
+import { useGuidance, SkipGuidanceToggle } from '../guided/SkipGuidanceToggle'
 
 export function LabScene() {
   const [preset, setPreset] = useState<CameraPreset>('overview')
@@ -23,6 +24,7 @@ export function LabScene() {
   const idx = useLabState(s => s.currentTaskIndex)
   const resetKey = useLabState(s => s.sessionId)
   const activeInstrument = phase === 'in-progress' ? tasks[idx]?.instrumentId : null
+  const guidanceOn = useGuidance(s => s.enabled)
 
   return (
     <>
@@ -45,10 +47,11 @@ export function LabScene() {
           <DigitalScale position={[0.75, 0.85, 0]} active={activeInstrument === 'digital-scale'} />
           {/* Weights in front of lever balance for easy reach */}
           <Weights startPosition={[0.05, 0.86, 0.4]} />
-          <GuidedOverlay />
+          {guidanceOn && <GuidedOverlay />}
         </Physics>
       </Canvas>
       <HUD />
+      <SkipGuidanceToggle />
       <div style={{ position: 'fixed', bottom: 16, right: 16, display: 'flex', gap: 8, zIndex: 10 }}>
         <Button variant="secondary" onClick={() => setPreset('overview')}>Скинути</Button>
         <Button variant="secondary" onClick={() => setPreset('digital-scale')}>Наблизити</Button>
