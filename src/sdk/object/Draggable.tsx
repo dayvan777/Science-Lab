@@ -62,6 +62,7 @@ export function Draggable({ position, mass, shape, bodyId, enabled = true, child
       type="dynamic"
       restitution={0.2}
       friction={0.6}
+      ccd
     >
       {shape.type === 'ball' ? (
         <BallCollider args={[shape.radius]} mass={massKg} />
