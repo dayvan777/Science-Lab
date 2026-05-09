@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useLabState } from '../../src/lab/LabState'
+import { useLabState } from '../../src/labs/mass-measurement/state/LabState'
 
 describe('LabState', () => {
   beforeEach(() => {

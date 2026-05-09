@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useStepEngine } from '../sdk/guided/StepEngine'
+import { useStepEngine } from '../guided/StepEngine'
 
 type Props = {
   unit: 'g' | 'N'

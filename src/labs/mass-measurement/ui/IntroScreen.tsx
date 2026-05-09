@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useLabState } from './LabState'
-import { Button } from '../ui/Button'
+import { useLabState } from '../state/LabState'
+import { Button } from '../../../sdk/ui/Button'
 
 export function IntroScreen() {
   const start = useLabState(s => s.start)

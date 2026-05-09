@@ -1,7 +1,7 @@
-import { useLabState } from './lab/LabState'
-import { IntroScreen } from './lab/IntroScreen'
+import { useLabState } from './labs/mass-measurement/state/LabState'
+import { IntroScreen } from './labs/mass-measurement/ui/IntroScreen'
 import { LabScene } from './scene/LabScene'
-import { SummaryScreen } from './lab/SummaryScreen'
+import { SummaryScreen } from './labs/mass-measurement/ui/SummaryScreen'
 
 export default function App() {
   const phase = useLabState(s => s.phase)

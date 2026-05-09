@@ -6,7 +6,7 @@ import { Vector3 } from 'three'
 import { Outlines, RoundedBox } from '@react-three/drei'
 import { registerSnap } from '../../../sdk/physics/snapTargets'
 import { getBodyMass, onDragStart } from '../../../sdk/physics/bodyRegistry'
-import { useReadings } from '../../../lab/InstrumentReadings'
+import { useReadings } from '../state/InstrumentReadings'
 import { createLcdTexture, drawLcd } from '../textures/lcdTexture'
 import { createBrandLabel } from '../textures/labelTexture'
 

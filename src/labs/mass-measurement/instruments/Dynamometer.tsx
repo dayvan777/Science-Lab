@@ -5,7 +5,7 @@ import { Vector3 } from 'three'
 import { registerSnap } from '../../../sdk/physics/snapTargets'
 import { getBodyMass, onDragStart } from '../../../sdk/physics/bodyRegistry'
 import { Outlines, RoundedBox } from '@react-three/drei'
-import { useReadings } from '../../../lab/InstrumentReadings'
+import { useReadings } from '../state/InstrumentReadings'
 import { createDialTexture } from '../textures/dialTexture'
 
 const G = 9.81

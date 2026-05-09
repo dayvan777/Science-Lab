@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { tasks } from '../../src/lab/tasks'
+import { tasks } from '../../src/labs/mass-measurement/content/tasks'
 
 describe('tasks', () => {
   it('has exactly 9 tasks (3 objects × 3 instruments)', () => {

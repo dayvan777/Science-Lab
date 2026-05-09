@@ -1,10 +1,10 @@
 import { useRef, useState, useEffect } from 'react'
 import { toPng } from 'html-to-image'
-import { useLabState } from './LabState'
-import { tasks } from './tasks'
-import { withinTolerance } from '../utils/units'
-import { Button } from '../ui/Button'
-import { GlassPanel } from '../ui/GlassPanel'
+import { useLabState } from '../state/LabState'
+import { tasks } from '../content/tasks'
+import { withinTolerance } from '../../../utils/units'
+import { Button } from '../../../sdk/ui/Button'
+import { GlassPanel } from '../../../sdk/ui/GlassPanel'
 
 export function SummaryScreen() {
   const journal = useLabState(s => s.journal)

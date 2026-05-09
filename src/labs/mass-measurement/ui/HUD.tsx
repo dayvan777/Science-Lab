@@ -1,10 +1,10 @@
 import { useEffect } from 'react'
-import { useLabState } from './LabState'
-import { tasks } from './tasks'
-import { NumberInput } from '../ui/NumberInput'
-import { GlassPanel } from '../ui/GlassPanel'
-import { useReadings } from './InstrumentReadings'
-import { useStepEngine } from '../sdk/guided/StepEngine'
+import { useLabState } from '../state/LabState'
+import { tasks } from '../content/tasks'
+import { NumberInput } from '../../../sdk/ui/NumberInput'
+import { GlassPanel } from '../../../sdk/ui/GlassPanel'
+import { useReadings } from '../state/InstrumentReadings'
+import { useStepEngine } from '../../../sdk/guided/StepEngine'
 
 const TOTAL = 9
 const BASE_FONT = '"SF Pro Display", "Inter", system-ui, sans-serif'

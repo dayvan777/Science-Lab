@@ -5,7 +5,7 @@ import { Outlines, RoundedBox } from '@react-three/drei'
 import { Vector3, Group } from 'three'
 import { registerSnap } from '../../../sdk/physics/snapTargets'
 import { getBodyMass, onDragStart } from '../../../sdk/physics/bodyRegistry'
-import { useReadings } from '../../../lab/InstrumentReadings'
+import { useReadings } from '../state/InstrumentReadings'
 
 const STAND_H = 0.25
 const BEAM_LEN = 0.45
