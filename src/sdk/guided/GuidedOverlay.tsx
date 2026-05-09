@@ -1,8 +1,8 @@
 import { useFrame } from '@react-three/fiber'
 import { useStepEngine, isStepComplete } from './StepEngine'
-import { TASK_STEPS } from './TaskSteps'
-import { useLabState } from '../lab/LabState'
-import { useReadings } from '../lab/InstrumentReadings'
+import { TASK_STEPS } from '../../labs/mass-measurement/content/steps'
+import { useLabState } from '../../lab/LabState'
+import { useReadings } from '../../lab/InstrumentReadings'
 import { Arrow3D } from './primitives/Arrow3D'
 import { GlowRing } from './primitives/GlowRing'
 

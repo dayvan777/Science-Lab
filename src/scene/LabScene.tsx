@@ -15,8 +15,8 @@ import { LeverBalance } from './instruments/LeverBalance'
 import { Weights } from './objects/Weights'
 import { useLabState } from '../lab/LabState'
 import { tasks } from '../lab/tasks'
-import { GuidedOverlay } from '../guided/GuidedOverlay'
-import { useGuidance, SkipGuidanceToggle } from '../guided/SkipGuidanceToggle'
+import { GuidedOverlay } from '../sdk/guided/GuidedOverlay'
+import { useGuidance, SkipGuidanceToggle } from '../sdk/guided/SkipGuidanceToggle'
 import { setActiveInstrument } from '../sdk/physics/snapTargets'
 
 export function LabScene() {

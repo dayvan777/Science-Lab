@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { TASK_STEPS } from '../../src/guided/TaskSteps'
+import { TASK_STEPS } from '../../src/labs/mass-measurement/content/steps'
 
 describe('TASK_STEPS', () => {
   it('has step trees for all 9 tasks', () => {

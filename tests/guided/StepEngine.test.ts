@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useStepEngine } from '../../src/guided/StepEngine'
+import { useStepEngine } from '../../src/sdk/guided/StepEngine'
 
 describe('StepEngine', () => {
   beforeEach(() => {

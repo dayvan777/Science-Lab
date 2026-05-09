@@ -1,30 +1,7 @@
-export type StepTarget =
-  | { kind: 'object'; id: 'tennis-ball' | 'apple' | 'baseball' | 'weight-any' }
-  | { kind: 'instrument'; id: 'digital-scale' | 'lever-balance-left' | 'lever-balance-right' | 'dynamometer-hook' }
-  | { kind: 'ui'; id: 'input' | 'submit' }
-
-export type CompletionRule =
-  | { kind: 'dragging'; bodyPattern: string }
-  | { kind: 'snapped'; targetPrefix: string }
-  | { kind: 'reading-stable'; instrument: 'digital-scale' | 'dynamometer'; minValue: number; durationMs: number }
-  | { kind: 'lever-balanced'; toleranceTilt: number }
-  | { kind: 'input-focused' }
-  | { kind: 'submitted' }
-
-export type Step = {
-  id: string
-  target: StepTarget
-  visualHint: 'arrow' | 'glow' | 'target-ring' | 'highlight'
-  hintTemplate: string  // e.g. "Введи {value} у поле"
-  complete: CompletionRule
-}
-
-export type TaskStepsMap = Record<string, Step[]>
+import type { Step, StepTarget, TaskStepsMap } from '../../../sdk/guided/TaskSteps'
 
 const objectIdToTarget = (objId: string): StepTarget =>
-  objId === 'tennis-ball' || objId === 'apple' || objId === 'baseball'
-    ? { kind: 'object', id: objId as 'tennis-ball' | 'apple' | 'baseball' }
-    : { kind: 'object', id: 'tennis-ball' }
+  ({ kind: 'object', id: objId })
 
 function makeDigitalScaleSteps(_taskId: string, objectId: string): Step[] {
   const obj = objectIdToTarget(objectId)

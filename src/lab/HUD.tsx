@@ -4,7 +4,7 @@ import { tasks } from './tasks'
 import { NumberInput } from '../ui/NumberInput'
 import { GlassPanel } from '../ui/GlassPanel'
 import { useReadings } from './InstrumentReadings'
-import { useStepEngine } from '../guided/StepEngine'
+import { useStepEngine } from '../sdk/guided/StepEngine'
 
 const TOTAL = 9
 const BASE_FONT = '"SF Pro Display", "Inter", system-ui, sans-serif'
