@@ -17,7 +17,7 @@ export function Table() {
         position={[0, TABLE_HEIGHT - TOP_THICKNESS / 2, 0]}
       >
         <boxGeometry args={[TABLE_WIDTH, TOP_THICKNESS, TABLE_DEPTH]} />
-        <meshStandardMaterial color="#8b5a2b" roughness={0.7} />
+        <meshStandardMaterial color="#3a2614" roughness={0.85} envMapIntensity={0.3} />
       </mesh>
       {/* 4 legs (visual only, single collider above is enough) */}
       {[
@@ -28,7 +28,7 @@ export function Table() {
       ].map(([x, y, z], i) => (
         <mesh key={i} position={[x, y, z]} castShadow receiveShadow>
           <boxGeometry args={[0.06, 0.7, 0.06]} />
-          <meshStandardMaterial color="#5a3a1a" roughness={0.8} />
+          <meshStandardMaterial color="#1f140a" roughness={0.9} envMapIntensity={0.2} />
         </mesh>
       ))}
     </RigidBody>

@@ -67,7 +67,7 @@ export function LabScene() {
         camera={{ position: [0, 1.5, 2.0], fov: 50 }}
         dpr={[1, 1.5]}
         shadows
-        gl={{ toneMapping: ACESFilmicToneMapping, toneMappingExposure: 0.75 }}
+        gl={{ toneMapping: ACESFilmicToneMapping, toneMappingExposure: 0.55 }}
         style={{ position: 'fixed', inset: 0, background: 'radial-gradient(ellipse at center, #2a2a30 0%, #1a1a1e 50%, #0a0a0c 100%)' }}
       >
         <CinematicLighting />

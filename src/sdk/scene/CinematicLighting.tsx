@@ -5,12 +5,12 @@
 export function CinematicLighting({ shadows = true }: { shadows?: boolean }) {
   return (
     <>
-      <ambientLight intensity={0.12} />
-      <hemisphereLight args={['#2a3040', '#1a1208', 0.25]} />
-      {/* Key — primary directional, warm */}
+      <ambientLight intensity={0.06} />
+      <hemisphereLight args={['#2a3040', '#1a1208', 0.12]} />
+      {/* Key — primary directional, warm. Focused intensity (was 1.4 — still too bright). */}
       <directionalLight
         position={[2, 4, 2]}
-        intensity={1.4}
+        intensity={0.85}
         color="#fff5e8"
         castShadow={shadows}
         shadow-mapSize-width={1024}
@@ -22,10 +22,10 @@ export function CinematicLighting({ shadows = true }: { shadows?: boolean }) {
         shadow-camera-top={2}
         shadow-camera-bottom={-2}
       />
-      {/* Fill — cool wash */}
-      <directionalLight position={[-2, 2, 1]} intensity={0.4} color="#b0c8e8" />
-      {/* Rim — warm contour */}
-      <directionalLight position={[0, 1, -3]} intensity={0.8} color="#ffd0a0" />
+      {/* Fill — cool wash, very subtle */}
+      <directionalLight position={[-2, 2, 1]} intensity={0.18} color="#b0c8e8" />
+      {/* Rim — warm contour for specular kiss */}
+      <directionalLight position={[0, 1, -3]} intensity={0.4} color="#ffd0a0" />
     </>
   )
 }
