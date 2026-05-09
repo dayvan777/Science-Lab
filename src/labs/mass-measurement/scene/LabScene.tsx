@@ -85,8 +85,15 @@ export function LabScene() {
           <Dynamometer position={[-0.55, 0.85, 0]} active={activeInstrumentId === 'dynamometer'} />
           <LeverBalance position={[0.05, 0.85, 0]} active={activeInstrumentId === 'lever-balance'} />
           <DigitalScale position={[0.75, 0.85, 0]} active={activeInstrumentId === 'digital-scale'} />
-          {/* Weights — only usable during lever-balance tasks. Spawn just above the table. */}
-          <Weights startPosition={[-0.55, 0.90, -0.35]} weightsEnabled={activeInstrumentId === 'lever-balance'} />
+          {/* Weights — laid out as a vertical column on the FAR-RIGHT side
+              of the table so they're easy to grab and don't sit behind the
+              lever balance. Spreads along z from front to back at x≈1.05. */}
+          <Weights
+            startPosition={[1.05, 0.90, -0.42]}
+            spreadAxis="z"
+            spacing={0.13}
+            weightsEnabled={activeInstrumentId === 'lever-balance'}
+          />
           {guidanceOn && <GuidedOverlay />}
         </Physics>
         <PostFX />

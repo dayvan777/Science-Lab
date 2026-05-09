@@ -13,20 +13,33 @@ const WEIGHTS = [
   { mass: 10,   radius: 0.020, height: 0.025, label: '10 г' },
 ]
 
-type Props = { startPosition: [number, number, number]; weightsEnabled?: boolean }
+type Props = {
+  startPosition: [number, number, number]
+  weightsEnabled?: boolean
+  /** Axis along which the weights are laid out. Default 'x' (legacy). */
+  spreadAxis?: 'x' | 'z'
+  /** Distance between consecutive weight centers. Default 0.13. */
+  spacing?: number
+}
 
-export function Weights({ startPosition, weightsEnabled = true }: Props) {
+export function Weights({
+  startPosition,
+  weightsEnabled = true,
+  spreadAxis = 'x',
+  spacing = 0.13,
+}: Props) {
   const [x0, y0, z0] = startPosition
   const labelTextures = useMemo(() => WEIGHTS.map(w => createWeightLabel(w.label)), [])
 
   return (
     <>
       {WEIGHTS.map((w, i) => {
-        const x = x0 + i * 0.13  // weights 0..6 spread to the right of x0
+        const x = spreadAxis === 'x' ? x0 + i * spacing : x0
+        const z = spreadAxis === 'z' ? z0 + i * spacing : z0
         return (
           <Draggable
             key={w.label}
-            position={[x, y0 + w.height / 2, z0]}
+            position={[x, y0 + w.height / 2, z]}
             mass={w.mass}
             shape={{ type: 'cuboid', halfExtents: [w.radius, w.height / 2, w.radius] }}
             bodyId={`weight-${w.label}`}
