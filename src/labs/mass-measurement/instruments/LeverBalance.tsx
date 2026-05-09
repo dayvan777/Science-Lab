@@ -21,21 +21,22 @@ const COL_W = 0.05
 const COL_H = 0.22
 const PIVOT_HEIGHT_LOCAL = BASE_H + COL_H // beam-pivot y in lever-local coords (= 0.26)
 
-// Beam
-const BEAM_LEN = 0.50
+// Beam — long enough that the bigger pans don't overlap visually
+const BEAM_LEN = 0.56
 const BEAM_T = 0.014
 const BEAM_DEPTH = 0.024
 
 // Hanger — V-shape: two diagonal rods from each beam tip down to opposite
 // edges of the pan rim. Thicker rod radius reads better at the lab's distance.
-const HANGER_H = 0.11
+const HANGER_H = 0.13
 const ROD_RADIUS = 0.0025
 
-// Pan — round metal dish with bright chrome rim
-const PAN_R = 0.085
-const PAN_BOTTOM_R = PAN_R * 0.78
-const PAN_DEPTH = 0.022
-const PAN_RIM_TUBE = 0.0035
+// Pan — round metal dish with bright chrome rim. Sized so baseball
+// (radius 0.075) fits comfortably inside with room to spare.
+const PAN_R = 0.105
+const PAN_BOTTOM_R = PAN_R * 0.75
+const PAN_DEPTH = 0.028
+const PAN_RIM_TUBE = 0.004
 
 const REFERENCE_MASS = 0.2  // 200g — full tilt at this difference
 
