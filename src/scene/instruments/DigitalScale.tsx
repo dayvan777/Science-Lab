@@ -7,8 +7,8 @@ import { Outlines, RoundedBox } from '@react-three/drei'
 import { registerSnap } from '../../sdk/physics/snapTargets'
 import { getBodyMass, onDragStart } from '../../sdk/physics/bodyRegistry'
 import { useReadings } from '../../lab/InstrumentReadings'
-import { createLcdTexture, drawLcd } from '../textures/lcdTexture'
-import { createBrandLabel } from '../textures/labelTexture'
+import { createLcdTexture, drawLcd } from '../../labs/mass-measurement/textures/lcdTexture'
+import { createBrandLabel } from '../../labs/mass-measurement/textures/labelTexture'
 
 const PLATFORM_W = 0.20
 const PLATFORM_D = 0.20

@@ -6,7 +6,7 @@ import { registerSnap } from '../../sdk/physics/snapTargets'
 import { getBodyMass, onDragStart } from '../../sdk/physics/bodyRegistry'
 import { Outlines, RoundedBox } from '@react-three/drei'
 import { useReadings } from '../../lab/InstrumentReadings'
-import { createDialTexture } from '../textures/dialTexture'
+import { createDialTexture } from '../../labs/mass-measurement/textures/dialTexture'
 
 const G = 9.81
 const SPRING_K = 50  // N/m — gives 0–10 cm range for 0–5 N
