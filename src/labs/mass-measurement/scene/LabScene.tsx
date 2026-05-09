@@ -8,6 +8,7 @@ import { TennisBall } from '../objects/TennisBall'
 import { Apple } from '../objects/Apple'
 import { Baseball } from '../objects/Baseball'
 import { Button } from '../../../sdk/ui/Button'
+import { SoundToggle } from '../../../sdk/ui/SoundToggle'
 import { HUD } from '../ui/HUD'
 import { DigitalScale } from '../instruments/DigitalScale'
 import { Dynamometer } from '../instruments/Dynamometer'
@@ -76,6 +77,7 @@ export function LabScene() {
       <HUD />
       <SkipGuidanceToggle />
       <div style={{ position: 'fixed', bottom: 16, right: 16, display: 'flex', gap: 8, zIndex: 10 }}>
+        <SoundToggle />
         <Button variant="secondary" onClick={() => respawnObjects()}>↻ Скинути предмети</Button>
         <Button variant="secondary" onClick={() => setPreset('overview')}>Камера</Button>
       </div>
