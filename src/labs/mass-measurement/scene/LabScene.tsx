@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
 import { ACESFilmicToneMapping } from 'three'
 import { CinematicLighting } from '../../../sdk/scene/CinematicLighting'
-import { CameraRig, CameraPreset } from '../../../sdk/scene/CameraRig'
+import { CameraRig } from '../../../sdk/scene/CameraRig'
+import type { CameraPreset } from '../../../sdk/scene/CameraRig'
 import { PostFX } from '../../../sdk/scene/PostFX'
 import { Table } from '../../../sdk/scene/Table'
 import { TennisBall } from '../objects/TennisBall'
@@ -22,8 +23,14 @@ import { GuidedOverlay } from '../../../sdk/guided/GuidedOverlay'
 import { useGuidance, SkipGuidanceToggle } from '../../../sdk/guided/SkipGuidanceToggle'
 import { setActiveInstrument } from '../../../sdk/physics/snapTargets'
 
+function instrumentToPreset(id: string | null): CameraPreset {
+  if (id === 'digital-scale') return 'focus-scale'
+  if (id === 'lever-balance') return 'focus-lever'
+  if (id === 'dynamometer')   return 'focus-dyn'
+  return 'workspace'
+}
+
 export function LabScene() {
-  const [preset, setPreset] = useState<CameraPreset>('overview')
   const phase = useLabState(s => s.phase)
   const idx = useLabState(s => s.currentTaskIndex)
   const resetKey = useLabState(s => s.sessionId)
@@ -33,6 +40,7 @@ export function LabScene() {
   const currentTask = phase === 'in-progress' ? tasks[idx] : null
   const activeObjectId = currentTask?.objectId ?? null
   const activeInstrumentId = currentTask?.instrumentId ?? null
+  const preset: CameraPreset = instrumentToPreset(activeInstrumentId)
 
   // Keep snap filter in sync with current task's instrument
   useEffect(() => {
@@ -84,7 +92,6 @@ export function LabScene() {
       <div style={{ position: 'fixed', bottom: 16, right: 16, display: 'flex', gap: 8, zIndex: 10 }}>
         <SoundToggle />
         <Button variant="secondary" onClick={() => respawnObjects()}>↻ Скинути предмети</Button>
-        <Button variant="secondary" onClick={() => setPreset('overview')}>Камера</Button>
       </div>
     </>
   )
