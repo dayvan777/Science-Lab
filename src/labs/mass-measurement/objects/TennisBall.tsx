@@ -1,23 +1,23 @@
-import { useMemo } from 'react'
-import { createFeltTexture } from '../textures/feltTexture'
 import { Draggable } from '../../../sdk/object/Draggable'
 
-const RADIUS = 0.07  // 2x real (was 0.0335) — for visibility on demo
-const MASS_GRAMS = 58
+// Ping-pong ball — small, light, plain white plastic.
+// Internal bodyId stays "tennis-ball" so the Step DSL completion rules
+// (bodyPattern: 'tennis-ball') and journal slots keep working.
+const RADIUS = 0.04
+const MASS_GRAMS = 5
 
 type Props = { position: [number, number, number]; enabled?: boolean }
 
 export function TennisBall({ position, enabled = true }: Props) {
-  const feltTexture = useMemo(() => createFeltTexture(), [])
   return (
     <Draggable position={position} mass={MASS_GRAMS} shape={{ type: 'ball', radius: RADIUS }} bodyId="tennis-ball" enabled={enabled}>
       <mesh castShadow receiveShadow>
-        <sphereGeometry args={[RADIUS, 16, 12]} />
+        <sphereGeometry args={[RADIUS, 24, 16]} />
         <meshStandardMaterial
-          map={feltTexture}
+          color="#f5f5f5"
           metalness={0}
-          roughness={0.85}
-          envMapIntensity={0.6}
+          roughness={0.45}
+          envMapIntensity={0.4}
         />
       </mesh>
     </Draggable>

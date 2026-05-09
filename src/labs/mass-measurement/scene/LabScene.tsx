@@ -75,11 +75,10 @@ export function LabScene() {
         <Environment preset="studio" background={false} resolution={64} />
         <Physics key={resetKey} gravity={[0, -9.81, 0]} timeStep={1/60}>
           <Table />
-          {/* Objects spawn ~5cm above the table for a short, predictable fall.
-              Combined with ccd=true on dynamic bodies (Draggable) and the
-              explicit CuboidColliders on Table, this avoids tunneling. */}
-          <TennisBall position={[-0.3, 0.97, 0.35]} enabled={activeObjectId === 'tennis-ball'} />
-          <Apple position={[0, 0.98, 0.35]} enabled={activeObjectId === 'apple'} />
+          {/* Objects spawn ~3-5cm above the table for a short predictable fall.
+              ping-pong (radius 0.04), metal ball (radius 0.045), baseball (radius 0.075). */}
+          <TennisBall position={[-0.3, 0.93, 0.35]} enabled={activeObjectId === 'tennis-ball'} />
+          <Apple position={[0, 0.93, 0.35]} enabled={activeObjectId === 'apple'} />
           <Baseball position={[0.3, 0.97, 0.35]} enabled={activeObjectId === 'baseball'} />
           {/* Instruments spread across the table, away from object spawn */}
           <Dynamometer position={[-0.55, 0.85, 0]} active={activeInstrumentId === 'dynamometer'} />

@@ -177,7 +177,7 @@ export function HUD() {
               borderBottom: '1px dashed rgba(0,0,0,0.08)',
               fontSize: 13, opacity,
             }}>
-              <span>{i < idx ? '✓ ' : i === idx ? '→ ' : '  '}{t.objectId}</span>
+              <span>{i < idx ? '✓ ' : i === idx ? '→ ' : '  '}{t.displayName}</span>
               <span style={{ fontWeight: 600, color: entry ? '#0071e3' : '#999' }}>{valueText}</span>
             </div>
           )

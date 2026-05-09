@@ -7,7 +7,7 @@ function makeDigitalScaleSteps(_taskId: string, objectId: string): Step[] {
   const obj = objectIdToTarget(objectId)
   return [
     { id: 'pickup', target: obj, visualHint: 'arrow',
-      hintTemplate: `Натисни і потримай ${objectId === 'tennis-ball' ? 'тенісний м\'яч' : objectId === 'apple' ? 'яблуко' : 'бейсбольний м\'яч'}`,
+      hintTemplate: `Натисни і потримай ${objectId === 'tennis-ball' ? 'пінг-понговий м\'ячик' : objectId === 'apple' ? 'металеву кульку' : 'бейсбольний м\'яч'}`,
       complete: { kind: 'dragging', bodyPattern: objectId } },
     { id: 'place', target: { kind: 'instrument', id: 'digital-scale' }, visualHint: 'target-ring',
       hintTemplate: 'Перетягни на платформу електронних ваг',
@@ -78,7 +78,7 @@ function makeDigitalScaleStepsTennis(): Step[] {
       id: 'pickup',
       target: { kind: 'object', id: 'tennis-ball' },
       visualHint: 'arrow',
-      hintTitle: 'Візьми тенісний м\'яч',
+      hintTitle: 'Візьми пінг-понговий м\'ячик',
       hintExplanation: 'Натисни і утримуй, щоб взяти предмет',
       complete: { kind: 'dragging', bodyPattern: 'tennis-ball' },
     },
