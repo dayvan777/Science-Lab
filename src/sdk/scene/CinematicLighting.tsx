@@ -5,12 +5,12 @@
 export function CinematicLighting({ shadows = true }: { shadows?: boolean }) {
   return (
     <>
-      <ambientLight intensity={0.15} />
-      <hemisphereLight args={['#2a3040', '#1a1208', 0.3]} />
-      {/* Key */}
+      <ambientLight intensity={0.12} />
+      <hemisphereLight args={['#2a3040', '#1a1208', 0.25]} />
+      {/* Key — primary directional, warm */}
       <directionalLight
         position={[2, 4, 2]}
-        intensity={2.5}
+        intensity={1.4}
         color="#fff5e8"
         castShadow={shadows}
         shadow-mapSize-width={1024}
@@ -22,10 +22,10 @@ export function CinematicLighting({ shadows = true }: { shadows?: boolean }) {
         shadow-camera-top={2}
         shadow-camera-bottom={-2}
       />
-      {/* Fill */}
-      <directionalLight position={[-2, 2, 1]} intensity={0.6} color="#b0c8e8" />
-      {/* Rim */}
-      <directionalLight position={[0, 1, -3]} intensity={1.5} color="#ffd0a0" />
+      {/* Fill — cool wash */}
+      <directionalLight position={[-2, 2, 1]} intensity={0.4} color="#b0c8e8" />
+      {/* Rim — warm contour */}
+      <directionalLight position={[0, 1, -3]} intensity={0.8} color="#ffd0a0" />
     </>
   )
 }
