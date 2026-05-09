@@ -3,7 +3,7 @@ import { sound } from '../../sdk/audio/SoundManager'
 import { LabScene } from './scene/LabScene'
 import { useLabState } from './state/LabState'
 import { IntroScreen } from './ui/IntroScreen'
-import { SummaryScreen } from './ui/SummaryScreen'
+import { RevealScene } from './ui/RevealScene'
 
 export const massMeasurementDefinition = {
   id: 'mass-measurement',
@@ -27,6 +27,6 @@ export function MassMeasurementLab() {
   }, [phase])
 
   if (phase === 'intro') return <IntroScreen />
-  if (phase === 'finished') return <SummaryScreen />
+  if (phase === 'finished') return <RevealScene />
   return <LabScene />
 }
