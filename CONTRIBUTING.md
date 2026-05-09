@@ -5,8 +5,8 @@ Thanks for your interest in improving the Lab SDK. This document is intentionall
 ## Getting set up
 
 ```bash
-git clone https://github.com/vladdomotsky/lab-sdk.git
-cd lab-sdk
+git clone https://github.com/dayvan777/Science-Lab.git
+cd Science-Lab
 npm install
 npm run dev          # http://localhost:5173/
 ```

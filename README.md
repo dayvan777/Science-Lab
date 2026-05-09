@@ -1,4 +1,4 @@
-# Lab SDK · Mass Measurement Lab
+# Science Lab · Mass Measurement
 
 > **Interactive 3D physics laboratory for Ukrainian schools**
 > Built for Promethean interactive panels (6th-7th grade) — touch-first, browser-based, no install.
@@ -53,8 +53,8 @@ No external CDN dependencies, no analytics, no backend. Builds to a single stati
 Requires **Node.js 20+**.
 
 ```bash
-git clone https://github.com/<your-username>/lab-sdk.git
-cd lab-sdk
+git clone https://github.com/dayvan777/Science-Lab.git
+cd Science-Lab
 npm install
 npm run dev          # http://localhost:5173/
 ```
@@ -160,7 +160,7 @@ Open:
 
 ## 📚 Design docs
 
-Living architecture decisions live in `docs/superpowers/specs/` and `docs/superpowers/plans/`. The most recent spec is the gold-standard design that this branch implements:
+Living architecture decisions live in `docs/superpowers/specs/` and `docs/superpowers/plans/`. The most recent spec is the gold-standard design that this `master` reflects:
 
 - **Spec:** [`docs/superpowers/specs/2026-05-09-mass-measurement-gold-standard-design.md`](docs/superpowers/specs/2026-05-09-mass-measurement-gold-standard-design.md)
 - **Plan:** [`docs/superpowers/plans/2026-05-09-slice-0-and-1-foundation-flagship.md`](docs/superpowers/plans/2026-05-09-slice-0-and-1-foundation-flagship.md)

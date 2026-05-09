@@ -55,4 +55,4 @@ went through a deliberate polish pass.
 
 - 53 unit tests across animation, sound manager, snap progress, step DSL, step engine, lab state, and tasks. All green.
 
-[0.1.0]: https://github.com/vladdomotsky/lab-sdk/releases/tag/v0.1.0
+[0.1.0]: https://github.com/dayvan777/Science-Lab/releases/tag/v0.1.0
