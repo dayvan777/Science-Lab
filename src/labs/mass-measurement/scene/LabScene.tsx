@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
 import { ACESFilmicToneMapping } from 'three'
@@ -15,6 +15,8 @@ import { Button } from '../../../sdk/ui/Button'
 import { SoundToggle } from '../../../sdk/ui/SoundToggle'
 import { ZoomControls } from '../../../sdk/ui/ZoomControls'
 import { HUD } from '../ui/HUD'
+import { IntroTitle } from '../ui/IntroTitle'
+import { MilestoneOverlay } from '../ui/MilestoneOverlay'
 import { DigitalScale } from '../instruments/DigitalScale'
 import { Dynamometer } from '../instruments/Dynamometer'
 import { LeverBalance } from '../instruments/LeverBalance'
@@ -42,7 +44,36 @@ export function LabScene() {
   const currentTask = phase === 'in-progress' ? tasks[idx] : null
   const activeObjectId = currentTask?.objectId ?? null
   const activeInstrumentId = currentTask?.instrumentId ?? null
-  const preset: CameraPreset = instrumentToPreset(activeInstrumentId)
+
+  // Intro flythrough — camera holds at the wide 'intro' preset for the
+  // first ~3 seconds while the title fades, then dollies to the
+  // task-driven focus preset.
+  const [introActive, setIntroActive] = useState(true)
+  useEffect(() => {
+    const t = setTimeout(() => setIntroActive(false), 3000)
+    return () => clearTimeout(t)
+  }, [])
+
+  const preset: CameraPreset = introActive ? 'intro' : instrumentToPreset(activeInstrumentId)
+
+  // Milestone overlay — shown when an object's three measurements complete
+  // (the next task's objectId differs from the previous one).
+  const [milestoneObjectId, setMilestoneObjectId] = useState<string | null>(null)
+  const prevTaskIdxRef = useRef(idx)
+  useEffect(() => {
+    const prev = prevTaskIdxRef.current
+    prevTaskIdxRef.current = idx
+    if (prev === idx) return
+    if (prev < 0 || prev >= tasks.length || idx >= tasks.length) return
+    const prevObjId = tasks[prev].objectId
+    const currObjId = tasks[idx].objectId
+    if (prevObjId !== currObjId) {
+      // Only show milestone for objects with defined milestone text
+      // (tennis-ball → apple transition, apple → baseball transition).
+      // After baseball (last object) the final reveal scene takes over.
+      setMilestoneObjectId(prevObjId)
+    }
+  }, [idx])
 
   // Keep snap filter in sync with current task's instrument
   useEffect(() => {
@@ -100,6 +131,8 @@ export function LabScene() {
       </Canvas>
       <HUD />
       <SkipGuidanceToggle />
+      {introActive && <IntroTitle onComplete={() => { /* fade-out handled internally */ }} />}
+      <MilestoneOverlay objectId={milestoneObjectId} onDismiss={() => setMilestoneObjectId(null)} />
       <div style={{ position: 'fixed', bottom: 16, right: 16, display: 'flex', gap: 8, zIndex: 10 }}>
         <ZoomControls />
         <SoundToggle />

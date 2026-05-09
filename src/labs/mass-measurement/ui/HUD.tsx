@@ -159,26 +159,69 @@ export function HUD() {
           color: '#1d1d1f',
         }}
       >
-        <div style={{ fontSize: 11, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>
-          Лабжурнал
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+          <div style={{ fontSize: 11, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 1 }}>
+            Лабжурнал
+          </div>
+          <div style={{ fontSize: 12, opacity: 0.55, fontVariantNumeric: 'tabular-nums' }}>
+            {Math.min(idx, TOTAL)} / {TOTAL}
+          </div>
         </div>
-        {tasks.map((t, i) => {
-          const entry = journal.find(e => e.taskId === t.id)
-          const opacity = i < idx ? 1 : i === idx ? 0.6 : 0.35
-          const valueText = entry
-            ? t.inputUnit === 'N'
-              ? `${entry.userValue.toFixed(2)} N`
-              : `${entry.userValue} г`
-            : '— —'
+        {/* Group tasks by objectId so the journal is a "rope": one block per
+            object showing all three measurement slots, with completed values
+            populated and pending slots as placeholders. */}
+        {Array.from(new Set(tasks.map(t => t.objectId))).map(objId => {
+          const objTasks = tasks.filter(t => t.objectId === objId)
+          const allDone = objTasks.every((_, _i) => {
+            const tIdx = tasks.findIndex(x => x.id === objTasks[_i].id)
+            return tIdx < idx
+          })
+          const groupName = objTasks[0]?.displayName ?? objId
           return (
-            <div key={t.id} style={{
-              display: 'flex', justifyContent: 'space-between',
-              padding: '8px 0',
-              borderBottom: '1px dashed rgba(0,0,0,0.08)',
-              fontSize: 13, opacity,
-            }}>
-              <span>{i < idx ? '✓ ' : i === idx ? '→ ' : '  '}{t.displayName}</span>
-              <span style={{ fontWeight: 600, color: entry ? '#0071e3' : '#999' }}>{valueText}</span>
+            <div key={objId} style={{ marginBottom: 14 }}>
+              <div style={{
+                fontSize: 11, fontWeight: 600, letterSpacing: 0.5,
+                color: allDone ? '#34c759' : '#1d1d1f',
+                marginBottom: 6, opacity: 0.85,
+              }}>
+                {allDone ? '✓ ' : ''}{groupName}
+              </div>
+              {objTasks.map(t => {
+                const tIdx = tasks.findIndex(x => x.id === t.id)
+                const isCurrent = tIdx === idx
+                const isDone = tIdx < idx
+                const entry = journal.find(e => e.taskId === t.id)
+                const valueText = entry
+                  ? t.inputUnit === 'N'
+                    ? `${entry.userValue.toFixed(2)} N`
+                    : `${entry.userValue} г`
+                  : '·····'
+                const marker = isDone ? '✓' : isCurrent ? '→' : '○'
+                const markerColor = isDone ? '#34c759' : isCurrent ? '#0a84ff' : '#bbb'
+                const instrLabel = t.instrumentId === 'digital-scale'
+                  ? 'Електронні'
+                  : t.instrumentId === 'lever-balance'
+                  ? 'Важільні'
+                  : 'Динамометр'
+                return (
+                  <div key={t.id} style={{
+                    display: 'flex', justifyContent: 'space-between',
+                    padding: '4px 0 4px 6px',
+                    fontSize: 12,
+                    opacity: isDone || isCurrent ? 1 : 0.45,
+                  }}>
+                    <span>
+                      <span style={{ color: markerColor, marginRight: 6, fontWeight: 600 }}>{marker}</span>
+                      {instrLabel}
+                    </span>
+                    <span style={{
+                      fontWeight: 600,
+                      color: entry ? '#0071e3' : '#999',
+                      fontVariantNumeric: 'tabular-nums',
+                    }}>{valueText}</span>
+                  </div>
+                )
+              })}
             </div>
           )
         })}
