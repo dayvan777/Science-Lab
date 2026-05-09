@@ -3,11 +3,39 @@ import { ThreeEvent, useThree } from '@react-three/fiber'
 import { Vector3 } from 'three'
 import { RapierRigidBody } from '@react-three/rapier'
 import { RigidBodyType } from '@dimforge/rapier3d-compat'
-import { findSnapNear } from './snapTargets'
+import { findSnapNear, snapProgress } from './snapTargets'
 import { useStepEngine } from '../../sdk/guided/StepEngine'
 
 const DRAG_HEIGHT = 1.0
 const SMOOTHING = 0.3
+
+function animateMagneticSnap(
+  body: RapierRigidBody,
+  from: Vector3,
+  to: Vector3,
+  durationMs: number,
+  done: () => void,
+): void {
+  const start = performance.now()
+  const step = () => {
+    const elapsed = performance.now() - start
+    const u = snapProgress(elapsed, durationMs)
+    const x = from.x + (to.x - from.x) * u
+    const y = from.y + (to.y - from.y) * u
+    const z = from.z + (to.z - from.z) * u
+    try {
+      body.setNextKinematicTranslation({ x, y, z })
+    } catch {
+      return // body destroyed
+    }
+    if (u >= 1) {
+      try { done() } catch {}
+      return
+    }
+    requestAnimationFrame(step)
+  }
+  requestAnimationFrame(step)
+}
 
 type Props = { rigidBody: RefObject<RapierRigidBody | null>; bodyId?: string }
 
@@ -65,26 +93,29 @@ export function useDrag({ rigidBody, bodyId }: Props) {
     if (ev.pointerId !== pointerId.current) return
     isDragging.current = false
     pointerId.current = null
-    if (rigidBody.current) {
-      // Restore solid collider before resolving snap/drop
-      const n = rigidBody.current.numColliders()
-      for (let i = 0; i < n; i++) {
-        rigidBody.current.collider(i).setSensor(false)
-      }
-      const t = rigidBody.current.translation()
-      const snap = findSnapNear(new Vector3(t.x, t.y, t.z), bodyId)
-      if (snap) {
-        setLastSnap(snap.id)
-        snap.onAttach(rigidBody.current)
-        // If keepKinematic, body stays kinematic after snap (anchored to snap point)
-        if (!snap.keepKinematic) {
-          rigidBody.current.setBodyType(RigidBodyType.Dynamic, true)
-        }
-      } else {
+    ;(ev.target as Element).releasePointerCapture(ev.pointerId)
+    if (!rigidBody.current) return
+    // Restore solid collider before resolving snap/drop
+    const n = rigidBody.current.numColliders()
+    for (let i = 0; i < n; i++) {
+      rigidBody.current.collider(i).setSensor(false)
+    }
+    const t = rigidBody.current.translation()
+    const dropPos = new Vector3(t.x, t.y, t.z)
+    const snap = findSnapNear(dropPos, bodyId)
+    if (!snap) {
+      rigidBody.current.setBodyType(RigidBodyType.Dynamic, true)
+      return
+    }
+    // Magnetic-pull tween: kinematic body walked from dropPos to snap.position over 300ms.
+    setLastSnap(snap.id)
+    animateMagneticSnap(rigidBody.current, dropPos, snap.position, 300, () => {
+      if (!rigidBody.current) return
+      snap.onAttach(rigidBody.current)
+      if (!snap.keepKinematic) {
         rigidBody.current.setBodyType(RigidBodyType.Dynamic, true)
       }
-    }
-    ;(ev.target as Element).releasePointerCapture(ev.pointerId)
+    })
   }
 
   return { onPointerDown, onPointerMove, onPointerUp }

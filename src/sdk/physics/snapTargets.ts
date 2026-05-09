@@ -1,5 +1,6 @@
 import { Vector3 } from 'three'
 import { RapierRigidBody } from '@react-three/rapier'
+import { clamp, easeOutCubic } from '../animation'
 
 export type SnapTarget = {
   id: string
@@ -20,6 +21,15 @@ export function setActiveInstrument(id: string | null) {
 export function registerSnap(target: SnapTarget) {
   targets.set(target.id, target)
   return () => { targets.delete(target.id) }
+}
+
+/**
+ * Returns 0..1 progress of a magnetic-pull snap tween.
+ * elapsed and duration in milliseconds. Eases out (front-loaded).
+ */
+export function snapProgress(elapsedMs: number, durationMs: number): number {
+  const t = clamp(elapsedMs / durationMs, 0, 1)
+  return easeOutCubic(t)
 }
 
 export function findSnapNear(pos: Vector3, draggedBodyId?: string): SnapTarget | null {
