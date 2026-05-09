@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import { createWeightLabel } from '../textures/weightLabel'
-import { Draggable } from './Draggable'
+import { createWeightLabel } from '../../../scene/textures/weightLabel'
+import { Draggable } from '../../../sdk/object/Draggable'
 
 // Sizes 1.8x real for demo visibility on a 2.5m table viewed from far
 const WEIGHTS = [

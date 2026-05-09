@@ -1,4 +1,4 @@
-import { Draggable } from './Draggable'
+import { Draggable } from '../../../sdk/object/Draggable'
 
 const RADIUS = 0.08  // 2x real for demo visibility
 const MASS_GRAMS = 180

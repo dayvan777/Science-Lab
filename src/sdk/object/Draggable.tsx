@@ -1,8 +1,8 @@
 import { ReactNode, useRef, useEffect } from 'react'
 import { RigidBody, RapierRigidBody, BallCollider, CuboidCollider } from '@react-three/rapier'
-import { useDrag } from '../../sdk/physics/useDrag'
-import { useStepEngine } from '../../sdk/guided/StepEngine'
-import { registerBody, notifyDragStart } from '../../sdk/physics/bodyRegistry'
+import { useDrag } from '../physics/useDrag'
+import { useStepEngine } from '../guided/StepEngine'
+import { registerBody, notifyDragStart } from '../physics/bodyRegistry'
 
 type Shape = { type: 'ball'; radius: number } | { type: 'cuboid'; halfExtents: [number, number, number] }
 

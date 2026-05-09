@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import { createBaseballSeamTexture } from '../textures/seamTexture'
-import { Draggable } from './Draggable'
+import { createBaseballSeamTexture } from '../../../scene/textures/seamTexture'
+import { Draggable } from '../../../sdk/object/Draggable'
 
 const RADIUS = 0.075  // 2x real for demo visibility
 const MASS_GRAMS = 145
