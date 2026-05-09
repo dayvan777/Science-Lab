@@ -75,16 +75,18 @@ export function LabScene() {
         <Environment preset="studio" background={false} resolution={64} />
         <Physics key={resetKey} gravity={[0, -9.81, 0]} timeStep={1/60}>
           <Table />
-          {/* Objects — only the active object for the current task is pickable */}
-          <TennisBall position={[-0.3, 1.5, 0.3]} enabled={activeObjectId === 'tennis-ball'} />
-          <Apple position={[0, 1.5, 0.3]} enabled={activeObjectId === 'apple'} />
-          <Baseball position={[0.3, 1.5, 0.3]} enabled={activeObjectId === 'baseball'} />
+          {/* Objects spawn AT-REST on the table top (y=0.85 + radius) so they
+              don't fall through during the 1-2 frame window before the table
+              collider is registered. Reset still works via sessionId remount. */}
+          <TennisBall position={[-0.3, 0.921, 0.35]} enabled={activeObjectId === 'tennis-ball'} />
+          <Apple position={[0, 0.931, 0.35]} enabled={activeObjectId === 'apple'} />
+          <Baseball position={[0.3, 0.926, 0.35]} enabled={activeObjectId === 'baseball'} />
           {/* Instruments spread across the table, away from object spawn */}
           <Dynamometer position={[-0.55, 0.85, 0]} active={activeInstrumentId === 'dynamometer'} />
           <LeverBalance position={[0.05, 0.85, 0]} active={activeInstrumentId === 'lever-balance'} />
           <DigitalScale position={[0.75, 0.85, 0]} active={activeInstrumentId === 'digital-scale'} />
-          {/* Weights — only usable during lever-balance tasks */}
-          <Weights startPosition={[-0.2, 1.0, -0.3]} weightsEnabled={activeInstrumentId === 'lever-balance'} />
+          {/* Weights — only usable during lever-balance tasks. Spawn on table top. */}
+          <Weights startPosition={[-0.55, 0.851, -0.35]} weightsEnabled={activeInstrumentId === 'lever-balance'} />
           {guidanceOn && <GuidedOverlay />}
         </Physics>
         <PostFX />
