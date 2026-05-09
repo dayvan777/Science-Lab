@@ -72,8 +72,54 @@ function makeLeverBalanceSteps(_taskId: string, objectId: string): Step[] {
   ]
 }
 
+function makeDigitalScaleStepsTennis(): Step[] {
+  return [
+    {
+      id: 'pickup',
+      target: { kind: 'object', id: 'tennis-ball' },
+      visualHint: 'arrow',
+      hintTitle: 'Візьми тенісний м\'яч',
+      hintExplanation: 'Натисни і утримуй, щоб взяти предмет',
+      complete: { kind: 'dragging', bodyPattern: 'tennis-ball' },
+    },
+    {
+      id: 'place',
+      target: { kind: 'instrument', id: 'digital-scale' },
+      visualHint: 'target-ring',
+      hintTitle: 'Поклади на платформу електронних ваг',
+      hintExplanation: 'Електронні ваги вимірюють силу тиску і конвертують у грами',
+      sound: 'tick',
+      complete: { kind: 'snapped', targetPrefix: 'digital-scale' },
+    },
+    {
+      id: 'read',
+      target: { kind: 'instrument', id: 'digital-scale' },
+      visualHint: 'highlight',
+      hintTitle: 'Дисплей показує {digitalScaleGrams} г',
+      hintExplanation: 'Зачекай, поки число стабілізується',
+      complete: { kind: 'reading-stable', instrument: 'digital-scale', minValue: 1, durationMs: 1500 },
+    },
+    {
+      id: 'enter',
+      target: { kind: 'ui', id: 'input' },
+      visualHint: 'arrow',
+      hintTitle: 'Введи {digitalScaleGrams} у поле нижче',
+      hintExplanation: 'Перевір, що значення збігається з показниками приладу',
+      complete: { kind: 'input-focused' },
+    },
+    {
+      id: 'submit',
+      target: { kind: 'ui', id: 'submit' },
+      visualHint: 'arrow',
+      hintTitle: 'Натисни «Записати»',
+      sound: 'ding',
+      complete: { kind: 'submitted' },
+    },
+  ]
+}
+
 export const TASK_STEPS: TaskStepsMap = {
-  t1: makeDigitalScaleSteps('t1', 'tennis-ball'),
+  t1: makeDigitalScaleStepsTennis(),  // upgraded to 2-layer hints + sound
   t2: makeLeverBalanceSteps('t2', 'tennis-ball'),
   t3: makeDynamometerSteps('t3', 'tennis-ball'),
   t4: makeDigitalScaleSteps('t4', 'apple'),

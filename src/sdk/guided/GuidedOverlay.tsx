@@ -5,6 +5,7 @@ import { useLabState } from '../../labs/mass-measurement/state/LabState'
 import { useReadings } from '../../labs/mass-measurement/state/InstrumentReadings'
 import { Arrow3D } from './primitives/Arrow3D'
 import { GlowRing } from './primitives/GlowRing'
+import { sound } from '../audio/SoundManager'
 
 // World positions adjusted for v1 layout with table (objects at y=0.95+, instruments at y=0.85+)
 const TARGET_POSITIONS: Record<string, [number, number, number]> = {
@@ -59,9 +60,14 @@ export function GuidedOverlay() {
     }
 
     if (isStepComplete(step.complete, ctx)) {
-      advanceStep()
+      if (step.sound) sound.play(step.sound)
       // Reset stable timer for next step
       useStepEngine.getState().setReadingStableSince(0)
+      if (step.micropause) {
+        setTimeout(() => advanceStep(), step.micropause)
+      } else {
+        advanceStep()
+      }
     }
   })
 
