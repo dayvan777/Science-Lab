@@ -5,7 +5,7 @@ import { RapierRigidBody } from '@react-three/rapier'
 import { Vector3 } from 'three'
 import { Outlines, RoundedBox } from '@react-three/drei'
 import { registerSnap } from '../../../sdk/physics/snapTargets'
-import { getBodyMass, onDragStart } from '../../../sdk/physics/bodyRegistry'
+import { getBodyMass, getBodyHalfHeight, onDragStart } from '../../../sdk/physics/bodyRegistry'
 import { useReadings } from '../state/InstrumentReadings'
 import { createLcdTexture, drawLcd } from '../textures/lcdTexture'
 import { createBrandLabel } from '../textures/labelTexture'
@@ -57,10 +57,13 @@ export function DigitalScale({ position, active = false }: Props) {
     setDigitalScale(Math.round(targetGrams))
   })
 
-  // Register snap target for platform top
+  // Register snap target for the platform top
   useEffect(() => {
-    const platformTopY = position[1] + HOUSING_H + PLATFORM_T + 0.05
-    const snapPos = new Vector3(position[0], platformTopY, position[2])
+    // Actual platform top surface in world coords:
+    const platformTopY = position[1] + HOUSING_H + PLATFORM_T
+    // Snap-detection target sits slightly above so a body dropped close enough
+    // is captured even when its center is above the platform.
+    const snapPos = new Vector3(position[0], platformTopY + 0.05, position[2])
     return registerSnap({
       id: `digital-scale-${position[0]}-${position[1]}-${position[2]}`,
       instrumentId: 'digital-scale',
@@ -68,8 +71,12 @@ export function DigitalScale({ position, active = false }: Props) {
       radius: 0.30,  // magnetic — was 0.12
       keepKinematic: true,
       onAttach: (body) => {
-        // Keep KINEMATIC — body anchored, won't bounce when others land
-        body.setTranslation({ x: snapPos.x, y: snapPos.y + 0.02, z: snapPos.z }, true)
+        // Place the body so its BOTTOM rests on the platform top + 1mm epsilon.
+        // Use the body's registered halfHeight (radius for spheres, halfExtents.y
+        // for cuboids) so the resting height matches the actual collider size.
+        const halfHeight = getBodyHalfHeight(body)
+        const restingY = platformTopY + halfHeight + 0.001
+        body.setTranslation({ x: position[0], y: restingY, z: position[2] }, true)
         body.setLinvel({ x: 0, y: 0, z: 0 }, true)
         body.setAngvel({ x: 0, y: 0, z: 0 }, true)
         snappedItems.current.add(body)

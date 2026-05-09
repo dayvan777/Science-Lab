@@ -26,15 +26,16 @@ const BEAM_LEN = 0.50
 const BEAM_T = 0.014
 const BEAM_DEPTH = 0.024
 
-// Hanger — a simple V (two thin diagonal rods) from each beam tip to the pan rim
-const HANGER_H = 0.10  // vertical distance from beam tip to pan rim center
-const ROD_RADIUS = 0.0012
+// Hanger — V-shape: two diagonal rods from each beam tip down to opposite
+// edges of the pan rim. Thicker rod radius reads better at the lab's distance.
+const HANGER_H = 0.11
+const ROD_RADIUS = 0.0025
 
-// Pan
-const PAN_R = 0.075
-const PAN_BOTTOM_R = PAN_R * 0.8
-const PAN_DEPTH = 0.018
-const PAN_RIM_TUBE = 0.003
+// Pan — round metal dish with bright chrome rim
+const PAN_R = 0.085
+const PAN_BOTTOM_R = PAN_R * 0.78
+const PAN_DEPTH = 0.022
+const PAN_RIM_TUBE = 0.0035
 
 const REFERENCE_MASS = 0.2  // 200g — full tilt at this difference
 
@@ -205,10 +206,12 @@ export function LeverBalance({ position, active = false }: Props) {
     setLeverRightPanGrams(Math.round(rightMassKg * 1000))
   })
 
-  // Geometry constants for the hanger V — one per side.
-  // Beam tip in beam-local coords: (±BEAM_LEN/2, 0, 0)
-  // Pan rim attaches at TWO points (left of pan, right of pan) at y = -HANGER_H
-  const PAN_ATTACH_OFFSET = PAN_R * 0.85
+  // Geometry for the hanger V — one per side.
+  // Beam tip is at (±BEAM_LEN/2, 0, 0). Each side has TWO rods that descend
+  // from the beam tip to two diametrically-opposed points on the pan rim.
+  // Attaching exactly at the rim (offset = PAN_R) gives the classic
+  // wireframe-triangle look from the reference image.
+  const PAN_ATTACH_OFFSET = PAN_R * 0.95
 
   return (
     <group position={position}>
