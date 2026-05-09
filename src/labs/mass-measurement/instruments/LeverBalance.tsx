@@ -11,31 +11,33 @@ import { useReadings } from '../state/InstrumentReadings'
 // column, horizontal beam at top, two A-frame wire hangers descending from
 // beam ends, round metal pans hanging at bottom.
 
-// Base + column (the "stand") — geometry is in lever-local coords (origin = table top)
-const BASE_W = 0.18
+// Base + column (the "stand") — geometry is in lever-local coords (origin = table top).
+// Sized so the tallest object (baseball at 2*R=0.15m) fits between pan rim and beam
+// with clearance, AND the lowest pan position at max tilt clears the table top.
+const BASE_W = 0.20
 const BASE_H = 0.04
-const BASE_D = 0.10
+const BASE_D = 0.11
 const FOOT_R = 0.012
 const FOOT_H = 0.012
 const COL_W = 0.05
-const COL_H = 0.22
-const PIVOT_HEIGHT_LOCAL = BASE_H + COL_H // beam-pivot y in lever-local coords (= 0.26)
+const COL_H = 0.30                          // raised from 0.22 so the whole rig is taller
+const PIVOT_HEIGHT_LOCAL = BASE_H + COL_H   // beam-pivot y in lever-local coords (= 0.34)
 
 // Beam — long enough that the bigger pans don't overlap visually
-const BEAM_LEN = 0.56
+const BEAM_LEN = 0.58
 const BEAM_T = 0.014
 const BEAM_DEPTH = 0.024
 
 // Hanger — V-shape: two diagonal rods from each beam tip down to opposite
-// edges of the pan rim. Thicker rod radius reads better at the lab's distance.
-const HANGER_H = 0.13
+// edges of the pan rim. Increased so the baseball's top clears the beam.
+const HANGER_H = 0.19
 const ROD_RADIUS = 0.0025
 
-// Pan — round metal dish with bright chrome rim. Sized so baseball
-// (radius 0.075) fits comfortably inside with room to spare.
-const PAN_R = 0.105
+// Pan — round metal dish with bright chrome rim. Comfortably fits a baseball
+// (radius 0.075) with margin around it.
+const PAN_R = 0.115
 const PAN_BOTTOM_R = PAN_R * 0.75
-const PAN_DEPTH = 0.028
+const PAN_DEPTH = 0.030
 const PAN_RIM_TUBE = 0.004
 
 const REFERENCE_MASS = 0.2  // 200g — full tilt at this difference
