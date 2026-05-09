@@ -46,7 +46,8 @@ export function HUD() {
   } else {
     liveLabel = 'Стан балансу'
     const balanced = Math.abs(leverTilt) < 0.05
-    liveValue = balanced ? '⚖️ урівноважено' : (leverTilt < 0 ? '↘ ліва важче' : '↙ права важче')
+    // tilt > 0 means left pan is DOWN (left heavier); tilt < 0 means right is DOWN (right heavier).
+    liveValue = balanced ? '⚖️ урівноважено' : (leverTilt > 0 ? '↙ ліва важче' : '↘ права важче')
     if (leverRightG === 0) stepHint = '→ Поклади предмет ліворуч, гирьки праворуч'
     else if (!balanced) stepHint = `→ На правій ${leverRightG} г — додай/прибери гирьки`
     else stepHint = `✓ Балка вирівняна! Маса = ${leverRightG} г`

@@ -1,12 +1,11 @@
 import { useRef, useState, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { RigidBody, CuboidCollider, useRapier } from '@react-three/rapier'
+import { RigidBody, CuboidCollider } from '@react-three/rapier'
 import { RapierRigidBody } from '@react-three/rapier'
 import { Vector3 } from 'three'
-import { RigidBodyType } from '@dimforge/rapier3d-compat'
 import { Outlines, RoundedBox } from '@react-three/drei'
 import { registerSnap } from '../../physics/snapTargets'
-import { getBodyMass } from '../../physics/bodyRegistry'
+import { getBodyMass, onDragStart } from '../../physics/bodyRegistry'
 import { useReadings } from '../../lab/InstrumentReadings'
 import { createLcdTexture, drawLcd } from '../textures/lcdTexture'
 import { createBrandLabel } from '../textures/labelTexture'
@@ -22,11 +21,13 @@ type Props = { position: [number, number, number]; active?: boolean }
 
 export function DigitalScale({ position, active = false }: Props) {
   const platformRef = useRef<RapierRigidBody>(null)
-  const frameCounter = useRef(0)
-  const { world } = useRapier()
   const [reading, setReading] = useState(0)
   const [tareOffset, setTareOffset] = useState(0)
   const setDigitalScale = useReadings(s => s.setDigitalScale)
+
+  // Track which bodies are snapped onto the platform (explicit tracking
+  // is more reliable than contactPairsWith for kinematic-fixed pairs).
+  const snappedItems = useRef<Set<RapierRigidBody>>(new Set())
 
   const lcdTexture = useMemo(() => createLcdTexture(), [])
   const brandTexture = useMemo(() => createBrandLabel('LAB SCALE'), [])
@@ -36,30 +37,16 @@ export function DigitalScale({ position, active = false }: Props) {
     drawLcd(lcdTexture, reading)
   }, [reading, lcdTexture])
 
-  useFrame(() => {
-    frameCounter.current++
-    if (frameCounter.current % 6 !== 0) return
-    const platform = platformRef.current
-    if (!platform) return
-
-    let totalMassKg = 0
-
-    // Get the platform's collider — rapier RigidBody.collider(i) returns the i-th collider
-    const platformCollider = platform.collider(0)
-
-    // world.contactPairsWith is available on the rapier World object:
-    // it iterates all colliders currently in contact with platformCollider
-    world.contactPairsWith(platformCollider, (otherCollider) => {
-      const body = otherCollider.parent()
-      if (!body) return
-      if (body.handle === platform.handle) return
-      // Accept Dynamic (0) AND KinematicPositionBased (2) — snapped bodies are kinematic
-      const bt = body.bodyType()
-      if (bt === RigidBodyType.Dynamic || bt === RigidBodyType.KinematicPositionBased) {
-        // Use bodyRegistry — kinematic body.mass() may return 0
-        totalMassKg += getBodyMass(body)
-      }
+  // When user starts dragging a body, remove it from our tracking set
+  useEffect(() => {
+    return onDragStart((body) => {
+      snappedItems.current.delete(body)
     })
+  }, [])
+
+  useFrame(() => {
+    let totalMassKg = 0
+    snappedItems.current.forEach(b => { totalMassKg += getBodyMass(b) })
 
     const grams = totalMassKg * 1000 - tareOffset
     // Smooth the reading slightly to reduce flicker as objects settle
@@ -82,6 +69,7 @@ export function DigitalScale({ position, active = false }: Props) {
         body.setTranslation({ x: snapPos.x, y: snapPos.y + 0.02, z: snapPos.z }, true)
         body.setLinvel({ x: 0, y: 0, z: 0 }, true)
         body.setAngvel({ x: 0, y: 0, z: 0 }, true)
+        snappedItems.current.add(body)
       },
     })
   }, [position])

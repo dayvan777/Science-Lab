@@ -96,7 +96,9 @@ export function LeverBalance({ position, active = false }: Props) {
 
   // Animate beam tilt + position snapped items on pans each frame
   useFrame((_, delta) => {
-    const massDiff = rightMassKg - leftMassKg
+    // Heavier side goes DOWN. With beam group rotation.z > 0, left pan goes down.
+    // So when leftMass > rightMass (object on left), tilt should be POSITIVE.
+    const massDiff = leftMassKg - rightMassKg
     const targetTilt = Math.max(-0.25, Math.min(0.25, (massDiff / REFERENCE_MASS) * 0.25))
 
     if (beamRef.current) {

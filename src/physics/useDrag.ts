@@ -38,6 +38,12 @@ export function useDrag({ rigidBody, bodyId }: Props) {
     pointerId.current = ev.pointerId
     rigidBody.current.setBodyType(RigidBodyType.KinematicPositionBased, true)
     rigidBody.current.setAngvel({ x: 0, y: 0, z: 0 }, true)
+    // Make collider a sensor during drag so dragged body passes through other objects
+    // without launching them (kinematic→dynamic collisions otherwise apply huge impulses).
+    const n = rigidBody.current.numColliders()
+    for (let i = 0; i < n; i++) {
+      rigidBody.current.collider(i).setSensor(true)
+    }
     target.current.copy(intersectPlane(ev))
     ;(ev.target as Element).setPointerCapture(ev.pointerId)
   }
@@ -60,6 +66,11 @@ export function useDrag({ rigidBody, bodyId }: Props) {
     isDragging.current = false
     pointerId.current = null
     if (rigidBody.current) {
+      // Restore solid collider before resolving snap/drop
+      const n = rigidBody.current.numColliders()
+      for (let i = 0; i < n; i++) {
+        rigidBody.current.collider(i).setSensor(false)
+      }
       const t = rigidBody.current.translation()
       const snap = findSnapNear(new Vector3(t.x, t.y, t.z), bodyId)
       if (snap) {

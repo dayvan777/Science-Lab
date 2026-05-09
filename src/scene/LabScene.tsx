@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
 import { Lighting } from './Lighting'
@@ -36,6 +36,18 @@ export function LabScene() {
     setActiveInstrument(activeInstrumentId)
     return () => { setActiveInstrument(null) }
   }, [activeInstrumentId])
+
+  // Auto-respawn objects when the active object changes between tasks
+  // (e.g. tennis-ball → apple). Prevents previous object from being stuck
+  // (kinematic-snapped) on an instrument and blocking the next experiment.
+  const prevObjectIdRef = useRef<string | null>(null)
+  useEffect(() => {
+    const prev = prevObjectIdRef.current
+    if (prev !== null && prev !== activeObjectId && activeObjectId !== null) {
+      respawnObjects()
+    }
+    prevObjectIdRef.current = activeObjectId
+  }, [activeObjectId, respawnObjects])
 
   return (
     <>
