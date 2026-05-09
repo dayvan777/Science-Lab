@@ -14,14 +14,17 @@ export type CameraPreset =
 
 type Pose = { position: [number, number, number]; lookAt: [number, number, number] }
 
+// Camera presets — focus-* poses are SUBTLE pans (slight lateral shift + slight
+// dolly-in) from the overview so the user always retains spatial orientation
+// and can interact with the whole table. Aggressive close-ups break drag-pickup.
 const POSES: Record<CameraPreset, Pose> = {
-  intro:         { position: [0, 2.5, 2.5],     lookAt: [0, 0.85, 0]    },
-  overview:      { position: [0, 1.5, 2.0],     lookAt: [0, 0.85, 0]    },
-  workspace:     { position: [0, 1.4, 1.8],     lookAt: [0, 0.9, 0]     },
-  'focus-scale': { position: [0.75, 1.2, 1.2],  lookAt: [0.75, 0.95, 0] },
-  'focus-lever': { position: [0.05, 1.3, 1.3],  lookAt: [0.05, 1.0, 0]  },
-  'focus-dyn':   { position: [-0.55, 1.3, 1.3], lookAt: [-0.55, 1.05, 0] },
-  reveal:        { position: [0, 3.5, 3.5],     lookAt: [0, 1.0, 0]     },
+  intro:         { position: [0, 2.0, 2.4],   lookAt: [0, 0.85, 0]   },
+  overview:      { position: [0, 1.5, 2.0],   lookAt: [0, 0.85, 0]   },
+  workspace:     { position: [0, 1.5, 2.0],   lookAt: [0, 0.85, 0]   },
+  'focus-scale': { position: [0.25, 1.5, 1.8], lookAt: [0.4, 0.9, 0] },
+  'focus-lever': { position: [0.05, 1.5, 1.8], lookAt: [0.05, 0.9, 0] },
+  'focus-dyn':   { position: [-0.25, 1.5, 1.8], lookAt: [-0.4, 0.9, 0] },
+  reveal:        { position: [0, 3.0, 3.2],   lookAt: [0, 1.0, 0]    },
 }
 
 const DOLLY_DURATION_MS = 1500
