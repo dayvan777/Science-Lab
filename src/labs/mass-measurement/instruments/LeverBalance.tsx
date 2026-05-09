@@ -220,11 +220,11 @@ export function LeverBalance({ position, active = false }: Props) {
       </RoundedBox>
       {/* 4 small rounded feet under the base */}
       {[
-        [-BASE_W / 2 + 0.018, -FOOT_H / 2, -BASE_D / 2 + 0.018],
-        [ BASE_W / 2 - 0.018, -FOOT_H / 2, -BASE_D / 2 + 0.018],
-        [-BASE_W / 2 + 0.018, -FOOT_H / 2,  BASE_D / 2 - 0.018],
-        [ BASE_W / 2 - 0.018, -FOOT_H / 2,  BASE_D / 2 - 0.018],
-      ].map(([fx, fy, fz], i) => (
+        [-BASE_W / 2 + 0.018, -BASE_D / 2 + 0.018],
+        [ BASE_W / 2 - 0.018, -BASE_D / 2 + 0.018],
+        [-BASE_W / 2 + 0.018,  BASE_D / 2 - 0.018],
+        [ BASE_W / 2 - 0.018,  BASE_D / 2 - 0.018],
+      ].map(([fx, fz], i) => (
         <mesh key={`foot-${i}`} position={[fx, FOOT_H / 2, fz]} castShadow>
           <cylinderGeometry args={[FOOT_R, FOOT_R * 1.1, FOOT_H, 16]} />
           <meshStandardMaterial color="#1f1f24" metalness={0.6} roughness={0.5} />
