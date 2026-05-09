@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
 import { ACESFilmicToneMapping } from 'three'
+import { Environment } from '@react-three/drei'
 import { CinematicLighting } from '../../../sdk/scene/CinematicLighting'
 import { CameraRig } from '../../../sdk/scene/CameraRig'
 import type { CameraPreset } from '../../../sdk/scene/CameraRig'
@@ -71,6 +72,7 @@ export function LabScene() {
       >
         <CinematicLighting />
         <CameraRig preset={preset} />
+        <Environment preset="studio" background={false} resolution={64} />
         <Physics key={resetKey} gravity={[0, -9.81, 0]} timeStep={1/60}>
           <Table />
           {/* Objects — only the active object for the current task is pickable */}

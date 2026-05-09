@@ -13,7 +13,12 @@ export function TennisBall({ position, enabled = true }: Props) {
     <Draggable position={position} mass={MASS_GRAMS} shape={{ type: 'ball', radius: RADIUS }} bodyId="tennis-ball" enabled={enabled}>
       <mesh castShadow receiveShadow>
         <sphereGeometry args={[RADIUS, 16, 12]} />
-        <meshStandardMaterial map={feltTexture} roughness={0.85} metalness={0} />
+        <meshStandardMaterial
+          map={feltTexture}
+          metalness={0}
+          roughness={0.85}
+          envMapIntensity={0.6}
+        />
       </mesh>
     </Draggable>
   )
