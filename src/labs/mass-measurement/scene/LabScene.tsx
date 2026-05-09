@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
+import { ACESFilmicToneMapping } from 'three'
 import { CinematicLighting } from '../../../sdk/scene/CinematicLighting'
 import { CameraRig, CameraPreset } from '../../../sdk/scene/CameraRig'
+import { PostFX } from '../../../sdk/scene/PostFX'
 import { Table } from '../../../sdk/scene/Table'
 import { TennisBall } from '../objects/TennisBall'
 import { Apple } from '../objects/Apple'
@@ -56,6 +58,7 @@ export function LabScene() {
         camera={{ position: [0, 1.5, 2.0], fov: 50 }}
         dpr={[1, 1.5]}
         shadows
+        gl={{ toneMapping: ACESFilmicToneMapping, toneMappingExposure: 1.0 }}
         style={{ position: 'fixed', inset: 0, background: 'radial-gradient(ellipse at center, #2a2a30 0%, #1a1a1e 50%, #0a0a0c 100%)' }}
       >
         <CinematicLighting />
@@ -74,6 +77,7 @@ export function LabScene() {
           <Weights startPosition={[-0.2, 1.0, -0.3]} weightsEnabled={activeInstrumentId === 'lever-balance'} />
           {guidanceOn && <GuidedOverlay />}
         </Physics>
+        <PostFX />
       </Canvas>
       <HUD />
       <SkipGuidanceToggle />
