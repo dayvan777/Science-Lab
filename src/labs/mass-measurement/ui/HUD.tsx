@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useLabState } from '../state/LabState'
 import { tasks } from '../content/tasks'
+import { TASK_STEPS } from '../content/steps'
 import { NumberInput } from '../../../sdk/ui/NumberInput'
 import { GlassPanel } from '../../../sdk/ui/GlassPanel'
 import { useReadings } from '../state/InstrumentReadings'
@@ -8,6 +9,24 @@ import { useStepEngine } from '../../../sdk/guided/StepEngine'
 
 const TOTAL = 9
 const BASE_FONT = '"SF Pro Display", "Inter", system-ui, sans-serif'
+
+function renderTemplate(tmpl: string, vars: Record<string, string | number>): string {
+  return tmpl.replace(/\{(\w+)\}/g, (_, key) => String(vars[key] ?? `{${key}}`))
+}
+
+function TaskProgressBar({ currentIndex, total }: { currentIndex: number; total: number }) {
+  return (
+    <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
+      {Array.from({ length: total }).map((_, i) => {
+        const state = i < currentIndex ? 'done' : i === currentIndex ? 'active' : 'pending'
+        const bg = state === 'done'   ? '#34c759'
+                 : state === 'active' ? '#0a84ff'
+                 :                       'rgba(0,0,0,0.12)'
+        return <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: bg }} />
+      })}
+    </div>
+  )
+}
 
 export function HUD() {
   const phase = useLabState(s => s.phase)
@@ -20,6 +39,7 @@ export function HUD() {
   const leverTilt = useReadings(s => s.leverBalanceTilt)
   const leverRightG = useReadings(s => s.leverRightPanGrams)
 
+  const currentStepIndex = useStepEngine(s => s.currentStepIndex)
   const resetForTask = useStepEngine(s => s.resetForTask)
   useEffect(() => {
     resetForTask(idx)
@@ -27,6 +47,16 @@ export function HUD() {
 
   if (phase !== 'in-progress') return null
   const current = tasks[idx]
+
+  const taskSteps = TASK_STEPS[current.id] ?? []
+  const currentStep = taskSteps[currentStepIndex] ?? null
+
+  const readings: Record<string, string | number> = {
+    digitalScaleGrams: digitalScaleG,
+    dynamometerNewtons: dynamometerN.toFixed(2),
+    leverRightPanGrams: leverRightG,
+    leverBalanceTilt: leverTilt,
+  }
 
   let liveLabel = ''
   let liveValue = ''
@@ -82,6 +112,7 @@ export function HUD() {
         <div style={{ fontSize: 11, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 1 }}>
           Зараз робимо
         </div>
+        <TaskProgressBar currentIndex={idx} total={tasks.length} />
         <div style={{ fontSize: 18, fontWeight: 500, margin: '8px 0 12px', lineHeight: 1.4 }}>
           {current.prompt}
         </div>
@@ -91,6 +122,18 @@ export function HUD() {
         }}>
           💡 {current.hint}
         </div>
+        {currentStep && (
+          <div style={{ paddingTop: 12, paddingBottom: 4 }}>
+            <div style={{ fontSize: 16, fontWeight: 600, color: '#0a84ff', marginBottom: 4 }}>
+              {renderTemplate(currentStep.hintTitle ?? currentStep.hintTemplate ?? '', readings)}
+            </div>
+            {currentStep.hintExplanation && (
+              <div style={{ fontSize: 13, color: '#6e6e73', lineHeight: 1.5 }}>
+                {currentStep.hintExplanation}
+              </div>
+            )}
+          </div>
+        )}
         <div style={{ paddingTop: 16 }}>
           <div style={{ fontSize: 11, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
             {liveLabel}
