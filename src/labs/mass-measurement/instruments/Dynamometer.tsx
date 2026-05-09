@@ -2,11 +2,11 @@ import { useRef, useState, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RigidBody, RapierRigidBody } from '@react-three/rapier'
 import { Vector3 } from 'three'
-import { registerSnap } from '../../sdk/physics/snapTargets'
-import { getBodyMass, onDragStart } from '../../sdk/physics/bodyRegistry'
+import { registerSnap } from '../../../sdk/physics/snapTargets'
+import { getBodyMass, onDragStart } from '../../../sdk/physics/bodyRegistry'
 import { Outlines, RoundedBox } from '@react-three/drei'
-import { useReadings } from '../../lab/InstrumentReadings'
-import { createDialTexture } from '../../labs/mass-measurement/textures/dialTexture'
+import { useReadings } from '../../../lab/InstrumentReadings'
+import { createDialTexture } from '../textures/dialTexture'
 
 const G = 9.81
 const SPRING_K = 50  // N/m — gives 0–10 cm range for 0–5 N
