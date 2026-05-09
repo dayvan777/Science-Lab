@@ -11,9 +11,15 @@ export function Baseball({ position, enabled = true }: Props) {
   const seamTexture = useMemo(() => createBaseballSeamTexture(), [])
   return (
     <Draggable position={position} mass={MASS_GRAMS} shape={{ type: 'ball', radius: RADIUS }} bodyId="baseball" enabled={enabled}>
-      <mesh>
-        <sphereGeometry args={[RADIUS, 16, 12]} />
-        <meshStandardMaterial map={seamTexture} roughness={0.6} metalness={0} />
+      <mesh castShadow receiveShadow>
+        <sphereGeometry args={[RADIUS, 32, 24]} />
+        <meshStandardMaterial
+          map={seamTexture}
+          color="#f5ebd6"
+          roughness={0.55}
+          metalness={0}
+          envMapIntensity={0.5}
+        />
       </mesh>
     </Draggable>
   )

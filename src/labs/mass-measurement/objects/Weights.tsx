@@ -32,17 +32,17 @@ export function Weights({ startPosition, weightsEnabled = true }: Props) {
             bodyId={`weight-${w.label}`}
             enabled={weightsEnabled}
           >
-            {/* Body — slight conical taper for premium look */}
-            <mesh>
-              <cylinderGeometry args={[w.radius * 0.95, w.radius, w.height * 0.85, 24]} />
-              <meshStandardMaterial color="#5a5a5d" metalness={0.7} roughness={0.45} />
+            {/* Body — slight conical taper for premium look (dark steel) */}
+            <mesh castShadow receiveShadow>
+              <cylinderGeometry args={[w.radius * 0.95, w.radius, w.height * 0.85, 32]} />
+              <meshStandardMaterial color="#3a3a40" metalness={0.85} roughness={0.35} envMapIntensity={1.0} />
             </mesh>
-            {/* Top knob */}
-            <mesh position={[0, w.height * 0.45, 0]}>
-              <cylinderGeometry args={[w.radius * 0.4, w.radius * 0.6, w.height * 0.15, 16]} />
-              <meshStandardMaterial color="#5a5a5d" metalness={0.7} roughness={0.45} />
+            {/* Top knob — slightly polished */}
+            <mesh position={[0, w.height * 0.45, 0]} castShadow>
+              <cylinderGeometry args={[w.radius * 0.4, w.radius * 0.6, w.height * 0.15, 24]} />
+              <meshStandardMaterial color="#46464c" metalness={0.9} roughness={0.25} envMapIntensity={1.1} />
             </mesh>
-            {/* Label on side */}
+            {/* Label on side — slightly emissive so the value reads under any lighting */}
             <mesh position={[0, 0, w.radius + 0.001]}>
               <planeGeometry args={[w.radius * 1.4, w.height * 0.5]} />
               <meshBasicMaterial map={labelTextures[i]} transparent />
