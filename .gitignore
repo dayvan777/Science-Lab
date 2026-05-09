@@ -1,5 +1,43 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
-.superpowers/
+build/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Tooling caches
+.cache/
+.parcel-cache/
+.turbo/
+.eslintcache
+
+# Tooling state — superpowers / Claude / scratch
 .claude/
-.env*
+.superpowers/
+
+# Coverage
+coverage/
+*.lcov
+
+# Misc logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

@@ -1,8 +1,35 @@
 {
-  "name": "mass-measurement-lab",
+  "name": "lab-sdk",
+  "version": "0.1.0",
+  "description": "Interactive 3D physics laboratory engine and the first concrete lab — Mass Measurement of Bodies — for Ukrainian schools (6-7 grade).",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
+  "license": "MIT",
+  "author": "Vlad Domotsky <vladdomotsky@gmail.com>",
+  "homepage": "https://github.com/vladdomotsky/lab-sdk#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vladdomotsky/lab-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vladdomotsky/lab-sdk/issues"
+  },
+  "keywords": [
+    "education",
+    "physics",
+    "interactive",
+    "3d",
+    "react",
+    "three.js",
+    "react-three-fiber",
+    "rapier",
+    "promethean",
+    "ukrainian-schools",
+    "lab-simulation"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
