@@ -9,6 +9,7 @@ import { getBodyMass, onDragStart } from '../../../sdk/physics/bodyRegistry'
 import { useReadings } from '../state/InstrumentReadings'
 import { createLcdTexture, drawLcd } from '../textures/lcdTexture'
 import { createBrandLabel } from '../textures/labelTexture'
+import { lerp } from '../../../sdk/animation'
 
 const PLATFORM_W = 0.20
 const PLATFORM_D = 0.20
@@ -47,11 +48,13 @@ export function DigitalScale({ position, active = false }: Props) {
   useFrame(() => {
     let totalMassKg = 0
     snappedItems.current.forEach(b => { totalMassKg += getBodyMass(b) })
-
-    const grams = totalMassKg * 1000 - tareOffset
-    // Smooth the reading slightly to reduce flicker as objects settle
-    setReading(prev => prev * 0.7 + Math.max(0, grams) * 0.3)
-    setDigitalScale(Math.max(0, Math.round(grams)))
+    const targetGrams = Math.max(0, totalMassKg * 1000 - tareOffset)
+    // Reading-tick: digits visibly tick toward target (~500ms settle), then snap when close.
+    setReading(prev => {
+      const next = lerp(prev, targetGrams, 0.15)
+      return Math.abs(next - targetGrams) < 0.5 ? targetGrams : next
+    })
+    setDigitalScale(Math.round(targetGrams))
   })
 
   // Register snap target for platform top
