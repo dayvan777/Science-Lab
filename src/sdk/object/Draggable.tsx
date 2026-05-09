@@ -20,16 +20,19 @@ export function Draggable({ position, mass, shape, bodyId, enabled = true, child
   const setDragging = useStepEngine(s => s.setDragging)
   const { onPointerDown: rawDown, onPointerMove, onPointerUp: rawUp } = useDrag({ rigidBody: ref, bodyId })
   const massKg = mass / 1000
+  // Half the vertical extent of the body — used by stacking layouts (lever pans).
+  const halfHeight = shape.type === 'ball' ? shape.radius : shape.halfExtents[1]
 
-  // Register body→mass on mount so other systems can look up mass even for kinematic bodies.
-  // RigidBody ref may not be ready immediately — poll until it is.
+  // Register body→{mass, halfHeight} on mount so other systems can read these
+  // even for kinematic bodies. RigidBody ref may not be ready immediately —
+  // poll until it is.
   useEffect(() => {
     let cancelled = false
     let unregister: (() => void) | null = null
     const tryRegister = () => {
       if (cancelled) return
       if (ref.current) {
-        unregister = registerBody(ref.current, massKg)
+        unregister = registerBody(ref.current, massKg, halfHeight)
       } else {
         requestAnimationFrame(tryRegister)
       }
@@ -39,7 +42,7 @@ export function Draggable({ position, mass, shape, bodyId, enabled = true, child
       cancelled = true
       unregister?.()
     }
-  }, [massKg])
+  }, [massKg, halfHeight])
 
   const onPointerDown = (ev: React.PointerEvent) => {
     if (!enabled) return  // BLOCK pickup when not the active object

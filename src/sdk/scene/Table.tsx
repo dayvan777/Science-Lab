@@ -5,15 +5,20 @@ const TABLE_DEPTH = 1.2
 const TABLE_HEIGHT = 0.85
 const TOP_THICKNESS = 0.05
 const LEG_THICKNESS = 0.06
-const LEG_HEIGHT = 0.7
+// Legs reach all the way up to the bottom of the tabletop.
+// Tabletop bottom = TABLE_HEIGHT - TOP_THICKNESS = 0.80
+const LEG_HEIGHT = TABLE_HEIGHT - TOP_THICKNESS // 0.80
+const LEG_CENTER_Y = LEG_HEIGHT / 2 // 0.40
 
 export const TABLE_TOP_Y = TABLE_HEIGHT // public constant for object placement
+export const TABLE_HALF_WIDTH = TABLE_WIDTH / 2
+export const TABLE_HALF_DEPTH = TABLE_DEPTH / 2
 
 const LEG_POSITIONS: [number, number, number][] = [
-  [-1.15, 0.35, -0.5],
-  [1.15, 0.35, -0.5],
-  [-1.15, 0.35, 0.5],
-  [1.15, 0.35, 0.5],
+  [-1.15, LEG_CENTER_Y, -0.5],
+  [1.15, LEG_CENTER_Y, -0.5],
+  [-1.15, LEG_CENTER_Y, 0.5],
+  [1.15, LEG_CENTER_Y, 0.5],
 ]
 
 export function Table() {

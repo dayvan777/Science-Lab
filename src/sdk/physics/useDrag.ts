@@ -5,9 +5,18 @@ import { RapierRigidBody } from '@react-three/rapier'
 import { RigidBodyType } from '@dimforge/rapier3d-compat'
 import { findSnapNear, snapProgress } from './snapTargets'
 import { useStepEngine } from '../../sdk/guided/StepEngine'
+import { clamp } from '../animation'
 
 const DRAG_HEIGHT = 1.0
 const SMOOTHING = 0.3
+// Drag bounds — keep dragged objects within the table footprint so the user
+// cannot accidentally drop something off the edge and lose it. Default values
+// match the mass-measurement lab table (2.5m × 1.2m). For multi-lab use later,
+// these can become a hook prop or context-driven config.
+const DRAG_MIN_X = -1.15
+const DRAG_MAX_X = 1.15
+const DRAG_MIN_Z = -0.5
+const DRAG_MAX_Z = 0.5
 
 function animateMagneticSnap(
   body: RapierRigidBody,
@@ -80,6 +89,10 @@ export function useDrag({ rigidBody, bodyId }: Props) {
     if (!isDragging.current || ev.pointerId !== pointerId.current) return
     const next = intersectPlane(ev)
     target.current.lerp(next, SMOOTHING)
+    // Clamp drag position to within table bounds — prevents user from
+    // dragging objects off the edge where they'd fall and become unreachable.
+    target.current.x = clamp(target.current.x, DRAG_MIN_X, DRAG_MAX_X)
+    target.current.z = clamp(target.current.z, DRAG_MIN_Z, DRAG_MAX_Z)
     if (rigidBody.current) {
       rigidBody.current.setNextKinematicTranslation({
         x: target.current.x,
