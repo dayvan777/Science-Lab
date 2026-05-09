@@ -17,7 +17,7 @@ import { useLabState } from '../lab/LabState'
 import { tasks } from '../lab/tasks'
 import { GuidedOverlay } from '../guided/GuidedOverlay'
 import { useGuidance, SkipGuidanceToggle } from '../guided/SkipGuidanceToggle'
-import { setActiveInstrument } from '../physics/snapTargets'
+import { setActiveInstrument } from '../sdk/physics/snapTargets'
 
 export function LabScene() {
   const [preset, setPreset] = useState<CameraPreset>('overview')

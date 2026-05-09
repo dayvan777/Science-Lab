@@ -4,7 +4,7 @@ import { Vector3 } from 'three'
 import { RapierRigidBody } from '@react-three/rapier'
 import { RigidBodyType } from '@dimforge/rapier3d-compat'
 import { findSnapNear } from './snapTargets'
-import { useStepEngine } from '../guided/StepEngine'
+import { useStepEngine } from '../../guided/StepEngine'
 
 const DRAG_HEIGHT = 1.0
 const SMOOTHING = 0.3
