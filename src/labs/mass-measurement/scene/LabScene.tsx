@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
-import { Lighting } from '../../../sdk/scene/Lighting'
+import { CinematicLighting } from '../../../sdk/scene/CinematicLighting'
 import { CameraRig, CameraPreset } from '../../../sdk/scene/CameraRig'
 import { Table } from '../../../sdk/scene/Table'
 import { TennisBall } from '../objects/TennisBall'
@@ -55,9 +55,10 @@ export function LabScene() {
       <Canvas
         camera={{ position: [0, 1.5, 2.0], fov: 50 }}
         dpr={[1, 1.5]}
-        style={{ position: 'fixed', inset: 0, background: '#2a2a2a' }}
+        shadows
+        style={{ position: 'fixed', inset: 0, background: 'radial-gradient(ellipse at center, #2a2a30 0%, #1a1a1e 50%, #0a0a0c 100%)' }}
       >
-        <Lighting />
+        <CinematicLighting />
         <CameraRig preset={preset} />
         <Physics key={resetKey} gravity={[0, -9.81, 0]} timeStep={1/60}>
           <Table />

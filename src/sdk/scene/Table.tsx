@@ -12,6 +12,7 @@ export function Table() {
     <RigidBody type="fixed" colliders="cuboid">
       {/* Tabletop */}
       <mesh
+        castShadow
         receiveShadow
         position={[0, TABLE_HEIGHT - TOP_THICKNESS / 2, 0]}
       >
@@ -25,7 +26,7 @@ export function Table() {
         [-1.15, 0.35, 0.5],
         [1.15, 0.35, 0.5],
       ].map(([x, y, z], i) => (
-        <mesh key={i} position={[x, y, z]} castShadow>
+        <mesh key={i} position={[x, y, z]} castShadow receiveShadow>
           <boxGeometry args={[0.06, 0.7, 0.06]} />
           <meshStandardMaterial color="#5a3a1a" roughness={0.8} />
         </mesh>

@@ -80,7 +80,7 @@ export function DigitalScale({ position, active = false }: Props) {
     <group position={position}>
       {/* Housing — rounded box */}
       <RoundedBox args={[PLATFORM_W * 1.1, HOUSING_H, PLATFORM_D * 1.1]} radius={0.005} smoothness={4}
-        position={[0, HOUSING_H / 2, 0]}>
+        position={[0, HOUSING_H / 2, 0]} castShadow receiveShadow>
         <meshStandardMaterial color="#3a3a3d" metalness={0.85} roughness={0.25} />
         {active && <Outlines thickness={3} color="#0071e3" />}
       </RoundedBox>
@@ -99,7 +99,7 @@ export function DigitalScale({ position, active = false }: Props) {
         position={[0, HOUSING_H + PLATFORM_T / 2, 0]}
       >
         <CuboidCollider args={[PLATFORM_W / 2, PLATFORM_T / 2, PLATFORM_D / 2]} />
-        <mesh>
+        <mesh castShadow receiveShadow>
           <boxGeometry args={[PLATFORM_W, PLATFORM_T, PLATFORM_D]} />
           <meshStandardMaterial color="#888" metalness={0.6} roughness={0.3} />
         </mesh>

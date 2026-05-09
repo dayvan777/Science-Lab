@@ -11,7 +11,7 @@ export function TennisBall({ position, enabled = true }: Props) {
   const feltTexture = useMemo(() => createFeltTexture(), [])
   return (
     <Draggable position={position} mass={MASS_GRAMS} shape={{ type: 'ball', radius: RADIUS }} bodyId="tennis-ball" enabled={enabled}>
-      <mesh>
+      <mesh castShadow receiveShadow>
         <sphereGeometry args={[RADIUS, 16, 12]} />
         <meshStandardMaterial map={feltTexture} roughness={0.85} metalness={0} />
       </mesh>
