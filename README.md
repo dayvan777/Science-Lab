@@ -3,6 +3,9 @@
 > **Interactive 3D physics laboratory for Ukrainian schools**
 > Built for Promethean interactive panels (6th-7th grade) — touch-first, browser-based, no install.
 
+🌐 **Live demo:** https://science-lab-phi.vercel.app/
+🎬 **Auto-walkthrough:** https://science-lab-phi.vercel.app/?demo=1 (lab plays itself end-to-end in ~70 seconds)
+
 This repository contains both an **engine** (`src/sdk/`) for building interactive lab simulations and the first concrete lab on top of it: **"Вимірювання маси тіл"** (Mass Measurement of Bodies). A student measures the mass of three different objects (ping-pong ball, metal sphere, baseball) using three different instruments (digital scale, lever balance, dynamometer) and discovers the **invariance of mass** — three methods, one result.
 
 ```
