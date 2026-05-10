@@ -1,12 +1,15 @@
-import { CSSProperties, ReactNode } from 'react'
+import { CSSProperties, ReactNode, HTMLAttributes } from 'react'
 
-type Props = {
+// Pass-through any HTMLDivElement attribute (role, aria-*, id, data-*, etc.)
+// so consumers can label panels and add ARIA semantics without a forked
+// component for each variant.
+type Props = HTMLAttributes<HTMLDivElement> & {
   children: ReactNode
   style?: CSSProperties
   variant?: 'default' | 'subtle' | 'strong'
 }
 
-export function GlassPanel({ children, style, variant = 'default' }: Props) {
+export function GlassPanel({ children, style, variant = 'default', ...rest }: Props) {
   const variants: Record<string, CSSProperties> = {
     default: {
       background: 'rgba(255, 255, 255, 0.7)',
@@ -27,6 +30,7 @@ export function GlassPanel({ children, style, variant = 'default' }: Props) {
 
   return (
     <div
+      {...rest}
       style={{
         ...variants[variant],
         borderRadius: 16,
