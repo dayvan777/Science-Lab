@@ -1,4 +1,4 @@
-import { CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
 
 type Props = {
   /** Kicker line above the logo (e.g. "ОСВІТНЯ ПЛАТФОРМА · 6–7 КЛАС · BETA"). */

@@ -1,4 +1,4 @@
-import { CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
 import { GlowBackground } from '../components/GlowBackground'
 import { BrandHero } from '../components/BrandHero'
 import { SubjectPill } from '../components/SubjectPill'

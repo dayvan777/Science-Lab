@@ -1,4 +1,4 @@
-import { CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { GlowBackground } from '../components/GlowBackground'
 import { BrandHero } from '../components/BrandHero'

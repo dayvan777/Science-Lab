@@ -1,4 +1,4 @@
-import { CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
 
 /**
  * Full-bleed dark background with four radial blur-glow overlays.
