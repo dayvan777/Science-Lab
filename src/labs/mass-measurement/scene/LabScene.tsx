@@ -7,11 +7,11 @@ import { CinematicLighting } from '../../../sdk/scene/CinematicLighting'
 import { CameraRig } from '../../../sdk/scene/CameraRig'
 import type { CameraPreset } from '../../../sdk/scene/CameraRig'
 import { PostFX } from '../../../sdk/scene/PostFX'
-import { Table } from '../../../sdk/scene/Table'
-import { ObjectTray } from './ObjectTray'
-import { TennisBall } from '../objects/TennisBall'
-import { Apple } from '../objects/Apple'
-import { Baseball } from '../objects/Baseball'
+import { Table, TABLE_TOP_Y } from '../../../sdk/scene/Table'
+import { ObjectTray, TRAY_H, TRAY_TOP_Y } from './ObjectTray'
+import { TennisBall, RADIUS as TENNIS_BALL_RADIUS } from '../objects/TennisBall'
+import { Apple, RADIUS as APPLE_RADIUS } from '../objects/Apple'
+import { Baseball, RADIUS as BASEBALL_RADIUS } from '../objects/Baseball'
 import { Button } from '../../../sdk/ui/Button'
 import { SoundToggle } from '../../../sdk/ui/SoundToggle'
 import { ZoomControls } from '../../../sdk/ui/ZoomControls'
@@ -109,13 +109,13 @@ export function LabScene() {
         <Physics key={resetKey} gravity={[0, -9.81, 0]} timeStep={1/60}>
           <Table />
           {/* Wooden tray sits on the table at z = 0.40 (slightly forward of
-              the previous ball-row z = 0.35) with its top surface at
-              y = 0.85 + 0.025 = 0.875. Balls spawn just above the tray's
-              top surface (each ball's centre = tray top + ball radius). */}
-          <ObjectTray position={[0, 0.85 + 0.025 / 2, 0.40]} />
-          <TennisBall position={[-0.30, 0.875 + 0.040 + 0.005, 0.40]} enabled={activeObjectId === 'tennis-ball'} />
-          <Apple      position={[ 0.00, 0.875 + 0.045 + 0.005, 0.40]} enabled={activeObjectId === 'apple'} />
-          <Baseball   position={[ 0.30, 0.875 + 0.075 + 0.005, 0.40]} enabled={activeObjectId === 'baseball'} />
+              the previous ball-row z = 0.35). Tray centre is placed so its
+              top surface lands at TRAY_TOP_Y; balls spawn just above the
+              tray's top surface (centre = tray top + ball radius + epsilon). */}
+          <ObjectTray position={[0, TABLE_TOP_Y + TRAY_H / 2, 0.40]} />
+          <TennisBall position={[-0.30, TRAY_TOP_Y + TENNIS_BALL_RADIUS + 0.005, 0.40]} enabled={activeObjectId === 'tennis-ball'} />
+          <Apple      position={[ 0.00, TRAY_TOP_Y + APPLE_RADIUS       + 0.005, 0.40]} enabled={activeObjectId === 'apple'} />
+          <Baseball   position={[ 0.30, TRAY_TOP_Y + BASEBALL_RADIUS    + 0.005, 0.40]} enabled={activeObjectId === 'baseball'} />
           {/* Instruments spread across the table, away from object spawn */}
           <Dynamometer position={[-0.55, 0.85, 0]} active={activeInstrumentId === 'dynamometer'} />
           <LeverBalance position={[0.05, 0.85, 0]} active={activeInstrumentId === 'lever-balance'} />

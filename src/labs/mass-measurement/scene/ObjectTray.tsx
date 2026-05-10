@@ -1,8 +1,16 @@
 import { RigidBody, CuboidCollider } from '@react-three/rapier'
+import { TABLE_TOP_Y } from '../../../sdk/scene/Table'
 
 const TRAY_W = 0.85
 const TRAY_D = 0.20
-const TRAY_H = 0.025
+export const TRAY_H = 0.025
+
+/**
+ * Top surface y of the tray when its centre is placed at TABLE_TOP_Y +
+ * TRAY_H / 2 (i.e. the tray sitting flat on the table). Balls spawn at
+ * TRAY_TOP_Y + ballRadius (+ small epsilon).
+ */
+export const TRAY_TOP_Y = TABLE_TOP_Y + TRAY_H
 
 const INDENTATION_DEPTH = 0.012
 
@@ -11,9 +19,9 @@ const INDENTATION_DEPTH = 0.012
  * Positions are tray-local (origin at the tray's centre).
  */
 const INDENTATIONS: { x: number; radius: number }[] = [
-  { x: -0.30, radius: 0.05  },  // ping-pong (radius 0.04)
-  { x:  0.00, radius: 0.055 },  // metal ball (radius 0.045)
-  { x:  0.30, radius: 0.085 },  // baseball  (radius 0.075)
+  { x: -0.30, radius: 0.05  },  // tennis ball (radius 0.04)
+  { x:  0.00, radius: 0.055 },  // apple       (radius 0.045)
+  { x:  0.30, radius: 0.085 },  // baseball    (radius 0.075)
 ]
 
 type Props = { position: [number, number, number] }
