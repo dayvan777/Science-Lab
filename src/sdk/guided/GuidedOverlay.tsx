@@ -7,15 +7,30 @@ import { Arrow3D } from './primitives/Arrow3D'
 import { GlowRing } from './primitives/GlowRing'
 import { sound } from '../audio/SoundManager'
 
-// World positions adjusted for v1 layout with table (objects at y=0.95+, instruments at y=0.85+)
+// World positions for guided-mode visual hints (Arrow3D / GlowRing).
+// Derived from the actual scene layout in LabScene.tsx + each instrument's
+// internal geometry constants. Whenever the table layout or an instrument's
+// dimensions change, these MUST be recomputed — there's no automatic source
+// of truth, so a stale entry produces a hint floating in mid-air.
+//
+// Current layout reference:
+//   Table top  : y = 0.85
+//   Tray top   : y = TABLE_TOP_Y + TRAY_H = 0.875  (Slice C — z=0.40)
+//   Dynamometer at world [-0.55, 0.85, 0]   — hook rest at local y = 0.20  → world (−0.55, 1.05, 0)
+//   LeverBalance at [0.05, 0.85, 0]         — pan rim at local y = PIVOT − HANGER = 0.40 − 0.26 = 0.14
+//                                              and x = ± BEAM_LEN / 2 = ±0.33
+//                                              → world left (−0.28, 0.99, 0), right (0.38, 0.99, 0)
+//   DigitalScale at [0.75, 0.85, 0]         — platform top at local y = HOUSING_H + PLATFORM_T = 0.06
+//                                              → world (0.75, 0.91, 0)
+//   Balls spawn just above the tray at z=0.40 (Slice C).
 const TARGET_POSITIONS: Record<string, [number, number, number]> = {
-  'tennis-ball':           [-1.05, 1.0, 0],
-  'apple':                 [-1.05, 1.0, 0.18],
-  'baseball':              [-1.05, 1.0, -0.18],
-  'digital-scale':         [0.75, 0.95, 0],
-  'lever-balance-left':    [-0.17, 1.20, 0],
-  'lever-balance-right':   [0.27, 1.20, 0],
-  'dynamometer-hook':      [-0.50, 1.10, 0],
+  'tennis-ball':           [-0.30, 0.92, 0.40],
+  'apple':                 [ 0.00, 0.93, 0.40],
+  'baseball':              [ 0.30, 0.96, 0.40],
+  'digital-scale':         [ 0.75, 0.91, 0.00],
+  'lever-balance-left':    [-0.28, 0.99, 0.00],
+  'lever-balance-right':   [ 0.38, 0.99, 0.00],
+  'dynamometer-hook':      [-0.55, 1.05, 0.00],
 }
 
 export function GuidedOverlay() {
