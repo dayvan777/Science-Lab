@@ -198,6 +198,26 @@ export function Dynamometer({ position, active = false }: Props) {
         <planeGeometry args={[0.06, 0.24]} />
         <meshBasicMaterial map={scaleTexture} />
       </mesh>
+
+      {/* Red needle pointing horizontally from the scale plate to the spring.
+          Slides up/down with the hook. Student reads the value where the
+          needle aligns with a graduation. */}
+      <mesh
+        position={[
+          -0.04 + 0.04,  // needle's tip lines up with the right edge of the scale plate
+          (() => {
+            const SCALE_TOP_Y = 0.36
+            const SCALE_BOTTOM_Y = 0.12
+            const HOOK_AT_ZERO_N = 0.20
+            return SCALE_TOP_Y + (HOOK_AT_ZERO_N - hookY) * (SCALE_BOTTOM_Y - SCALE_TOP_Y) / (0.10 - HOOK_AT_ZERO_N)
+          })(),
+          0.001,  // just in front of the scale plate
+        ]}
+        rotation={[0, 0, -Math.PI / 2]}
+      >
+        <coneGeometry args={[0.005, 0.024, 3]} />
+        <meshStandardMaterial color="#ff3b30" emissive="#ff3b30" emissiveIntensity={0.7} />
+      </mesh>
     </group>
   )
 }
