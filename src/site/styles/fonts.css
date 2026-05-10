@@ -1,0 +1,15 @@
+/*
+ * Site-wide font imports.
+ *
+ * Inter — body text, kickers, taglines, pill labels (existing lab uses
+ * SF Pro Display / Inter stack, this aligns).
+ *
+ * Saira — display headings: lab titles on cards, "Скоро" message on
+ * placeholder pages. Closest free Google match to the heavy display
+ * face from the user's first reference ("ВІРТУАЛЬНА ЛАБОРАТОРІЯ").
+ *
+ * Orbitron is intentionally NOT imported here — the brand mark is a
+ * PNG image (public/nova-evrika-logo.png). Adding Orbitron would only
+ * inflate the font payload without being rendered.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Saira:wght@700;800;900&display=swap');
