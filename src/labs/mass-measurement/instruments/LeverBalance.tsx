@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RapierRigidBody } from '@react-three/rapier'
-import { Outlines, RoundedBox } from '@react-three/drei'
+import { RoundedBox } from '@react-three/drei'
 import { Vector3, Group, Quaternion } from 'three'
 import { registerSnap } from '../../../sdk/physics/snapTargets'
 import { getBodyMass, getBodyHalfHeight, onDragStart } from '../../../sdk/physics/bodyRegistry'
@@ -282,8 +282,23 @@ export function LeverBalance({ position, active = false }: Props) {
           <mesh castShadow receiveShadow>
             <cylinderGeometry args={[PAN_R, PAN_BOTTOM_R, PAN_DEPTH, 48]} />
             <meshStandardMaterial color="#878a92" metalness={0.65} roughness={0.5} envMapIntensity={0.45} />
-            {active && leftItems.current.length === 0 && <Outlines thickness={3} color="#0a84ff" />}
           </mesh>
+          {/* Active drop-target halo — thin glowing blue torus precisely at the
+              pan's TOP RIM. Replaces the previous <Outlines>-on-cone effect,
+              which produced a stray second ring above the pan because Outlines
+              drew the back-side silhouette of the entire truncated cone (top
+              radius != bottom radius → two visible rings). */}
+          {active && leftItems.current.length === 0 && (
+            <mesh position={[0, PAN_DEPTH / 2, 0]} rotation={[Math.PI / 2, 0, 0]}>
+              <torusGeometry args={[PAN_R, 0.004, 12, 64]} />
+              <meshStandardMaterial
+                color="#0a84ff"
+                emissive="#0a84ff"
+                emissiveIntensity={1.6}
+                toneMapped={false}
+              />
+            </mesh>
+          )}
         </group>
 
         {/* RIGHT side — symmetric */}
