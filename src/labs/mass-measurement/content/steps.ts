@@ -61,8 +61,11 @@ function makeLeverBalanceSteps(_taskId: string, objectId: string): Step[] {
       hintTemplate: 'Поклади на ПРАВУ чашу',
       complete: { kind: 'snapped', targetPrefix: 'lever-right' } },
     { id: 'balance-loop', target: { kind: 'instrument', id: 'lever-balance-right' }, visualHint: 'highlight',
-      hintTemplate: 'Праворуч {leverRightPanGrams} г — додай/прибери поки не вирівняється',
-      complete: { kind: 'lever-balanced', toleranceTilt: 0.05 } },
+      hintTemplate: 'Праворуч {leverRightPanGrams} г — додай/прибери поки маси не зрівняються',
+      // Half-gram tolerance: covers float drift in mass summation, rejects
+      // any meaningful imbalance. The student must put weights summing to
+      // EXACTLY the object's mass (within ±0.5 g) — not "roughly equal".
+      complete: { kind: 'lever-balanced', toleranceGrams: 0.5 } },
     { id: 'enter', target: { kind: 'ui', id: 'input' }, visualHint: 'arrow',
       hintTemplate: 'Маса = {leverRightPanGrams} г. Введи у поле',
       complete: { kind: 'input-focused' } },

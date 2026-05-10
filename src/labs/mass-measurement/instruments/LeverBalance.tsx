@@ -2,7 +2,7 @@ import { useRef, useState, useEffect, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RapierRigidBody } from '@react-three/rapier'
 import { RoundedBox } from '@react-three/drei'
-import { Vector3, Group, Quaternion } from 'three'
+import { Vector3, Group, Quaternion, MeshStandardMaterial } from 'three'
 import { registerSnap } from '../../../sdk/physics/snapTargets'
 import { getBodyMass, getBodyHalfHeight, onDragStart } from '../../../sdk/physics/bodyRegistry'
 import { useReadings } from '../state/InstrumentReadings'
@@ -41,7 +41,17 @@ const PAN_R = 0.14
 const PAN_BOTTOM_R = PAN_R * 0.75
 const PAN_DEPTH = 0.034
 
-const REFERENCE_MASS = 0.2  // 200g — full tilt at this difference
+const REFERENCE_MASS = 0.2  // 200g — full tilt at this difference (visual only)
+
+// A pair of pans is considered BALANCED when both hold something AND the
+// total masses match within this gram tolerance. Used both to snap the
+// beam's visual tilt to exactly 0 and to flip the indicator colour from
+// red → green so the student gets an unambiguous "yes, balanced" signal.
+// Same number is mirrored in the step-engine predicate's toleranceGrams.
+const BALANCE_TOLERANCE_G = 0.5
+
+const RED   = '#ff3b30'
+const GREEN = '#34c759'
 
 type Props = { position: [number, number, number]; active?: boolean }
 
@@ -78,7 +88,13 @@ export function LeverBalance({ position, active = false }: Props) {
   const [leftMassKg, setLeftMassKg] = useState(0)
   const [rightMassKg, setRightMassKg] = useState(0)
   const setLeverTilt = useReadings(s => s.setLeverTilt)
+  const setLeverLeftPanGrams = useReadings(s => s.setLeverLeftPanGrams)
   const setLeverRightPanGrams = useReadings(s => s.setLeverRightPanGrams)
+
+  // Refs to the indicator materials so we can recolour without re-rendering
+  // (cone arrow on the beam + static reference tick on the column).
+  const coneMatRef = useRef<MeshStandardMaterial>(null)
+  const tickMatRef = useRef<MeshStandardMaterial>(null)
 
   // Track which bodies are on which pan as ORDERED arrays — items stack
   // visually (each new one rests on top of the previous, not clipping at one point).
@@ -163,13 +179,36 @@ export function LeverBalance({ position, active = false }: Props) {
   // accumulated half-heights for stacking.
   useFrame((_, delta) => {
     const massDiff = leftMassKg - rightMassKg
-    const targetTilt = Math.max(-0.25, Math.min(0.25, (massDiff / REFERENCE_MASS) * 0.25))
+    const massDiffG = Math.abs(massDiff) * 1000
+    const isBalanced =
+      leftMassKg > 0 && rightMassKg > 0 && massDiffG <= BALANCE_TOLERANCE_G
+
+    // When balanced, snap target tilt to exactly 0 — gives the student a
+    // clean "settles level" cue. Otherwise tilt is proportional to massDiff.
+    const targetTilt = isBalanced
+      ? 0
+      : Math.max(-0.25, Math.min(0.25, (massDiff / REFERENCE_MASS) * 0.25))
 
     if (beamRef.current) {
       const current = beamRef.current.rotation.z
-      const next = current + (targetTilt - current) * Math.min(1, delta * 4)
+      // Faster lerp toward 0 when balanced (snappier "click into place" feel).
+      const lerpRate = isBalanced ? delta * 8 : delta * 4
+      const next = current + (targetTilt - current) * Math.min(1, lerpRate)
       beamRef.current.rotation.z = next
       setLeverTilt(next)
+    }
+
+    // Recolour indicator + tick: red/white when off, green when balanced.
+    // Mutating the existing Three.js Color objects avoids any re-render.
+    if (coneMatRef.current) {
+      coneMatRef.current.color.set(isBalanced ? GREEN : RED)
+      coneMatRef.current.emissive.set(isBalanced ? GREEN : RED)
+      coneMatRef.current.emissiveIntensity = isBalanced ? 1.0 : 0.6
+    }
+    if (tickMatRef.current) {
+      tickMatRef.current.color.set(isBalanced ? GREEN : '#ffffff')
+      tickMatRef.current.emissive.set(isBalanced ? GREEN : '#ffffff')
+      tickMatRef.current.emissiveIntensity = isBalanced ? 1.5 : 0.5
     }
 
     const tiltZ = beamRef.current?.rotation.z ?? 0
@@ -207,6 +246,7 @@ export function LeverBalance({ position, active = false }: Props) {
       rightStackY = centerY + hh
     })
 
+    setLeverLeftPanGrams(Math.round(leftMassKg * 1000))
     setLeverRightPanGrams(Math.round(rightMassKg * 1000))
   })
 
@@ -242,10 +282,12 @@ export function LeverBalance({ position, active = false }: Props) {
         <meshStandardMaterial color="#2a2a30" metalness={0.6} roughness={0.5} envMapIntensity={0.4} />
       </RoundedBox>
       {/* Static equilibrium reference tick — when the beam is level, the
-          red cone above aligns with this white tick on the column. */}
+          cone above aligns with this tick. White when off-balance, GREEN
+          (and brighter) when |left − right| ≤ BALANCE_TOLERANCE_G — gives
+          the student an unambiguous physical confirmation. */}
       <mesh position={[0, PIVOT_HEIGHT_LOCAL - 0.06, COL_W / 2 + 0.001]}>
         <boxGeometry args={[0.003, 0.030, 0.003]} />
-        <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.5} />
+        <meshStandardMaterial ref={tickMatRef} color="#ffffff" emissive="#ffffff" emissiveIntensity={0.5} />
       </mesh>
       {/* Pivot ornament at column top */}
       <mesh position={[0, PIVOT_HEIGHT_LOCAL, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
@@ -259,12 +301,13 @@ export function LeverBalance({ position, active = false }: Props) {
         <RoundedBox args={[BEAM_LEN, BEAM_T, BEAM_DEPTH]} radius={0.003} smoothness={4} castShadow receiveShadow>
           <meshStandardMaterial color="#878a92" metalness={0.65} roughness={0.45} envMapIntensity={0.45} />
         </RoundedBox>
-        {/* Indicator arrow — large red cone pointing down from beam center.
-            Rotates with the beam; alignment with the static tick on the
-            column below indicates equilibrium. */}
+        {/* Indicator arrow — large cone pointing down from beam centre.
+            Rotates with the beam; alignment with the static tick below
+            indicates equilibrium. RED while the beam is off-balance,
+            switches to GREEN (and brighter) when masses match. */}
         <mesh position={[0, -BEAM_T / 2 - 0.075, 0]}>
           <coneGeometry args={[0.010, 0.110, 4]} />
-          <meshStandardMaterial color="#ff3b30" emissive="#ff3b30" emissiveIntensity={0.6} />
+          <meshStandardMaterial ref={coneMatRef} color="#ff3b30" emissive="#ff3b30" emissiveIntensity={0.6} />
         </mesh>
 
         {/* LEFT side — V hanger (two diagonal rods) + pan */}

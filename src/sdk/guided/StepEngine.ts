@@ -49,6 +49,7 @@ export function isStepComplete(
     digitalScaleGrams: number
     dynamometerNewtons: number
     leverBalanceTilt: number
+    leverLeftPanGrams: number
     leverRightPanGrams: number
     readingStableSinceMs: number
     nowMs: number
@@ -66,7 +67,16 @@ export function isStepComplete(
       return value >= rule.minValue && (ctx.nowMs - ctx.readingStableSinceMs) >= rule.durationMs
     }
     case 'lever-balanced':
-      return Math.abs(ctx.leverBalanceTilt) < rule.toleranceTilt && ctx.leverRightPanGrams > 0
+      // Both pans must hold something, AND the masses must match within
+      // toleranceGrams. The tilt angle is not consulted — it's a visual
+      // cue only. This matches how a real balance is read: equal masses,
+      // beam level. Half-gram tolerance covers floating-point drift in
+      // the mass-summation while rejecting any meaningful imbalance.
+      return (
+        ctx.leverLeftPanGrams > 0 &&
+        ctx.leverRightPanGrams > 0 &&
+        Math.abs(ctx.leverLeftPanGrams - ctx.leverRightPanGrams) <= rule.toleranceGrams
+      )
     case 'input-focused':
       return ctx.inputFocused
     case 'submitted':

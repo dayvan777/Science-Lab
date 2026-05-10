@@ -9,7 +9,15 @@ export type CompletionRule =
   | { kind: 'dragging'; bodyPattern: string }
   | { kind: 'snapped'; targetPrefix: string }
   | { kind: 'reading-stable'; instrument: string; minValue: number; durationMs: number }
-  | { kind: 'lever-balanced'; toleranceTilt: number }
+  | {
+      /**
+       * Both pans non-empty AND |leftPanGrams - rightPanGrams| ≤ toleranceGrams.
+       * Tilt angle is purely a visual cue and is not consulted — the truth is
+       * the mass equality, which is what classical balance pedagogy teaches.
+       */
+      kind: 'lever-balanced'
+      toleranceGrams: number
+    }
   | { kind: 'input-focused' }
   | { kind: 'submitted' }
 

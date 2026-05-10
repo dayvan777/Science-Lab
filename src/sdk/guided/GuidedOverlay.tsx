@@ -45,6 +45,7 @@ export function GuidedOverlay() {
   const digitalScaleGrams = useReadings(s => s.digitalScaleGrams)
   const dynamometerNewtons = useReadings(s => s.dynamometerNewtons)
   const leverBalanceTilt = useReadings(s => s.leverBalanceTilt)
+  const leverLeftPanGrams = useReadings(s => s.leverLeftPanGrams)
   const leverRightPanGrams = useReadings(s => s.leverRightPanGrams)
 
   // Auto-detect step completion
@@ -58,7 +59,7 @@ export function GuidedOverlay() {
 
     const ctx = {
       draggingBodyId, lastSnapTargetId,
-      digitalScaleGrams, dynamometerNewtons, leverBalanceTilt, leverRightPanGrams,
+      digitalScaleGrams, dynamometerNewtons, leverBalanceTilt, leverLeftPanGrams, leverRightPanGrams,
       readingStableSinceMs: useStepEngine.getState().readingStableSinceMs,
       nowMs, inputFocused,
       submittedSinceMs: 0,  // submission tracked via journal length change
