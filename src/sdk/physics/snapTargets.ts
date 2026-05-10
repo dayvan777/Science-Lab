@@ -32,6 +32,27 @@ export function snapProgress(elapsedMs: number, durationMs: number): number {
   return easeOutCubic(t)
 }
 
+/**
+ * Find the FIRST registered snap target whose instrumentId matches.
+ * Used by demo / scripted walkthroughs that need to target an instrument
+ * without a Vector3 position.
+ */
+export function findSnapByInstrument(instrumentId: SnapTarget['instrumentId']): SnapTarget | null {
+  for (const t of targets.values()) {
+    if (t.instrumentId === instrumentId) return t
+  }
+  return null
+}
+
+/**
+ * Return ALL snap targets registered under the given instrumentId.
+ * For instruments with multiple targets (lever balance has left + right pans),
+ * the caller can disambiguate by inspecting `id`.
+ */
+export function listSnapsByInstrument(instrumentId: SnapTarget['instrumentId']): SnapTarget[] {
+  return Array.from(targets.values()).filter(t => t.instrumentId === instrumentId)
+}
+
 export function findSnapNear(pos: Vector3, draggedBodyId?: string): SnapTarget | null {
   let best: { t: SnapTarget; d: number } | null = null
   for (const t of targets.values()) {

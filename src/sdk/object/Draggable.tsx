@@ -32,7 +32,7 @@ export function Draggable({ position, mass, shape, bodyId, enabled = true, child
     const tryRegister = () => {
       if (cancelled) return
       if (ref.current) {
-        unregister = registerBody(ref.current, massKg, halfHeight)
+        unregister = registerBody(ref.current, massKg, halfHeight, bodyId)
       } else {
         requestAnimationFrame(tryRegister)
       }
@@ -42,7 +42,7 @@ export function Draggable({ position, mass, shape, bodyId, enabled = true, child
       cancelled = true
       unregister?.()
     }
-  }, [massKg, halfHeight])
+  }, [massKg, halfHeight, bodyId])
 
   const onPointerDown = (ev: React.PointerEvent) => {
     if (!enabled) return  // BLOCK pickup when not the active object
