@@ -8,6 +8,7 @@ import { CameraRig } from '../../../sdk/scene/CameraRig'
 import type { CameraPreset } from '../../../sdk/scene/CameraRig'
 import { PostFX } from '../../../sdk/scene/PostFX'
 import { Table } from '../../../sdk/scene/Table'
+import { ObjectTray } from './ObjectTray'
 import { TennisBall } from '../objects/TennisBall'
 import { Apple } from '../objects/Apple'
 import { Baseball } from '../objects/Baseball'
@@ -107,11 +108,14 @@ export function LabScene() {
         <Environment preset="studio" background={false} resolution={64} />
         <Physics key={resetKey} gravity={[0, -9.81, 0]} timeStep={1/60}>
           <Table />
-          {/* Objects spawn ~3-5cm above the table for a short predictable fall.
-              ping-pong (radius 0.04), metal ball (radius 0.045), baseball (radius 0.075). */}
-          <TennisBall position={[-0.3, 0.93, 0.35]} enabled={activeObjectId === 'tennis-ball'} />
-          <Apple position={[0, 0.93, 0.35]} enabled={activeObjectId === 'apple'} />
-          <Baseball position={[0.3, 0.97, 0.35]} enabled={activeObjectId === 'baseball'} />
+          {/* Wooden tray sits on the table at z = 0.40 (slightly forward of
+              the previous ball-row z = 0.35) with its top surface at
+              y = 0.85 + 0.025 = 0.875. Balls spawn just above the tray's
+              top surface (each ball's centre = tray top + ball radius). */}
+          <ObjectTray position={[0, 0.85 + 0.025 / 2, 0.40]} />
+          <TennisBall position={[-0.30, 0.875 + 0.040 + 0.005, 0.40]} enabled={activeObjectId === 'tennis-ball'} />
+          <Apple      position={[ 0.00, 0.875 + 0.045 + 0.005, 0.40]} enabled={activeObjectId === 'apple'} />
+          <Baseball   position={[ 0.30, 0.875 + 0.075 + 0.005, 0.40]} enabled={activeObjectId === 'baseball'} />
           {/* Instruments spread across the table, away from object spawn */}
           <Dynamometer position={[-0.55, 0.85, 0]} active={activeInstrumentId === 'dynamometer'} />
           <LeverBalance position={[0.05, 0.85, 0]} active={activeInstrumentId === 'lever-balance'} />
