@@ -157,7 +157,11 @@ export function HUD() {
         defaultCollapsed={breakpoint === 'phone'}
         aria-labelledby="hud-current-task-label"
         style={{ overflow: 'auto', ...layout.taskPanel }}
-        collapsedStyle={{ top: layout.taskPanel.top ?? 64, left: 8 }}
+        collapsedStyle={
+          breakpoint === 'phone'
+            ? { bottom: 96, left: 8 }
+            : { top: layout.taskPanel.top ?? 64, left: 8 }
+        }
       >
         <div id="hud-current-task-label" style={{ fontSize: 11, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 1 }}>
           Зараз робимо
@@ -211,7 +215,11 @@ export function HUD() {
         defaultCollapsed={breakpoint === 'phone'}
         aria-labelledby="hud-journal-label"
         style={{ overflow: 'auto', ...layout.journalPanel }}
-        collapsedStyle={{ top: layout.journalPanel.top ?? 64, right: 8 }}
+        collapsedStyle={
+          breakpoint === 'phone'
+            ? { top: 56, right: 8 }
+            : { top: layout.journalPanel.top ?? 64, right: 8 }
+        }
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
           <div id="hud-journal-label" style={{ fontSize: 11, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 1 }}>

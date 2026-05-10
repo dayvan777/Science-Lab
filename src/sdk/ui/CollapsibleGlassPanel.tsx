@@ -42,10 +42,14 @@ export function CollapsibleGlassPanel({
 }: Props) {
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     if (typeof localStorage === 'undefined') return defaultCollapsed
-    const raw = localStorage.getItem(`lab.collapse.${storageKey}`)
-    if (raw === '1') return true
-    if (raw === '0') return false
-    return defaultCollapsed
+    try {
+      const raw = localStorage.getItem(`lab.collapse.${storageKey}`)
+      if (raw === '1') return true
+      if (raw === '0') return false
+      return defaultCollapsed
+    } catch {
+      return defaultCollapsed
+    }
   })
 
   useEffect(() => {
@@ -71,6 +75,8 @@ export function CollapsibleGlassPanel({
           cursor: 'pointer',
           position: 'fixed',
           zIndex: 10,
+          top: 16,
+          left: 16,
           ...collapsedStyle,
         }}
       >
