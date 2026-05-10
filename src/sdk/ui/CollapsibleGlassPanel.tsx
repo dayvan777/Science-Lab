@@ -62,6 +62,13 @@ export function CollapsibleGlassPanel({
   }, [collapsed, storageKey])
 
   if (collapsed) {
+    // NOTE: callers MUST provide `collapsedStyle` with at least one vertical
+    // anchor (top OR bottom) and one horizontal anchor (left OR right).
+    // Previously this block also set `top: 16, left: 16` as defaults, but
+    // callers that wanted to anchor by `bottom` or `right` ended up with
+    // BOTH sides set on a fixed element with explicit width/height — the
+    // browser silently keeps `top`/`left` and ignores the override. That
+    // bug stacked phone-breakpoint pills in the top-left corner.
     return (
       <button
         onClick={() => setCollapsed(false)}
@@ -82,8 +89,6 @@ export function CollapsibleGlassPanel({
           cursor: 'pointer',
           position: 'fixed',
           zIndex: 10,
-          top: 16,
-          left: 16,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

@@ -27,6 +27,7 @@ import { tasks } from '../content/tasks'
 import { GuidedOverlay } from '../../../sdk/guided/GuidedOverlay'
 import { useGuidance, SkipGuidanceToggle } from '../../../sdk/guided/SkipGuidanceToggle'
 import { setActiveInstrument } from '../../../sdk/physics/snapTargets'
+import { useViewport } from '../../../sdk/a11y/useViewport'
 
 function instrumentToPreset(id: string | null): CameraPreset {
   if (id === 'digital-scale') return 'focus-scale'
@@ -41,6 +42,8 @@ export function LabScene() {
   const resetKey = useLabState(s => s.sessionId)
   const respawnObjects = useLabState(s => s.respawnObjects)
   const guidanceOn = useGuidance(s => s.enabled)
+  const { breakpoint } = useViewport()
+  const isPhone = breakpoint === 'phone'
 
   const currentTask = phase === 'in-progress' ? tasks[idx] : null
   const activeObjectId = currentTask?.objectId ?? null
@@ -137,10 +140,43 @@ export function LabScene() {
       <SkipGuidanceToggle />
       {introActive && <IntroTitle onComplete={() => { /* fade-out handled internally */ }} />}
       <MilestoneOverlay objectId={milestoneObjectId} onDismiss={() => setMilestoneObjectId(null)} />
-      <div style={{ position: 'fixed', bottom: 16, right: 16, display: 'flex', gap: 8, zIndex: 10 }}>
+      {/* Utility controls — desktop/tablet keep them in the bottom-right
+          row alongside the input bar. On phone the input bar already
+          occupies the full bottom strip, so we move the controls into a
+          right-side vertical column starting just below the journal pill
+          (top: 110), and shrink "Скинути предмети" to icon-only. */}
+      <div
+        style={
+          isPhone
+            ? {
+                position: 'fixed',
+                top: 110,
+                right: 8,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+                zIndex: 10,
+              }
+            : {
+                position: 'fixed',
+                bottom: 16,
+                right: 16,
+                display: 'flex',
+                gap: 8,
+                zIndex: 10,
+              }
+        }
+      >
         <ZoomControls />
         <SoundToggle />
-        <Button variant="secondary" onClick={() => respawnObjects()}>↻ Скинути предмети</Button>
+        <Button
+          variant="secondary"
+          onClick={() => respawnObjects()}
+          aria-label="Скинути предмети"
+          title="Скинути предмети"
+        >
+          {isPhone ? '↻' : '↻ Скинути предмети'}
+        </Button>
       </div>
     </>
   )

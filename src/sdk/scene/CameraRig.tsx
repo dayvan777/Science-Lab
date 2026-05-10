@@ -1,9 +1,10 @@
 import { useThree, useFrame } from '@react-three/fiber'
 import { useEffect, useRef } from 'react'
-import { Vector3 } from 'three'
+import { Vector3, PerspectiveCamera } from 'three'
 import { easeInOutCubic, clamp } from '../animation'
 import { useCameraStore } from './cameraStore'
 import { useReducedMotion } from '../a11y/useReducedMotion'
+import { useViewport } from '../a11y/useViewport'
 
 export type CameraPreset =
   | 'intro'
@@ -31,6 +32,20 @@ const POSES: Record<CameraPreset, Pose> = {
 
 const DOLLY_DURATION_MS = 1500
 
+// Per-breakpoint camera adjustment. Default Canvas FOV is 50° (calibrated
+// for a 16:9 desktop). On a portrait phone the auto-derived horizontal FOV
+// is much narrower, which left instruments cut off the sides of the frame.
+// Widening the vertical FOV plus pulling the camera back gives the scene
+// enough horizontal room on portrait viewports.
+const FOV_DESKTOP = 50
+const FOV_TABLET  = 56
+const FOV_PHONE   = 70
+
+// Multiplier on the camera-to-lookAt distance, layered on top of the user's
+// manual zoomMul. On phone the camera sits 40 % farther; on tablet 10 %.
+const DISTANCE_MUL_TABLET = 1.10
+const DISTANCE_MUL_PHONE  = 1.40
+
 type Props = { preset: CameraPreset }
 
 /**
@@ -56,8 +71,31 @@ export function CameraRig({ preset }: Props) {
   const fromLook = useRef(new Vector3())
   const targetLook = useRef(new Vector3())
   const lastPreset = useRef<CameraPreset | null>(null)
-  const zoomMul = useCameraStore(s => s.zoomMul)
+  const userZoomMul = useCameraStore(s => s.zoomMul)
   const reducedMotion = useReducedMotion()
+  const { breakpoint } = useViewport()
+
+  // Compose user zoom with the per-breakpoint distance multiplier.
+  const deviceZoomMul =
+    breakpoint === 'phone'  ? DISTANCE_MUL_PHONE  :
+    breakpoint === 'tablet' ? DISTANCE_MUL_TABLET :
+    1.0
+  const zoomMul = userZoomMul * deviceZoomMul
+
+  // Set the camera's vertical FOV per breakpoint. The default Canvas FOV
+  // (50°) is preserved on desktop; portrait phones get 70° so all three
+  // instruments fit horizontally.
+  useEffect(() => {
+    if (!(camera instanceof PerspectiveCamera)) return
+    const targetFov =
+      breakpoint === 'phone'  ? FOV_PHONE  :
+      breakpoint === 'tablet' ? FOV_TABLET :
+      FOV_DESKTOP
+    if (camera.fov !== targetFov) {
+      camera.fov = targetFov
+      camera.updateProjectionMatrix()
+    }
+  }, [camera, breakpoint])
 
   // Mouse-wheel zoom on the canvas — listener is attached once.
   useEffect(() => {

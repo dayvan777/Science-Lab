@@ -5,14 +5,27 @@ type Props = {
   variant?: 'primary' | 'secondary'
   children: ReactNode
   disabled?: boolean
+  /** Tooltip + accessible name. Required for icon-only buttons (e.g. when
+   *  `children` is just '↻' on phone breakpoints). */
+  title?: string
+  'aria-label'?: string
 }
 
-export function Button({ onClick, variant = 'primary', children, disabled }: Props) {
+export function Button({
+  onClick,
+  variant = 'primary',
+  children,
+  disabled,
+  title,
+  'aria-label': ariaLabel,
+}: Props) {
   const isPrimary = variant === 'primary'
   return (
     <button
       onClick={(e: MouseEvent) => { e.preventDefault(); if (!disabled) onClick() }}
       disabled={disabled}
+      title={title}
+      aria-label={ariaLabel ?? title}
       style={{
         background: isPrimary ? (disabled ? '#a0a0a8' : '#0071e3') : 'rgba(255, 255, 255, 0.7)',
         backdropFilter: isPrimary ? undefined : 'blur(20px)',
