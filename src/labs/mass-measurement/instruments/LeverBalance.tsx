@@ -40,7 +40,6 @@ const ROD_RADIUS = 0.0025
 const PAN_R = 0.14
 const PAN_BOTTOM_R = PAN_R * 0.75
 const PAN_DEPTH = 0.034
-const PAN_RIM_TUBE = 0.004
 
 const REFERENCE_MASS = 0.2  // 200g — full tilt at this difference
 
@@ -224,7 +223,6 @@ export function LeverBalance({ position, active = false }: Props) {
       <RoundedBox args={[BASE_W, BASE_H, BASE_D]} radius={0.005} smoothness={4}
         position={[0, BASE_H / 2, 0]} castShadow receiveShadow>
         <meshStandardMaterial color="#2a2a30" metalness={0.55} roughness={0.55} envMapIntensity={0.4} />
-        {active && <Outlines thickness={3} color="#0071e3" />}
       </RoundedBox>
       {/* 4 small rounded feet under the base */}
       {[
@@ -243,6 +241,12 @@ export function LeverBalance({ position, active = false }: Props) {
         position={[0, BASE_H + COL_H / 2, 0]} castShadow receiveShadow>
         <meshStandardMaterial color="#2a2a30" metalness={0.6} roughness={0.5} envMapIntensity={0.4} />
       </RoundedBox>
+      {/* Static equilibrium reference tick — when the beam is level, the
+          red cone above aligns with this white tick on the column. */}
+      <mesh position={[0, PIVOT_HEIGHT_LOCAL - 0.06, COL_W / 2 + 0.001]}>
+        <boxGeometry args={[0.003, 0.030, 0.003]} />
+        <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.5} />
+      </mesh>
       {/* Pivot ornament at column top */}
       <mesh position={[0, PIVOT_HEIGHT_LOCAL, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
         <cylinderGeometry args={[0.012, 0.012, 0.06, 16]} />
@@ -255,10 +259,12 @@ export function LeverBalance({ position, active = false }: Props) {
         <RoundedBox args={[BEAM_LEN, BEAM_T, BEAM_DEPTH]} radius={0.003} smoothness={4} castShadow receiveShadow>
           <meshStandardMaterial color="#878a92" metalness={0.65} roughness={0.45} envMapIntensity={0.45} />
         </RoundedBox>
-        {/* Indicator arrow (red cone pointing down from beam center) */}
-        <mesh position={[0, -BEAM_T / 2 - 0.05, 0]}>
-          <coneGeometry args={[0.006, 0.07, 4]} />
-          <meshStandardMaterial color="#ff3b30" emissive="#ff3b30" emissiveIntensity={0.4} />
+        {/* Indicator arrow — large red cone pointing down from beam center.
+            Rotates with the beam; alignment with the static tick on the
+            column below indicates equilibrium. */}
+        <mesh position={[0, -BEAM_T / 2 - 0.075, 0]}>
+          <coneGeometry args={[0.010, 0.110, 4]} />
+          <meshStandardMaterial color="#ff3b30" emissive="#ff3b30" emissiveIntensity={0.6} />
         </mesh>
 
         {/* LEFT side — V hanger (two diagonal rods) + pan */}
@@ -271,15 +277,12 @@ export function LeverBalance({ position, active = false }: Props) {
           from={[-BEAM_LEN / 2, -BEAM_T / 2, 0]}
           to={[-BEAM_LEN / 2 + PAN_ATTACH_OFFSET, -HANGER_H, 0]}
         />
-        {/* Left pan — bowl + bright rim. Position center at (-BEAM_LEN/2, -HANGER_H - PAN_DEPTH/2, 0) */}
+        {/* Left pan — bowl. Position center at (-BEAM_LEN/2, -HANGER_H - PAN_DEPTH/2, 0) */}
         <group position={[-BEAM_LEN / 2, -HANGER_H - PAN_DEPTH / 2, 0]}>
           <mesh castShadow receiveShadow>
             <cylinderGeometry args={[PAN_R, PAN_BOTTOM_R, PAN_DEPTH, 48]} />
             <meshStandardMaterial color="#878a92" metalness={0.65} roughness={0.5} envMapIntensity={0.45} />
-          </mesh>
-          <mesh position={[0, PAN_DEPTH / 2, 0]} castShadow>
-            <torusGeometry args={[PAN_R, PAN_RIM_TUBE, 12, 48]} />
-            <meshStandardMaterial color="#a8aab2" metalness={0.75} roughness={0.32} envMapIntensity={0.55} />
+            {active && leftItems.current.length === 0 && <Outlines thickness={3} color="#0a84ff" />}
           </mesh>
         </group>
 
@@ -296,10 +299,6 @@ export function LeverBalance({ position, active = false }: Props) {
           <mesh castShadow receiveShadow>
             <cylinderGeometry args={[PAN_R, PAN_BOTTOM_R, PAN_DEPTH, 48]} />
             <meshStandardMaterial color="#878a92" metalness={0.65} roughness={0.5} envMapIntensity={0.45} />
-          </mesh>
-          <mesh position={[0, PAN_DEPTH / 2, 0]} castShadow>
-            <torusGeometry args={[PAN_R, PAN_RIM_TUBE, 12, 48]} />
-            <meshStandardMaterial color="#a8aab2" metalness={0.75} roughness={0.32} envMapIntensity={0.55} />
           </mesh>
         </group>
       </group>

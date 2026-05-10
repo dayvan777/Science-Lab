@@ -122,7 +122,7 @@ export function LabScene() {
           <Weights
             startPosition={[1.05, 0.90, -0.42]}
             spreadAxis="z"
-            spacing={0.13}
+            spacing={0.085}
             weightsEnabled={activeInstrumentId === 'lever-balance'}
           />
           {guidanceOn && <GuidedOverlay />}
