@@ -27,12 +27,15 @@ export function NumberInput({ unit, onSubmit }: Props) {
 
   const canSubmit = !!text && Number.isFinite(parseFloat(text.replace(',', '.')))
 
+  const inputId = 'measurement-value-input'
+  const unitLabel = unit === 'g' ? 'грамах' : 'Ньютонах'
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-      <span style={{ fontSize: 14, opacity: 0.7, color: '#1d1d1f' }}>
-        Значення в {unit === 'g' ? 'грамах' : 'Ньютонах'}:
-      </span>
+      <label htmlFor={inputId} style={{ fontSize: 14, opacity: 0.7, color: '#1d1d1f' }}>
+        Значення в {unitLabel}:
+      </label>
       <input
+        id={inputId}
         ref={inputRef}
         type="number"
         inputMode="decimal"
@@ -40,6 +43,7 @@ export function NumberInput({ unit, onSubmit }: Props) {
         min="0"
         value={text}
         placeholder="0"
+        aria-label={`Введи виміряне значення в ${unitLabel}`}
         onChange={(e) => setText(e.target.value)}
         onFocus={() => setInputFocused(true)}
         onBlur={() => setInputFocused(false)}
@@ -57,6 +61,7 @@ export function NumberInput({ unit, onSubmit }: Props) {
       <button
         onClick={submit}
         disabled={!canSubmit}
+        aria-label="Записати виміряне значення і перейти до наступного завдання"
         style={{
           background: canSubmit ? '#0071e3' : '#c0c0c8',
           color: '#fff', border: 'none',

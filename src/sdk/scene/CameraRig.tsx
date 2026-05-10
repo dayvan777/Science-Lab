@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import { Vector3 } from 'three'
 import { easeInOutCubic, clamp } from '../animation'
 import { useCameraStore } from './cameraStore'
+import { useReducedMotion } from '../a11y/useReducedMotion'
 
 export type CameraPreset =
   | 'intro'
@@ -56,6 +57,7 @@ export function CameraRig({ preset }: Props) {
   const targetLook = useRef(new Vector3())
   const lastPreset = useRef<CameraPreset | null>(null)
   const zoomMul = useCameraStore(s => s.zoomMul)
+  const reducedMotion = useReducedMotion()
 
   // Mouse-wheel zoom on the canvas — listener is attached once.
   useEffect(() => {
@@ -87,6 +89,14 @@ export function CameraRig({ preset }: Props) {
     const targetPos = applyZoom(target.position, target.lookAt, zoomMul)
 
     if (tweenStart.current !== null) {
+      // Reduced-motion users get an instant cut to the new pose
+      // instead of a 1.5-second dolly.
+      if (reducedMotion) {
+        camera.position.set(targetPos[0], targetPos[1], targetPos[2])
+        camera.lookAt(target.lookAt[0], target.lookAt[1], target.lookAt[2])
+        tweenStart.current = null
+        return
+      }
       // Active preset-change tween — interpolate from saved start to zoom-adjusted target.
       const elapsed = performance.now() - tweenStart.current
       const t = clamp(elapsed / DOLLY_DURATION_MS, 0, 1)

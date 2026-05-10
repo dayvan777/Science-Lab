@@ -103,13 +103,15 @@ export function HUD() {
       {/* Left: current step + live reading */}
       <GlassPanel
         variant="strong"
+        role="region"
+        aria-labelledby="hud-current-task-label"
         style={{
           position: 'fixed', top: 80, left: 16, width: 360,
           padding: 20, zIndex: 10,
           color: '#1d1d1f',
         }}
       >
-        <div style={{ fontSize: 11, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 1 }}>
+        <div id="hud-current-task-label" style={{ fontSize: 11, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 1 }}>
           Зараз робимо
         </div>
         <TaskProgressBar currentIndex={idx} total={tasks.length} />
@@ -138,10 +140,14 @@ export function HUD() {
           <div style={{ fontSize: 11, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
             {liveLabel}
           </div>
-          <div style={{
-            fontSize: 36, fontWeight: 700, color: '#0071e3',
-            fontVariantNumeric: 'tabular-nums', lineHeight: 1, marginBottom: 12,
-          }}>
+          <div
+            aria-live="polite"
+            aria-atomic="true"
+            style={{
+              fontSize: 36, fontWeight: 700, color: '#0071e3',
+              fontVariantNumeric: 'tabular-nums', lineHeight: 1, marginBottom: 12,
+            }}
+          >
             {liveValue}
           </div>
           <div style={{ fontSize: 14, color: '#1d1d1f', lineHeight: 1.4, fontWeight: 500 }}>
@@ -153,6 +159,8 @@ export function HUD() {
       {/* Right: journal */}
       <GlassPanel
         variant="strong"
+        role="region"
+        aria-labelledby="hud-journal-label"
         style={{
           position: 'fixed', top: 80, right: 16, width: 320,
           padding: 16, zIndex: 10, maxHeight: '70vh', overflow: 'auto',
@@ -160,7 +168,7 @@ export function HUD() {
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
-          <div style={{ fontSize: 11, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 1 }}>
+          <div id="hud-journal-label" style={{ fontSize: 11, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 1 }}>
             Лабжурнал
           </div>
           <div style={{ fontSize: 12, opacity: 0.55, fontVariantNumeric: 'tabular-nums' }}>
@@ -208,7 +216,7 @@ export function HUD() {
                     display: 'flex', justifyContent: 'space-between',
                     padding: '4px 0 4px 6px',
                     fontSize: 12,
-                    opacity: isDone || isCurrent ? 1 : 0.45,
+                    opacity: isDone || isCurrent ? 1 : 0.6,
                   }}>
                     <span>
                       <span style={{ color: markerColor, marginRight: 6, fontWeight: 600 }}>{marker}</span>

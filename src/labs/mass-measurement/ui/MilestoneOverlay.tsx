@@ -43,6 +43,9 @@ export function MilestoneOverlay({ objectId, onDismiss }: Props) {
 
   return (
     <div
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
       style={{
         position: 'fixed',
         top: visible ? 24 : -120,

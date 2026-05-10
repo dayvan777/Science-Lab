@@ -1,0 +1,72 @@
+/* Global accessibility baseline.
+ *
+ * Most of the app's styling is inline-style on individual components, but
+ * a few things have to live in a stylesheet:
+ *   - :focus-visible — keyboard-only focus ring
+ *   - prefers-reduced-motion — system-wide motion preference
+ *   - Visually hidden helper for screen-reader-only labels
+ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #1a1a1a;
+  color: #f5f5f7;
+  font-family: "SF Pro Display", "Inter", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Strong, high-contrast keyboard focus indicator that works on any
+ * background (dark glass, light glass, transparent overlays).
+ * Uses the :focus-visible pseudo-class so mouse / touch interactions
+ * don't trigger the ring (which would visually clutter the touch flow). */
+:focus { outline: none; }
+
+:focus-visible {
+  outline: 3px solid #0a84ff;
+  outline-offset: 2px;
+  border-radius: 4px;
+  transition: outline-color 120ms ease;
+}
+
+/* Buttons that have backdrop-filter glass treatment need a slightly
+ * different focus ring so the outline doesn't clash with the blur. */
+button:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.6);
+}
+
+/* Reduce motion for users who request it via OS settings.
+ *
+ * Three categories of motion in the lab:
+ *   1. Camera dollies between presets — replaced by instant cuts via JS
+ *      check (see CameraRig.tsx + useReducedMotion hook).
+ *   2. CSS transitions on overlays (IntroTitle, MilestoneOverlay,
+ *      RevealScene) — disabled here.
+ *   3. WebGL physics + rendering — left as-is (essential to the lab).
+ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Screen-reader-only utility — visually hidden, still announced. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
