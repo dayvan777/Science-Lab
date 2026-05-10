@@ -4,6 +4,7 @@ import { tasks } from '../content/tasks'
 import { TASK_STEPS } from '../content/steps'
 import { NumberInput } from '../../../sdk/ui/NumberInput'
 import { GlassPanel } from '../../../sdk/ui/GlassPanel'
+import { CollapsibleGlassPanel } from '../../../sdk/ui/CollapsibleGlassPanel'
 import { useReadings } from '../state/InstrumentReadings'
 import { useStepEngine } from '../../../sdk/guided/StepEngine'
 import { useViewport } from '../../../sdk/a11y/useViewport'
@@ -150,15 +151,13 @@ export function HUD() {
       </GlassPanel>
 
       {/* Left: current step + live reading */}
-      <GlassPanel
-        variant="strong"
-        role="region"
+      <CollapsibleGlassPanel
+        storageKey="task-panel"
+        label="панель завдання"
+        defaultCollapsed={breakpoint === 'phone'}
         aria-labelledby="hud-current-task-label"
-        style={{
-          position: 'fixed', zIndex: 10, color: '#1d1d1f',
-          overflow: 'auto',
-          ...layout.taskPanel,
-        }}
+        style={{ overflow: 'auto', ...layout.taskPanel }}
+        collapsedStyle={{ top: layout.taskPanel.top ?? 64, left: 8 }}
       >
         <div id="hud-current-task-label" style={{ fontSize: 11, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 1 }}>
           Зараз робимо
@@ -203,17 +202,16 @@ export function HUD() {
             {stepHint}
           </div>
         </div>
-      </GlassPanel>
+      </CollapsibleGlassPanel>
 
       {/* Right: journal */}
-      <GlassPanel
-        variant="strong"
-        role="region"
+      <CollapsibleGlassPanel
+        storageKey="journal-panel"
+        label="журнал"
+        defaultCollapsed={breakpoint === 'phone'}
         aria-labelledby="hud-journal-label"
-        style={{
-          position: 'fixed', zIndex: 10, color: '#1d1d1f', overflow: 'auto',
-          ...layout.journalPanel,
-        }}
+        style={{ overflow: 'auto', ...layout.journalPanel }}
+        collapsedStyle={{ top: layout.journalPanel.top ?? 64, right: 8 }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
           <div id="hud-journal-label" style={{ fontSize: 11, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 1 }}>
@@ -281,7 +279,7 @@ export function HUD() {
             </div>
           )
         })}
-      </GlassPanel>
+      </CollapsibleGlassPanel>
 
       {/* Bottom center: input bar */}
       <GlassPanel
