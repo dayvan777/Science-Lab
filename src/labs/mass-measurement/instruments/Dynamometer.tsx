@@ -6,7 +6,12 @@ import { registerSnap } from '../../../sdk/physics/snapTargets'
 import { getBodyMass, onDragStart } from '../../../sdk/physics/bodyRegistry'
 import { Outlines, RoundedBox } from '@react-three/drei'
 import { useReadings } from '../state/InstrumentReadings'
-import { createDialTexture } from '../textures/dialTexture'
+import {
+  createDialTexture,
+  DIAL_TEXTURE_H,
+  DIAL_READING_TOP_PX,
+  DIAL_READING_BOTTOM_PX,
+} from '../textures/dialTexture'
 import { springStep } from '../../../sdk/animation'
 
 // Physics — real spring constant for force ↔ extension mapping.
@@ -34,20 +39,34 @@ const SPRING_COILS = 14
 // Where the spring/scale axis sits, relative to the stand at x=0
 const ARM_X_OFFSET = 0.05
 
-// Backplate (dual-scale): exactly covers the pointer's full vertical travel
-const BACKPLATE_TOP_Y = HOOK_REST_Y                 // 0.35 — aligns with "0 N"
-const BACKPLATE_BOTTOM_Y = HOOK_AT_FIVE_N           // 0.25 — aligns with "1 N" / "5 N"
-const BACKPLATE_HEIGHT = BACKPLATE_TOP_Y - BACKPLATE_BOTTOM_Y  // 0.10 m
-const BACKPLATE_CENTER_Y = (BACKPLATE_TOP_Y + BACKPLATE_BOTTOM_Y) / 2  // 0.30
-const BACKPLATE_WIDTH = 0.10
-const BACKPLATE_X = ARM_X_OFFSET - 0.06             // sits 6 cm left of the spring axis
-
 // Mechanical pointer: rigid horizontal arm hanging off the spring's bottom,
 // red triangle tip on the LEFT side that sweeps the backplate.
 const POINTER_ARM_LEN = 0.05
 const POINTER_ARM_THICKNESS = 0.003
 const POINTER_TIP_LEN = 0.014
 const POINTER_TIP_RADIUS = 0.005
+
+// Pointer's vertical travel range — must equal HOOK_REST_Y − HOOK_AT_FIVE_N.
+const POINTER_TRAVEL = HOOK_REST_Y - HOOK_AT_FIVE_N        // 0.10 m
+
+// Backplate (dual-scale): physical plane extends slightly above and below
+// the pointer's travel so the texture's "title" margin and bottom padding
+// don't eat into the readable scale. Derived from the texture's reading-area
+// fractions — single source of truth lives in `dialTexture.ts`.
+const READING_TOP_FRAC    = DIAL_READING_TOP_PX / DIAL_TEXTURE_H              // ≈ 0.078
+const READING_BOTTOM_FRAC = DIAL_READING_BOTTOM_PX / DIAL_TEXTURE_H           // ≈ 0.922
+const READING_FRAC        = READING_BOTTOM_FRAC - READING_TOP_FRAC            // ≈ 0.844
+const BACKPLATE_HEIGHT    = POINTER_TRAVEL / READING_FRAC                     // ≈ 0.1185 m
+
+// Plate top edge sits above HOOK_REST_Y by the top-margin's physical height,
+// so the texture's "0" label (at READING_TOP_FRAC of the canvas) lands
+// exactly at HOOK_REST_Y. Similarly the texture's "5" label lands at
+// HOOK_AT_FIVE_N.
+const BACKPLATE_TOP_Y    = HOOK_REST_Y + BACKPLATE_HEIGHT * READING_TOP_FRAC  // ≈ 0.359
+const BACKPLATE_BOTTOM_Y = BACKPLATE_TOP_Y - BACKPLATE_HEIGHT                 // ≈ 0.241
+const BACKPLATE_CENTER_Y = (BACKPLATE_TOP_Y + BACKPLATE_BOTTOM_Y) / 2         // ≈ 0.300
+const BACKPLATE_WIDTH    = 0.10
+const BACKPLATE_X        = ARM_X_OFFSET - POINTER_ARM_LEN - 0.01              // tip lands 1 cm inside the plate's right edge
 
 // Thin rigid rod from pointer down to the hook (so the hook hangs BELOW
 // the backplate without being obstructed by the scale).

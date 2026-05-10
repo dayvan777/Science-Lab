@@ -1,7 +1,18 @@
 import { CanvasTexture } from 'three'
 
-const W = 256
-const H = 512
+// Texture canvas dimensions (px). Exported so `Dynamometer.tsx` can compute
+// the physical plate geometry that aligns the painted labels with the
+// pointer's actual travel range.
+export const DIAL_TEXTURE_W = 256
+export const DIAL_TEXTURE_H = 512
+
+// Vertical reading area (px). Pixels above DIAL_READING_TOP_PX are the "title"
+// margin (renders the "1 N" / "5 N" titles); pixels below DIAL_READING_BOTTOM_PX
+// are the bottom padding. The pointer's "0 N" position must align with
+// DIAL_READING_TOP_PX physically; the pointer's "1 N"/"5 N" position must
+// align with DIAL_READING_BOTTOM_PX physically.
+export const DIAL_READING_TOP_PX = 40
+export const DIAL_READING_BOTTOM_PX = 472
 
 /**
  * Draws an analog dynamometer scale plate with TWO scale strips on one
@@ -23,20 +34,20 @@ const H = 512
  */
 export function createDialTexture(): CanvasTexture {
   const canvas = document.createElement('canvas')
-  canvas.width = W
-  canvas.height = H
+  canvas.width = DIAL_TEXTURE_W
+  canvas.height = DIAL_TEXTURE_H
   const ctx = canvas.getContext('2d')!
 
   // Off-white plate background
   ctx.fillStyle = '#f5f5f7'
-  ctx.fillRect(0, 0, W, H)
+  ctx.fillRect(0, 0, DIAL_TEXTURE_W, DIAL_TEXTURE_H)
   ctx.strokeStyle = '#c8c8d0'
   ctx.lineWidth = 2
-  ctx.strokeRect(2, 2, W - 4, H - 4)
+  ctx.strokeRect(2, 2, DIAL_TEXTURE_W - 4, DIAL_TEXTURE_H - 4)
 
   // Vertical separator between the two strips
   ctx.fillStyle = '#c8c8d0'
-  ctx.fillRect(127, 8, 2, H - 16)
+  ctx.fillRect(127, 8, 2, DIAL_TEXTURE_H - 16)
 
   // Title row at the top of each strip
   ctx.fillStyle = '#1d1d1f'
@@ -47,8 +58,8 @@ export function createDialTexture(): CanvasTexture {
   ctx.fillText('5 N', 192, 22)
 
   // Shared scale geometry — both strips use the same y range
-  const TOP = 40
-  const BOTTOM = 472
+  const TOP = DIAL_READING_TOP_PX
+  const BOTTOM = DIAL_READING_BOTTOM_PX
   const SPAN = BOTTOM - TOP  // 432 px
   const yForFraction = (f: number) => TOP + f * SPAN
 
