@@ -6,6 +6,7 @@ import { NumberInput } from '../../../sdk/ui/NumberInput'
 import { GlassPanel } from '../../../sdk/ui/GlassPanel'
 import { useReadings } from '../state/InstrumentReadings'
 import { useStepEngine } from '../../../sdk/guided/StepEngine'
+import { useViewport } from '../../../sdk/a11y/useViewport'
 
 const TOTAL = 9
 const BASE_FONT = '"SF Pro Display", "Inter", system-ui, sans-serif'
@@ -45,6 +46,8 @@ export function HUD() {
     resetForTask(idx)
   }, [idx, resetForTask])
 
+  const { breakpoint } = useViewport()
+
   if (phase !== 'in-progress') return null
   const current = tasks[idx]
 
@@ -83,18 +86,64 @@ export function HUD() {
     else stepHint = `✓ Балка вирівняна! Маса = ${leverRightG} г`
   }
 
+  // Layout per breakpoint — only the outer position/sizing differs.
+  const layout = (() => {
+    if (breakpoint === 'phone') {
+      return {
+        // Top pill stays small at top-centre.
+        topPill: { top: 8, padding: '6px 14px', fontSize: 12 } as const,
+        // Task panel becomes a bottom drawer (above the input bar).
+        taskPanel: {
+          left: 8, right: 8, bottom: 96, top: undefined,
+          width: 'auto', maxHeight: '40vh', padding: 14,
+        } as const,
+        // Journal moves above the task panel as a compact strip — only the group headers visible.
+        journalPanel: {
+          left: 8, right: 8, bottom: undefined, top: 56,
+          width: 'auto', maxHeight: 120, padding: 10, fontSize: 12,
+        } as const,
+        // Input bar pinned to the bottom edge.
+        inputBar: { left: 8, right: 8, bottom: 8, padding: '10px 14px' } as const,
+      }
+    }
+    if (breakpoint === 'tablet') {
+      return {
+        topPill: { top: 12, padding: '8px 18px', fontSize: 13 } as const,
+        taskPanel: {
+          top: 64, left: 12, width: 320, padding: 16, bottom: undefined, right: undefined, maxHeight: undefined,
+        } as const,
+        journalPanel: {
+          top: 64, right: 12, width: 280, padding: 14, bottom: undefined, left: undefined, maxHeight: '60vh',
+        } as const,
+        inputBar: { left: '50%', right: undefined, bottom: 12, padding: '12px 20px' } as const,
+      }
+    }
+    // desktop (default)
+    return {
+      topPill: { top: 16, padding: '8px 20px', fontSize: 13 } as const,
+      taskPanel: {
+        top: 80, left: 16, width: 360, padding: 20, bottom: undefined, right: undefined, maxHeight: undefined,
+      } as const,
+      journalPanel: {
+        top: 80, right: 16, width: 320, padding: 16, bottom: undefined, left: undefined, maxHeight: '70vh',
+      } as const,
+      inputBar: { left: '50%', right: undefined, bottom: 16, padding: '14px 24px' } as const,
+    }
+  })()
+
   return (
     <div style={{ fontFamily: BASE_FONT }}>
       {/* Top floating pill */}
       <GlassPanel
         variant="strong"
         style={{
-          position: 'fixed', top: 16, left: '50%',
+          position: 'fixed', left: '50%',
           transform: 'translateX(-50%)',
-          padding: '8px 20px', borderRadius: 100,
-          fontSize: 13, fontWeight: 500,
+          borderRadius: 100,
+          fontWeight: 500,
           zIndex: 10,
           color: '#1d1d1f',
+          ...layout.topPill,
         }}
       >
         Лабораторна · {idx + 1} з {TOTAL}
@@ -106,9 +155,9 @@ export function HUD() {
         role="region"
         aria-labelledby="hud-current-task-label"
         style={{
-          position: 'fixed', top: 80, left: 16, width: 360,
-          padding: 20, zIndex: 10,
-          color: '#1d1d1f',
+          position: 'fixed', zIndex: 10, color: '#1d1d1f',
+          overflow: 'auto',
+          ...layout.taskPanel,
         }}
       >
         <div id="hud-current-task-label" style={{ fontSize: 11, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 1 }}>
@@ -162,9 +211,8 @@ export function HUD() {
         role="region"
         aria-labelledby="hud-journal-label"
         style={{
-          position: 'fixed', top: 80, right: 16, width: 320,
-          padding: 16, zIndex: 10, maxHeight: '70vh', overflow: 'auto',
-          color: '#1d1d1f',
+          position: 'fixed', zIndex: 10, color: '#1d1d1f', overflow: 'auto',
+          ...layout.journalPanel,
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
@@ -239,10 +287,10 @@ export function HUD() {
       <GlassPanel
         variant="strong"
         style={{
-          position: 'fixed', bottom: 16, left: '50%',
-          transform: 'translateX(-50%)',
-          padding: '14px 24px', zIndex: 10,
-          color: '#1d1d1f',
+          position: 'fixed',
+          transform: layout.inputBar.left === '50%' ? 'translateX(-50%)' : undefined,
+          zIndex: 10, color: '#1d1d1f',
+          ...layout.inputBar,
         }}
       >
         <NumberInput
