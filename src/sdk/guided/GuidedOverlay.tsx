@@ -3,7 +3,6 @@ import { useStepEngine, isStepComplete } from './StepEngine'
 import { TASK_STEPS } from '../../labs/mass-measurement/content/steps'
 import { useLabState } from '../../labs/mass-measurement/state/LabState'
 import { useReadings } from '../../labs/mass-measurement/state/InstrumentReadings'
-import { Arrow3D } from './primitives/Arrow3D'
 import { GlowRing } from './primitives/GlowRing'
 import { sound } from '../audio/SoundManager'
 
@@ -101,7 +100,11 @@ export function GuidedOverlay() {
 
   return (
     <>
-      {step.visualHint === 'arrow' && <Arrow3D position={pos} />}
+      {/* 'arrow' hint intentionally NOT rendered as a 3D primitive — the
+          floating triangle distracted students more than it helped (the
+          objects sit visibly on a labelled tray, and the hint text in
+          the HUD already names which one to grab). The hint type is kept
+          in the DSL for future labs that may want it. */}
       {step.visualHint === 'target-ring' && <GlowRing position={pos} radius={0.12} />}
       {/* highlight applied by instrument's existing `active` prop already */}
     </>

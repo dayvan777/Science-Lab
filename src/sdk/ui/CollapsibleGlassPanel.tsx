@@ -6,7 +6,7 @@ type Props = {
   storageKey: string
   /** Short label shown on the collapsed pill (sr-only when an icon is given). */
   label: string
-  /** Optional icon shown on the collapsed pill. Defaults to '⊟'. */
+  /** Optional icon shown on the collapsed pill. Defaults to '+'. */
   collapsedIcon?: string
   /** Default collapsed state on first mount (overridden by localStorage). */
   defaultCollapsed?: boolean
@@ -21,19 +21,23 @@ type Props = {
 }
 
 /**
- * GlassPanel wrapper with a collapse-to-pill button in the top-right corner.
+ * GlassPanel wrapper with a visible collapse button (top-right corner of
+ * the panel) and an expand pill (when collapsed). Both buttons are sized
+ * for Promethean-panel touch (≥36×36 in expanded state, 44×44 collapsed)
+ * and use a clear plus/minus icon — children of school age recognise these
+ * at a glance, unlike the previous transparent ‹‹ glyph.
  *
- *   ┌──────────────────────┐               ⊟ (small pill)
- *   │  panel content...    │   ─click─►    or expand again with one click
- *   │  ...                 │
- *   └──────────────────────┘
+ *   ┌──────────────────[ − ]┐                ( + )  ← visible glass pill
+ *   │  panel content...     │   ─click─►     in the same corner
+ *   │  ...                  │
+ *   └───────────────────────┘
  *
  * Collapsed state persists to localStorage under `lab.collapse.<storageKey>`.
  */
 export function CollapsibleGlassPanel({
   storageKey,
   label,
-  collapsedIcon = '⊟',
+  collapsedIcon = '+',
   defaultCollapsed = false,
   style,
   collapsedStyle,
@@ -64,19 +68,26 @@ export function CollapsibleGlassPanel({
         aria-label={`Розгорнути ${label}`}
         title={`Розгорнути ${label}`}
         style={{
-          background: 'rgba(255,255,255,0.85)',
+          background: 'rgba(255,255,255,0.92)',
           backdropFilter: 'blur(60px) saturate(200%)',
-          border: '1px solid rgba(255,255,255,0.25)',
-          color: '#1d1d1f',
+          border: '1px solid rgba(0,0,0,0.12)',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.18)',
+          color: '#0071e3',
           borderRadius: 100,
-          width: 44,
-          height: 44,
-          fontSize: 18,
+          width: 48,
+          height: 48,
+          fontSize: 28,
+          fontWeight: 400,
+          lineHeight: 1,
           cursor: 'pointer',
           position: 'fixed',
           zIndex: 10,
           top: 16,
           left: 16,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 0,
           ...collapsedStyle,
         }}
       >
@@ -98,23 +109,34 @@ export function CollapsibleGlassPanel({
         ...style,
       }}
     >
+      {/* Visible collapse button: clear minus icon on a subtle glass plate
+          so a 6th-grader can spot it at a glance on a Promethean panel. */}
       <button
         onClick={() => setCollapsed(true)}
         aria-label={`Згорнути ${label}`}
         title={`Згорнути ${label}`}
         style={{
           position: 'absolute',
-          top: 8, right: 8,
-          background: 'transparent',
-          border: 'none',
-          color: '#6e6e73',
-          fontSize: 16,
-          width: 32, height: 32,
+          top: 8,
+          right: 8,
+          background: 'rgba(0,0,0,0.06)',
+          border: '1px solid rgba(0,0,0,0.12)',
+          color: '#1d1d1f',
+          fontSize: 22,
+          fontWeight: 500,
+          lineHeight: 1,
+          width: 36,
+          height: 36,
           cursor: 'pointer',
-          borderRadius: 8,
+          borderRadius: 10,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 0,
+          zIndex: 1,
         }}
       >
-        ‹‹
+        −
       </button>
       {children}
     </GlassPanel>
