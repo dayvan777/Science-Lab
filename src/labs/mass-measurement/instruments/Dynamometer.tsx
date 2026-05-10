@@ -1,7 +1,7 @@
 import { useRef, useState, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RigidBody, RapierRigidBody } from '@react-three/rapier'
-import { Vector3, TubeGeometry, CatmullRomCurve3, MathUtils } from 'three'
+import { Vector3, TubeGeometry, CatmullRomCurve3 } from 'three'
 import { registerSnap } from '../../../sdk/physics/snapTargets'
 import { getBodyMass, onDragStart } from '../../../sdk/physics/bodyRegistry'
 import { Outlines, RoundedBox } from '@react-three/drei'
@@ -9,37 +9,56 @@ import { useReadings } from '../state/InstrumentReadings'
 import { createDialTexture } from '../textures/dialTexture'
 import { springStep } from '../../../sdk/animation'
 
-// Physics — real spring constant for force ↔ extension mapping
+// Physics — real spring constant for force ↔ extension mapping.
+// SPRING_K = 50 N/m  →  0–5 N maps to 0–10 cm of spring extension.
 const G = 9.81
-const SPRING_K = 50  // N/m — gives 0–10 cm range for 0–5 N
+const SPRING_K = 50
 
 // Visual oscillation — separate spring-damper for the hook's "wobble" feel
 const VISUAL_STIFFNESS = 80
 const VISUAL_DAMPING = 7
 
-// Geometry
-const STAND_H = 0.4
-const SPRING_TOP_Y = 0.4
-const HOOK_REST_Y = 0.2
-const SPRING_NATURAL_LEN = SPRING_TOP_Y - HOOK_REST_Y // 0.20m at rest
+// Geometry — all in lever-local coords, in metres. Scaled +50 % vs v0.1.2
+// so the dual-scale backplate has comfortable spacing and the device looks
+// like a real classroom dynamometer.
+const STAND_H = 0.6
+const SPRING_TOP_Y = 0.55
+const HOOK_REST_Y = 0.35
+const HOOK_AT_FIVE_N = 0.25
+const SPRING_NATURAL_LEN = SPRING_TOP_Y - HOOK_REST_Y  // 0.20 m
 
 const SPRING_HELIX_RADIUS = 0.014
 const SPRING_TUBE_RADIUS = 0.0018
 const SPRING_COILS = 14
-const ARM_X_OFFSET = 0.05  // how far the arm reaches from the stand
 
-// Scale-plate geometry — single source of truth for the plate mesh and the needle math
-const SCALE_PLATE_CENTER_Y = STAND_H * 0.6                                  // 0.24
-const SCALE_PLATE_HEIGHT   = 0.24
-const SCALE_TOP_Y          = SCALE_PLATE_CENTER_Y + SCALE_PLATE_HEIGHT / 2  // 0.36
-const SCALE_BOTTOM_Y       = SCALE_PLATE_CENTER_Y - SCALE_PLATE_HEIGHT / 2  // 0.12
-const HOOK_AT_FIVE_N       = 0.10                                            // hookY at full 5 N load
+// Where the spring/scale axis sits, relative to the stand at x=0
+const ARM_X_OFFSET = 0.05
+
+// Backplate (dual-scale): exactly covers the pointer's full vertical travel
+const BACKPLATE_TOP_Y = HOOK_REST_Y                 // 0.35 — aligns with "0 N"
+const BACKPLATE_BOTTOM_Y = HOOK_AT_FIVE_N           // 0.25 — aligns with "1 N" / "5 N"
+const BACKPLATE_HEIGHT = BACKPLATE_TOP_Y - BACKPLATE_BOTTOM_Y  // 0.10 m
+const BACKPLATE_CENTER_Y = (BACKPLATE_TOP_Y + BACKPLATE_BOTTOM_Y) / 2  // 0.30
+const BACKPLATE_WIDTH = 0.10
+const BACKPLATE_X = ARM_X_OFFSET - 0.06             // sits 6 cm left of the spring axis
+
+// Mechanical pointer: rigid horizontal arm hanging off the spring's bottom,
+// red triangle tip on the LEFT side that sweeps the backplate.
+const POINTER_ARM_LEN = 0.05
+const POINTER_ARM_THICKNESS = 0.003
+const POINTER_TIP_LEN = 0.014
+const POINTER_TIP_RADIUS = 0.005
+
+// Thin rigid rod from pointer down to the hook (so the hook hangs BELOW
+// the backplate without being obstructed by the scale).
+const ROD_BELOW_POINTER_LEN = 0.13
+const ROD_RADIUS = 0.0015
 
 type Props = { position: [number, number, number]; active?: boolean }
 
 /**
- * Build a TubeGeometry that follows a helix curve. We construct it once at the
- * spring's natural length and then scale Y at runtime to follow the hook.
+ * Build a TubeGeometry that follows a helix curve. We construct it once at
+ * the spring's natural length and then scale Y at runtime to follow the hook.
  */
 function buildSpringGeometry(): TubeGeometry {
   const points: Vector3[] = []
@@ -97,9 +116,11 @@ export function Dynamometer({ position, active = false }: Props) {
     })
     hookVelocity.current = r.velocity
     setHookY(r.current)
+    // Hook hangs at the BOTTOM of the rod, which is below the pointer (= r.current).
+    const hookY_world = position[1] + r.current - ROD_BELOW_POINTER_LEN
     hook.setNextKinematicTranslation({
       x: position[0] + ARM_X_OFFSET,
-      y: position[1] + r.current,
+      y: hookY_world,
       z: position[2],
     })
 
@@ -107,14 +128,20 @@ export function Dynamometer({ position, active = false }: Props) {
       if (attached.bodyType() !== 2) attached.setBodyType(2 /* KinematicPositionBased */, true)
       attached.setNextKinematicTranslation({
         x: position[0] + ARM_X_OFFSET,
-        y: position[1] + r.current - 0.03,
+        y: hookY_world - 0.03,
         z: position[2],
       })
     }
   })
 
   useEffect(() => {
-    const hookWorldPos = new Vector3(position[0] + ARM_X_OFFSET, position[1] + hookY, position[2])
+    // Snap target tracks the hook, which now hangs ROD_BELOW_POINTER_LEN
+    // below `hookY` (where the spring's bottom and the pointer sit).
+    const hookWorldPos = new Vector3(
+      position[0] + ARM_X_OFFSET,
+      position[1] + hookY - ROD_BELOW_POINTER_LEN,
+      position[2],
+    )
     const unregister = registerSnap({
       id: 'dynamometer-hook',
       instrumentId: 'dynamometer',
@@ -138,16 +165,9 @@ export function Dynamometer({ position, active = false }: Props) {
   const springYCenter = (SPRING_TOP_Y + hookY) / 2
   const springScaleY = currentSpringLen / SPRING_NATURAL_LEN
 
-  // Needle y on the dial — linearly interpolated from hookY, clamped to the
-  // plate's y-range so spring overshoot during transients (under-damped at
-  // ζ ≈ 0.39) doesn't push the needle off the visible dial.
-  const needleYRaw = SCALE_TOP_Y +
-    (HOOK_REST_Y - hookY) * (SCALE_BOTTOM_Y - SCALE_TOP_Y) / (HOOK_AT_FIVE_N - HOOK_REST_Y)
-  const needleY = MathUtils.clamp(needleYRaw, SCALE_BOTTOM_Y, SCALE_TOP_Y)
-
   return (
     <group position={position}>
-      {/* Vertical stand — anodized matte black, matches the digital scale housing */}
+      {/* Vertical stand — anodized matte black */}
       <RoundedBox
         args={[0.04, STAND_H, 0.04]}
         radius={0.005}
@@ -160,7 +180,7 @@ export function Dynamometer({ position, active = false }: Props) {
         {active && <Outlines thickness={3} color="#0071e3" />}
       </RoundedBox>
 
-      {/* Top horizontal arm — same anodized finish */}
+      {/* Top horizontal arm */}
       <RoundedBox
         args={[0.16, 0.025, 0.04]}
         radius={0.005}
@@ -178,7 +198,7 @@ export function Dynamometer({ position, active = false }: Props) {
         <meshStandardMaterial color="#9aa0a8" metalness={0.95} roughness={0.15} envMapIntensity={1.2} />
       </mesh>
 
-      {/* Coiled spring — TubeGeometry of a helix, scaled vertically to fit current length */}
+      {/* Coiled spring */}
       <mesh
         geometry={springGeometry}
         position={[ARM_X_OFFSET, springYCenter, 0]}
@@ -188,45 +208,72 @@ export function Dynamometer({ position, active = false }: Props) {
         <meshStandardMaterial color="#c8c8d0" metalness={0.9} roughness={0.18} envMapIntensity={1.2} />
       </mesh>
 
-      {/* Hook (kinematic — physics body for snap target) */}
+      {/* Backplate — the dual-scale board sits behind/beside the spring,
+          flush with the pointer's full travel range. */}
+      <mesh position={[BACKPLATE_X, BACKPLATE_CENTER_Y, 0]}>
+        <planeGeometry args={[BACKPLATE_WIDTH, BACKPLATE_HEIGHT]} />
+        <meshBasicMaterial map={scaleTexture} />
+      </mesh>
+
+      {/* Mechanical pointer group — rigidly tracks the spring's bottom (hookY).
+          Contains: horizontal arm extending toward the backplate, a sharp red
+          triangle tip at its left end, and a thin rod descending to the hook. */}
+      <group position={[ARM_X_OFFSET, hookY, 0]}>
+        {/* Horizontal arm: from the spring axis (x=0 in group-local) to the
+            backplate's right edge. Length POINTER_ARM_LEN ≈ |BACKPLATE_X|. */}
+        <mesh position={[-POINTER_ARM_LEN / 2, 0, 0]} castShadow>
+          <boxGeometry args={[POINTER_ARM_LEN, POINTER_ARM_THICKNESS, 0.005]} />
+          <meshStandardMaterial color="#9aa0a8" metalness={0.7} roughness={0.35} envMapIntensity={0.9} />
+        </mesh>
+
+        {/* Red triangular tip — apex points along +X (toward the spring axis),
+            base 14 mm to the left. So the visible "arrow" points from the
+            scale toward the spring; the apex sits on the right edge of the
+            backplate plane (at z = +0.001 to avoid z-fighting). */}
+        <mesh
+          position={[-POINTER_ARM_LEN, 0, 0.001]}
+          rotation={[0, 0, -Math.PI / 2]}
+        >
+          <coneGeometry args={[POINTER_TIP_RADIUS, POINTER_TIP_LEN, 3]} />
+          <meshStandardMaterial
+            color="#ff3b30"
+            emissive="#ff3b30"
+            emissiveIntensity={0.7}
+            toneMapped={false}
+          />
+        </mesh>
+
+        {/* Thin rigid rod from the pointer arm DOWN to the hook (the rod's top
+            is at the arm, the hook ring sits at the bottom). */}
+        <mesh position={[0, -ROD_BELOW_POINTER_LEN / 2, 0]} castShadow>
+          <cylinderGeometry args={[ROD_RADIUS, ROD_RADIUS, ROD_BELOW_POINTER_LEN, 8]} />
+          <meshStandardMaterial color="#9aa0a8" metalness={0.7} roughness={0.35} envMapIntensity={0.9} />
+        </mesh>
+      </group>
+
+      {/* Hook (kinematic — physics body for snap target). Now hangs BELOW
+          the backplate, at hookY − ROD_BELOW_POINTER_LEN. */}
       <RigidBody
         ref={hookRef}
         type="kinematicPosition"
         colliders={false}
-        position={[position[0] + ARM_X_OFFSET, position[1] + hookY, position[2]]}
+        position={[
+          position[0] + ARM_X_OFFSET,
+          position[1] + hookY - ROD_BELOW_POINTER_LEN,
+          position[2],
+        ]}
       >
         {/* Hook ring */}
         <mesh castShadow>
           <torusGeometry args={[0.014, 0.0028, 12, 24]} />
           <meshStandardMaterial color="#c8c8d0" metalness={0.95} roughness={0.15} envMapIntensity={1.2} />
         </mesh>
-        {/* Hook stem (small cylinder above ring connecting to spring bottom) */}
+        {/* Hook stem (small cylinder above ring connecting to the rod above) */}
         <mesh position={[0, 0.012, 0]} castShadow>
           <cylinderGeometry args={[0.0015, 0.0015, 0.024, 8]} />
           <meshStandardMaterial color="#c8c8d0" metalness={0.95} roughness={0.15} envMapIntensity={1.2} />
         </mesh>
       </RigidBody>
-
-      {/* Scale plate (procedural 0-5 N dial) */}
-      <mesh position={[-0.04, SCALE_PLATE_CENTER_Y, 0]}>
-        <planeGeometry args={[0.06, SCALE_PLATE_HEIGHT]} />
-        <meshBasicMaterial map={scaleTexture} />
-      </mesh>
-
-      {/* Red needle pointing horizontally from the scale plate to the spring.
-          Slides up/down with the hook. Student reads the value where the
-          needle aligns with a graduation. */}
-      <mesh
-        position={[
-          -0.04 + 0.04,  // needle's tip lines up with the right edge of the scale plate
-          needleY,
-          0.001,  // just in front of the scale plate
-        ]}
-        rotation={[0, 0, -Math.PI / 2]}
-      >
-        <coneGeometry args={[0.005, 0.024, 3]} />
-        <meshStandardMaterial color="#ff3b30" emissive="#ff3b30" emissiveIntensity={0.7} />
-      </mesh>
     </group>
   )
 }

@@ -15,7 +15,7 @@ import { sound } from '../audio/SoundManager'
 // Current layout reference:
 //   Table top  : y = 0.85
 //   Tray top   : y = TABLE_TOP_Y + TRAY_H = 0.875  (Slice C — z=0.40)
-//   Dynamometer at world [-0.55, 0.85, 0]   — hook rest at local y = 0.20  → world (−0.55, 1.05, 0)
+//   Dynamometer at world [-0.55, 0.85, 0]   — hook hangs at local y = 0.35 − 0.13 = 0.22 (HOOK_REST_Y minus ROD_BELOW_POINTER_LEN)  → world (−0.55, 1.07, 0)
 //   LeverBalance at [0.05, 0.85, 0]         — pan rim at local y = PIVOT − HANGER = 0.40 − 0.26 = 0.14
 //                                              and x = ± BEAM_LEN / 2 = ±0.33
 //                                              → world left (−0.28, 0.99, 0), right (0.38, 0.99, 0)
@@ -29,7 +29,7 @@ const TARGET_POSITIONS: Record<string, [number, number, number]> = {
   'digital-scale':         [ 0.75, 0.91, 0.00],
   'lever-balance-left':    [-0.28, 0.99, 0.00],
   'lever-balance-right':   [ 0.38, 0.99, 0.00],
-  'dynamometer-hook':      [-0.55, 1.05, 0.00],
+  'dynamometer-hook':      [-0.55, 1.07, 0.00],
 }
 
 export function GuidedOverlay() {

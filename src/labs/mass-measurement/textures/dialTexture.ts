@@ -1,18 +1,25 @@
 import { CanvasTexture } from 'three'
 
-const W = 128
+const W = 256
 const H = 512
 
 /**
- * Draws an analog dynamometer scale plate (0 N at the top, 5 N at the bottom).
- * Major graduations every 1 N (with numeric label), medium every 0.5 N,
- * minor every 0.1 N. The needle is a separate 3D mesh in Dynamometer.tsx —
- * this texture only renders the static scale.
+ * Draws an analog dynamometer scale plate with TWO scale strips on one
+ * canvas: left = 0–1 N (fine resolution), right = 0–5 N (coarse). Both
+ * strips share the same vertical y-mapping so a physical pointer at any
+ * height reads a value on both strips simultaneously.
  *
- * Layout (canvas-px coordinates, 128×512):
- *   y = 40   → 0 N   (top of usable scale)
- *   y = 472  → 5 N   (bottom of usable scale)
- *   ticks anchored on the LEFT side, labels to their right.
+ * Layout (canvas-px coordinates, 256×512):
+ *   y =  40  → "0" on both strips
+ *   y = 472  → "1" on left, "5" on right
+ *   x ∈ [0, 128] → left strip
+ *   x ∈ [128, 256] → right strip
+ *   ticks are anchored at the BLOCK's left edge (left strip's at x=0,
+ *   right strip's at x=128); labels render to the right of their ticks.
+ *
+ * Real ranges:
+ *   Left  fine scale: minor 0.05 N, medium 0.1 N, major 0.5 N (labels 0 / 0.5 / 1)
+ *   Right coarse scale: minor 0.1 N, medium 0.5 N, major 1 N (labels 0…5)
  */
 export function createDialTexture(): CanvasTexture {
   const canvas = document.createElement('canvas')
@@ -27,41 +34,75 @@ export function createDialTexture(): CanvasTexture {
   ctx.lineWidth = 2
   ctx.strokeRect(2, 2, W - 4, H - 4)
 
-  // Title band at the very top
+  // Vertical separator between the two strips
+  ctx.fillStyle = '#c8c8d0'
+  ctx.fillRect(127, 8, 2, H - 16)
+
+  // Title row at the top of each strip
   ctx.fillStyle = '#1d1d1f'
-  ctx.font = 'bold 22px "SF Pro Display", "Inter", sans-serif'
+  ctx.font = 'bold 18px "SF Pro Display", "Inter", sans-serif'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillText('N', W / 2, 22)
+  ctx.fillText('1 N', 64, 22)
+  ctx.fillText('5 N', 192, 22)
 
-  // Scale geometry
+  // Shared scale geometry — both strips use the same y range
   const TOP = 40
   const BOTTOM = 472
-  const SPAN = BOTTOM - TOP  // 432 px for 5 N
-  const yForN = (n: number) => TOP + (n / 5) * SPAN
+  const SPAN = BOTTOM - TOP  // 432 px
+  const yForFraction = (f: number) => TOP + f * SPAN
 
-  // Minor ticks every 0.1 N
+  ctx.font = 'bold 26px "SF Pro Display", "Inter", sans-serif'
+  ctx.textAlign = 'left'
+
+  // ──────────────────────────────────────────────────────────────────
+  // LEFT strip — 0 to 1 N
+  // x range [0, 128]; ticks left-anchored at x=8; labels at x=44
+  // ──────────────────────────────────────────────────────────────────
+  // Minor ticks every 0.05 N (skipping 0.5 / 0.1 multiples drawn below)
+  ctx.fillStyle = '#3a3a40'
+  for (let n20 = 0; n20 <= 20; n20++) {
+    if (n20 % 2 === 0) continue // 0.1-multiples handled below
+    const y = yForFraction(n20 / 20)
+    ctx.fillRect(8, y - 0.5, 8, 1)
+  }
+  // Medium ticks every 0.1 N (skipping 0.5-multiples drawn below)
+  for (let n10 = 1; n10 <= 9; n10++) {
+    if (n10 % 5 === 0) continue
+    const y = yForFraction(n10 / 10)
+    ctx.fillRect(8, y - 1, 12, 2)
+  }
+  // Major ticks at 0, 0.5, 1.0 with labels
+  const leftLabels = ['0', '0,5', '1']
+  for (let i = 0; i < 3; i++) {
+    const y = yForFraction(i / 2)
+    ctx.fillStyle = '#1d1d1f'
+    ctx.fillRect(8, y - 1.5, 18, 3)
+    ctx.fillText(leftLabels[i], 30, y)
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // RIGHT strip — 0 to 5 N
+  // x range [128, 256]; ticks left-anchored at x=136; labels at x=172
+  // ──────────────────────────────────────────────────────────────────
+  // Minor ticks every 0.1 N (skipping 0.5-multiples)
   ctx.fillStyle = '#3a3a40'
   for (let n10 = 0; n10 <= 50; n10++) {
-    if (n10 % 5 === 0) continue // skip — major/medium drawn below
-    const y = yForN(n10 / 10)
-    ctx.fillRect(28, y - 0.5, 8, 1)
+    if (n10 % 5 === 0) continue
+    const y = yForFraction(n10 / 50)
+    ctx.fillRect(136, y - 0.5, 8, 1)
   }
-
   // Medium ticks every 0.5 N (skipping integer marks)
   for (let n2 = 1; n2 <= 9; n2 += 2) {
-    const y = yForN(n2 / 2)
-    ctx.fillRect(24, y - 1, 14, 2)
+    const y = yForFraction(n2 / 10)
+    ctx.fillRect(136, y - 1, 12, 2)
   }
-
-  // Major ticks every 1 N + numeric label
-  ctx.font = 'bold 28px "SF Pro Display", "Inter", sans-serif'
-  ctx.textAlign = 'left'
+  // Major ticks at 0..5 N with labels
   for (let i = 0; i <= 5; i++) {
-    const y = yForN(i)
+    const y = yForFraction(i / 5)
     ctx.fillStyle = '#1d1d1f'
-    ctx.fillRect(20, y - 1.5, 22, 3)
-    ctx.fillText(`${i}`, 56, y)
+    ctx.fillRect(136, y - 1.5, 18, 3)
+    ctx.fillText(`${i}`, 158, y)
   }
 
   return new CanvasTexture(canvas)

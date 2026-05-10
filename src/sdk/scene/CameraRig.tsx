@@ -25,7 +25,7 @@ const POSES: Record<CameraPreset, Pose> = {
   workspace:     { position: [0, 1.5, 2.0],   lookAt: [0, 0.85, 0]   },
   'focus-scale': { position: [0.25, 1.5, 1.8], lookAt: [0.4, 0.9, 0] },
   'focus-lever': { position: [0.05, 1.5, 1.8], lookAt: [0.05, 0.9, 0] },
-  'focus-dyn':   { position: [-0.25, 1.5, 1.8], lookAt: [-0.4, 0.9, 0] },
+  'focus-dyn':   { position: [-0.25, 1.55, 1.8], lookAt: [-0.4, 1.05, 0] },
   reveal:        { position: [0, 3.0, 3.2],   lookAt: [0, 1.0, 0]    },
 }
 
