@@ -1,7 +1,7 @@
 import { useRef, useState, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RigidBody, RapierRigidBody } from '@react-three/rapier'
-import { Vector3, TubeGeometry, CatmullRomCurve3 } from 'three'
+import { Vector3, TubeGeometry, CatmullRomCurve3, MathUtils } from 'three'
 import { registerSnap } from '../../../sdk/physics/snapTargets'
 import { getBodyMass, onDragStart } from '../../../sdk/physics/bodyRegistry'
 import { Outlines, RoundedBox } from '@react-three/drei'
@@ -27,6 +27,13 @@ const SPRING_HELIX_RADIUS = 0.014
 const SPRING_TUBE_RADIUS = 0.0018
 const SPRING_COILS = 14
 const ARM_X_OFFSET = 0.05  // how far the arm reaches from the stand
+
+// Scale-plate geometry — single source of truth for the plate mesh and the needle math
+const SCALE_PLATE_CENTER_Y = STAND_H * 0.6                                  // 0.24
+const SCALE_PLATE_HEIGHT   = 0.24
+const SCALE_TOP_Y          = SCALE_PLATE_CENTER_Y + SCALE_PLATE_HEIGHT / 2  // 0.36
+const SCALE_BOTTOM_Y       = SCALE_PLATE_CENTER_Y - SCALE_PLATE_HEIGHT / 2  // 0.12
+const HOOK_AT_FIVE_N       = 0.10                                            // hookY at full 5 N load
 
 type Props = { position: [number, number, number]; active?: boolean }
 
@@ -131,6 +138,13 @@ export function Dynamometer({ position, active = false }: Props) {
   const springYCenter = (SPRING_TOP_Y + hookY) / 2
   const springScaleY = currentSpringLen / SPRING_NATURAL_LEN
 
+  // Needle y on the dial — linearly interpolated from hookY, clamped to the
+  // plate's y-range so spring overshoot during transients (under-damped at
+  // ζ ≈ 0.39) doesn't push the needle off the visible dial.
+  const needleYRaw = SCALE_TOP_Y +
+    (HOOK_REST_Y - hookY) * (SCALE_BOTTOM_Y - SCALE_TOP_Y) / (HOOK_AT_FIVE_N - HOOK_REST_Y)
+  const needleY = MathUtils.clamp(needleYRaw, SCALE_BOTTOM_Y, SCALE_TOP_Y)
+
   return (
     <group position={position}>
       {/* Vertical stand — anodized matte black, matches the digital scale housing */}
@@ -194,8 +208,8 @@ export function Dynamometer({ position, active = false }: Props) {
       </RigidBody>
 
       {/* Scale plate (procedural 0-5 N dial) */}
-      <mesh position={[-0.04, STAND_H * 0.6, 0]}>
-        <planeGeometry args={[0.06, 0.24]} />
+      <mesh position={[-0.04, SCALE_PLATE_CENTER_Y, 0]}>
+        <planeGeometry args={[0.06, SCALE_PLATE_HEIGHT]} />
         <meshBasicMaterial map={scaleTexture} />
       </mesh>
 
@@ -205,12 +219,7 @@ export function Dynamometer({ position, active = false }: Props) {
       <mesh
         position={[
           -0.04 + 0.04,  // needle's tip lines up with the right edge of the scale plate
-          (() => {
-            const SCALE_TOP_Y = 0.36
-            const SCALE_BOTTOM_Y = 0.12
-            const HOOK_AT_ZERO_N = 0.20
-            return SCALE_TOP_Y + (HOOK_AT_ZERO_N - hookY) * (SCALE_BOTTOM_Y - SCALE_TOP_Y) / (0.10 - HOOK_AT_ZERO_N)
-          })(),
+          needleY,
           0.001,  // just in front of the scale plate
         ]}
         rotation={[0, 0, -Math.PI / 2]}
