@@ -1,4 +1,4 @@
-import { ReactNode, MouseEvent } from 'react'
+import { ReactNode, MouseEvent, PointerEvent } from 'react'
 
 type Props = {
   onClick: () => void
@@ -45,9 +45,10 @@ export function Button({
         transition: 'transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1), background 200ms ease',
         fontFamily: '"SF Pro Display", "Inter", system-ui, sans-serif',
       }}
-      onMouseDown={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(0.96)' }}
-      onMouseUp={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)' }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)' }}
+      onPointerDown={(e: PointerEvent) => { (e.currentTarget as HTMLElement).style.transform = 'scale(0.96)' }}
+      onPointerUp={(e: PointerEvent) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)' }}
+      onPointerCancel={(e: PointerEvent) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)' }}
+      onPointerLeave={(e: PointerEvent) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)' }}
     >
       {children}
     </button>

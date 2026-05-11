@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useStepEngine } from '../guided/StepEngine'
+import { useViewport } from '../a11y/useViewport'
 
 type Props = {
   unit: 'g' | 'N'
@@ -10,6 +11,8 @@ export function NumberInput({ unit, onSubmit }: Props) {
   const [text, setText] = useState('')
   const setInputFocused = useStepEngine(s => s.setInputFocused)
   const inputRef = useRef<HTMLInputElement>(null)
+  const { breakpoint } = useViewport()
+  const isPhone = breakpoint === 'phone'
 
   // Reset text when component is reused for new task
   useEffect(() => {
@@ -30,7 +33,13 @@ export function NumberInput({ unit, onSubmit }: Props) {
   const inputId = 'measurement-value-input'
   const unitLabel = unit === 'g' ? 'грамах' : 'Ньютонах'
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+    <div style={{
+      display: 'flex',
+      alignItems: isPhone ? 'stretch' : 'center',
+      flexDirection: isPhone ? 'column' : 'row',
+      gap: isPhone ? 8 : 12,
+      width: '100%',
+    }}>
       <label htmlFor={inputId} style={{ fontSize: 14, opacity: 0.7, color: '#1d1d1f' }}>
         Значення в {unitLabel}:
       </label>
@@ -54,8 +63,12 @@ export function NumberInput({ unit, onSubmit }: Props) {
           background: '#fff', color: '#1d1d1f',
           padding: '12px 16px', fontSize: 22, fontWeight: 700,
           border: '2px solid #d1d1d6', borderRadius: 12,
-          width: 120, textAlign: 'right', fontFamily: 'monospace',
+          width: isPhone ? '100%' : 120,
+          textAlign: isPhone ? 'center' : 'right',
+          fontFamily: 'monospace',
           outline: 'none',
+          minHeight: 48,
+          boxSizing: 'border-box',
         }}
       />
       <button
@@ -69,8 +82,10 @@ export function NumberInput({ unit, onSubmit }: Props) {
           borderRadius: 12,
           cursor: canSubmit ? 'pointer' : 'not-allowed',
           minHeight: 48,
+          width: isPhone ? '100%' : undefined,
           boxShadow: canSubmit ? '0 2px 8px rgba(0,113,227,0.3)' : 'none',
           transition: 'all 200ms ease',
+          touchAction: 'manipulation',
         }}
       >
         Записати → Далі
