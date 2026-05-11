@@ -55,7 +55,9 @@ export function SubjectPill({ subject }: Props) {
 
   const labCount = subject.labs.length
   const badgeText = isAvailable
-    ? labCount === 1 ? '1 ЛАБА' : `${labCount} ЛАБ`
+    ? labCount === 1 ? '1 ЛАБА'
+      : labCount >= 2 && labCount <= 4 ? `${labCount} ЛАБИ`
+      : `${labCount} ЛАБ`
     : 'СКОРО'
 
   const style = { ...baseStyle, ...(isAvailable ? availableStyle : lockedStyle) }

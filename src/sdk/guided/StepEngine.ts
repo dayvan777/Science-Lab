@@ -6,10 +6,12 @@ export type StepEngineState = {
   draggingBodyId: string | null
   inputFocused: boolean
   lastSnapTargetId: string | null
+  lastMCChoice: number | null
   readingStableSinceMs: number
   setDragging: (id: string | null) => void
   setInputFocused: (b: boolean) => void
   setLastSnap: (id: string | null) => void
+  setLastMCChoice: (i: number | null) => void
   setReadingStableSince: (ms: number) => void
   advanceStep: () => void
   resetForTask: (taskIndex: number) => void
@@ -21,10 +23,12 @@ export const useStepEngine = create<StepEngineState>((set) => ({
   draggingBodyId: null,
   inputFocused: false,
   lastSnapTargetId: null,
+  lastMCChoice: null,
   readingStableSinceMs: 0,
   setDragging: (id) => set({ draggingBodyId: id }),
   setInputFocused: (b) => set({ inputFocused: b }),
   setLastSnap: (id) => set({ lastSnapTargetId: id }),
+  setLastMCChoice: (i) => set({ lastMCChoice: i }),
   setReadingStableSince: (ms) => set({ readingStableSinceMs: ms }),
   advanceStep: () => set(s => ({ currentStepIndex: s.currentStepIndex + 1 })),
   resetForTask: (taskIndex) => set({
@@ -33,6 +37,7 @@ export const useStepEngine = create<StepEngineState>((set) => ({
     draggingBodyId: null,
     inputFocused: false,
     lastSnapTargetId: null,
+    lastMCChoice: null,
     readingStableSinceMs: 0,
   }),
 }))
@@ -51,6 +56,7 @@ export function isStepComplete(
     leverBalanceTilt: number
     leverLeftPanGrams: number
     leverRightPanGrams: number
+    lastMCChoice: number | null
     readingStableSinceMs: number
     nowMs: number
     inputFocused: boolean
@@ -77,6 +83,8 @@ export function isStepComplete(
         ctx.leverRightPanGrams > 0 &&
         Math.abs(ctx.leverLeftPanGrams - ctx.leverRightPanGrams) <= rule.toleranceGrams
       )
+    case 'mc-selected':
+      return ctx.lastMCChoice === rule.correctIndex
     case 'input-focused':
       return ctx.inputFocused
     case 'submitted':

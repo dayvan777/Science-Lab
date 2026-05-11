@@ -4,7 +4,7 @@ import { clamp, easeOutCubic } from '../animation'
 
 export type SnapTarget = {
   id: string
-  instrumentId: 'digital-scale' | 'lever-balance' | 'dynamometer'
+  instrumentId: 'digital-scale' | 'lever-balance' | 'dynamometer' | 'coil'
   position: Vector3       // world position of the snap target center
   radius: number          // horizontal (X/Z) snap radius
   onAttach: (body: RapierRigidBody) => void

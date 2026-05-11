@@ -9,6 +9,7 @@ const baseCtx = {
   leverBalanceTilt: 0,
   leverLeftPanGrams: 0,
   leverRightPanGrams: 0,
+  lastMCChoice: null as number | null,
   readingStableSinceMs: 0,
   nowMs: 0,
   inputFocused: false,

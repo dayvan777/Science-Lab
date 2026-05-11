@@ -53,6 +53,13 @@ export const SUBJECTS: SubjectEntry[] = [
         path: '/physics/mass-measurement',
         status: 'available',
       },
+      {
+        id: 'em-induction',
+        title: 'Дослідження електромагнітної індукції',
+        subtitle: 'Котушка · Гальванометр · Лампочка',
+        path: '/physics/em-induction',
+        status: 'available',
+      },
     ],
   },
 ]

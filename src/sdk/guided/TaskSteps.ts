@@ -18,6 +18,15 @@ export type CompletionRule =
       kind: 'lever-balanced'
       toleranceGrams: number
     }
+  | {
+      /**
+       * Student picked the correct option in a multiple-choice question.
+       * The lab's MC UI calls setLastMCChoice(index) on click; this rule
+       * compares against the spec'd correctIndex.
+       */
+      kind: 'mc-selected'
+      correctIndex: number
+    }
   | { kind: 'input-focused' }
   | { kind: 'submitted' }
 
@@ -35,6 +44,8 @@ export type Step = {
   micropause?: number
   /** Sound to play on completion. */
   sound?: SoundId
+  /** For mc-selected steps — 2–4 option labels rendered as glass pills. */
+  choices?: { id: string; label: string }[]
   complete: CompletionRule
 }
 

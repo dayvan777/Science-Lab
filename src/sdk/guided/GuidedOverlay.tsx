@@ -59,6 +59,7 @@ export function GuidedOverlay() {
     const ctx = {
       draggingBodyId, lastSnapTargetId,
       digitalScaleGrams, dynamometerNewtons, leverBalanceTilt, leverLeftPanGrams, leverRightPanGrams,
+      lastMCChoice: useStepEngine.getState().lastMCChoice,
       readingStableSinceMs: useStepEngine.getState().readingStableSinceMs,
       nowMs, inputFocused,
       submittedSinceMs: 0,  // submission tracked via journal length change
