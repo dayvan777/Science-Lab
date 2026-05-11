@@ -7,7 +7,7 @@ import type { Step } from '../../../sdk/guided/TaskSteps'
  *
  *   'magnet-near-coil'         — magnet enters INFLUENCE_RADIUS for >= 1.5 s
  *   'magnet-leaving-coil'      — magnet exits influence radius after being inside
- *   'magnet-stationary-in-coil' — magnet inside coil + speed < 0.02 m/s for >= 2.0 s
+ *   'magnet-stationary-in-coil' — magnet inside coil + speed < 0.04 m/s for >= 2.0 s
  *
  * These are NOT in CompletionRule. LabScene watches readings and calls
  * advanceStep() directly when the conditions are met. Each Step below

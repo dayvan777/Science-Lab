@@ -11,13 +11,13 @@ import { Table } from '../../../sdk/scene/Table'
 import { Button } from '../../../sdk/ui/Button'
 import { SoundToggle } from '../../../sdk/ui/SoundToggle'
 import { ZoomControls } from '../../../sdk/ui/ZoomControls'
-import { useStepEngine } from '../../../sdk/guided/StepEngine'
+import { useStepEngine, isStepComplete } from '../../../sdk/guided/StepEngine'
 import { setActiveInstrument } from '../../../sdk/physics/snapTargets'
 import { useViewport } from '../../../sdk/a11y/useViewport'
 import { Coil } from '../instruments/Coil'
 import { Galvanometer } from '../instruments/Galvanometer'
 import { Bulb } from '../instruments/Bulb'
-import { BarMagnet } from '../objects/BarMagnet'
+import { BarMagnet, BAR_MAGNET_BODY_ID } from '../objects/BarMagnet'
 import { useLabState } from '../state/LabState'
 import { useInductionReadings } from '../state/InductionReadings'
 import { SCENES } from '../content/scenes'
@@ -30,7 +30,9 @@ const GALVANOMETER_WORLD: [number, number, number] = [0.30, 0.85, 0]
 const BULB_WORLD: [number, number, number] = [0.55, 0.85, 0]
 const MAGNET_TRAY_WORLD: [number, number, number] = [-0.40, 0.94, 0.30]
 
-const SCENE_TO_PRESET: CameraPreset[] = ['overview', 'focus-coil', 'focus-coil', 'focus-coil', 'focus-coil']
+function sceneToPreset(idx: number): CameraPreset {
+  return idx === 0 ? 'overview' : 'focus-coil'
+}
 
 /**
  * Reads magnet position + velocity each frame, computes EMF + bulb +
@@ -55,7 +57,7 @@ function SceneController() {
   }, [currentSceneIdx, currentStepIdx])
 
   useFrame(({ clock }) => {
-    const body = findBodyByTag('bar-magnet')
+    const body = findBodyByTag(BAR_MAGNET_BODY_ID)
     if (!body) return
     const t = body.translation()
     const v = body.linvel()
@@ -70,11 +72,11 @@ function SceneController() {
       magnetWorldZ: t.z,
     })
 
-    // ---------- Motion-aware step advance ----------
+    // ---------- Step advance ----------
     const scene = SCENES[currentSceneIdx]
     if (!scene) return
     const step = scene[currentStepIdx]
-    if (!step || !step.motionTrigger) return
+    if (!step) return
 
     const distance = pos.distanceTo(COIL_CENTER)
     const inside = distance <= INFLUENCE_RADIUS
@@ -111,6 +113,36 @@ function SceneController() {
         stationarySinceMs.current = null
       }
     }
+
+    // ---------- SDK rule advance ----------
+    // For steps without a motionTrigger, run the SDK's standard predicate.
+    // This covers `dragging` (pickup-slow / pickup-fast), `mc-selected`
+    // (every MC step), and `submitted`-as-fallback. Motion-trigger steps
+    // already short-circuited above and we don't double-check them here.
+    if (!step.motionTrigger) {
+      const engineState = useStepEngine.getState()
+      const ctx = {
+        draggingBodyId: engineState.draggingBodyId,
+        lastSnapTargetId: engineState.lastSnapTargetId,
+        digitalScaleGrams: 0,
+        dynamometerNewtons: 0,
+        leverBalanceTilt: 0,
+        leverLeftPanGrams: 0,
+        leverRightPanGrams: 0,
+        lastMCChoice: engineState.lastMCChoice,
+        readingStableSinceMs: engineState.readingStableSinceMs,
+        nowMs,
+        inputFocused: engineState.inputFocused,
+        submittedSinceMs: 0,  // 'submitted' rule handled by HUD's "Далі" button click via advanceStep() directly
+      }
+      if (isStepComplete(step.complete, ctx)) {
+        advanceStep()
+        // mc-selected: consume the choice so next MC step doesn't inherit it
+        if (step.complete.kind === 'mc-selected') {
+          engineState.setLastMCChoice(null)
+        }
+      }
+    }
   })
 
   return null
@@ -123,7 +155,7 @@ export function LabScene() {
   const respawnObjects = useLabState(s => s.respawnObjects)
   const { breakpoint } = useViewport()
   const isPhone = breakpoint === 'phone'
-  const preset: CameraPreset = SCENE_TO_PRESET[idx] ?? 'overview'
+  const preset: CameraPreset = sceneToPreset(idx)
 
   // Tell the snap-target system the active instrument is the coil — this
   // is a no-op since the magnet is free-form, but keeps the SDK happy.
