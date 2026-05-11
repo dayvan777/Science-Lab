@@ -16,11 +16,12 @@ export function SoundToggle() {
         backdropFilter: 'blur(20px)',
         border: '1px solid rgba(255,255,255,0.08)',
         color: '#f5f5f7',
-        borderRadius: 8,
-        width: 40,
-        height: 40,
-        fontSize: 18,
+        borderRadius: 10,
+        width: 44,
+        height: 44,
+        fontSize: 20,
         cursor: 'pointer',
+        touchAction: 'manipulation',
       }}
       aria-label={muted ? 'Увімкнути звук' : 'Вимкнути звук'}
     >
