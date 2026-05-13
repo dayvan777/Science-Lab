@@ -208,7 +208,10 @@ export function LabScene() {
         <Physics key={resetKey} gravity={[0, -9.81, 0]} timeStep={1 / 60}>
           <Table />
           <CoilStand coilWorld={COIL_WORLD} coilLength={COIL_LENGTH} coilOuterRadius={COIL_OUTER_RADIUS} />
-          <Coil position={COIL_WORLD} active={true} />
+          {/* No `active` prop — there's only one instrument in this lab, so the
+              blue <Outlines> highlight from mass-measurement's pattern just looked
+              like noise around the 16-turn copper helix. */}
+          <Coil position={COIL_WORLD} />
           <Galvanometer position={GALVANOMETER_WORLD} />
           <Bulb position={BULB_WORLD} />
           <Wires
