@@ -10,12 +10,15 @@ const MAX_LIGHT_INTENSITY = 2.5
 type Props = { position: [number, number, number] }
 
 export function Bulb({ position }: Props) {
-  const brightness = useInductionReadings(s => s.bulbBrightness)
   const lightRef = useRef<PointLight>(null)
   const glassMatRef = useRef<MeshStandardMaterial>(null)
 
   // Update light + emissive every frame via refs — avoids React re-render churn.
+  // PERF: read from store via getState() instead of selector — same reasoning
+  // as Galvanometer.tsx. Per-frame state changes don't trigger this component
+  // to reconcile.
   useFrame(() => {
+    const brightness = useInductionReadings.getState().bulbBrightness
     if (lightRef.current) {
       lightRef.current.intensity = brightness * MAX_LIGHT_INTENSITY
     }

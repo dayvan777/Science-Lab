@@ -20,7 +20,6 @@ const NEEDLE_DAMPING = 8
 type Props = { position: [number, number, number] }
 
 export function Galvanometer({ position }: Props) {
-  const targetAngle = useInductionReadings(s => s.galvanometerAngle)
   const dialTexture = useMemo(() => createGalvanometerDialTexture(), [])
   const needleRef = useRef<Mesh>(null)
   const displayedAngle = useRef(0)
@@ -31,8 +30,13 @@ export function Galvanometer({ position }: Props) {
   }, [dialTexture])
 
   useFrame((_, delta) => {
-    // Spring-damper smoothing so the needle eases into its target instead
-    // of jittering with raw Rapier velocity.
+    // PERF: read from store via getState() instead of selector — avoids
+    // a Zustand subscription that would re-render this component every
+    // frame when readings change (~60Hz). The component renders once at
+    // mount; per-frame updates are applied directly to the needle's
+    // rotation ref. If you need a value that DRIVES a re-render
+    // (e.g. an isComplete flag), put it in LabState, not InductionReadings.
+    const targetAngle = useInductionReadings.getState().galvanometerAngle
     const r = springStep({
       current: displayedAngle.current,
       velocity: velocity.current,

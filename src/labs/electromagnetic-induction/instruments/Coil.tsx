@@ -17,7 +17,7 @@ type Props = {
 }
 
 function buildCoilGeometry(): TubeGeometry {
-  const SEGMENTS = 256
+  const SEGMENTS = 96
   const points: Vector3[] = []
   for (let i = 0; i <= SEGMENTS; i++) {
     const t = i / SEGMENTS
@@ -31,7 +31,7 @@ function buildCoilGeometry(): TubeGeometry {
     ))
   }
   const curve = new CatmullRomCurve3(points)
-  return new TubeGeometry(curve, SEGMENTS * 2, COIL_TUBE_RADIUS, 8, false)
+  return new TubeGeometry(curve, SEGMENTS * 2, COIL_TUBE_RADIUS, 6, false)
 }
 
 export function Coil({ position, active = false }: Props) {
@@ -55,7 +55,7 @@ export function Coil({ position, active = false }: Props) {
 
   return (
     <group position={position}>
-      <mesh geometry={geometry} castShadow>
+      <mesh geometry={geometry}>
         <meshStandardMaterial
           color="#b67333"
           metalness={0.85}

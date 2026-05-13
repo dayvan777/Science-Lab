@@ -45,9 +45,15 @@ export const BULB_MAX = 4.5
  *   3. Reversed motion direction → velAlongAxis sign flips → EMF sign
  *      flips → galvanometer needle deflects the other way (Lenz).
  */
+// PERF: module-level scratch Vector3 reused by computeEMF. Avoids one
+// allocation per call (~60/sec while the lab is active → noticeable GC
+// pressure). The function is only called from a single useFrame, so
+// concurrent mutation is not a concern.
+const _scratchOffset = new Vector3()
+
 export function computeEMF(magnetPos: Vector3, magnetVel: Vector3): number {
-  const offset = new Vector3().subVectors(magnetPos, COIL_CENTER)
-  const distance = offset.length()
+  _scratchOffset.subVectors(magnetPos, COIL_CENTER)
+  const distance = _scratchOffset.length()
   if (distance > INFLUENCE_RADIUS) return 0
   // Proximity factor: 1 at the centre, smoothly tapering to 0 at the edge
   const t = distance / INFLUENCE_RADIUS

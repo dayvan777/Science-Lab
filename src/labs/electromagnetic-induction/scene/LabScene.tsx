@@ -17,6 +17,7 @@ import { useViewport } from '../../../sdk/a11y/useViewport'
 import { Coil } from '../instruments/Coil'
 import { Galvanometer } from '../instruments/Galvanometer'
 import { Bulb } from '../instruments/Bulb'
+import { Wires } from '../instruments/Wires'
 import { BarMagnet, BAR_MAGNET_BODY_ID } from '../objects/BarMagnet'
 import { useLabState } from '../state/LabState'
 import { useInductionReadings } from '../state/InductionReadings'
@@ -48,6 +49,11 @@ function SceneController() {
   const wasInside = useRef(false)
   const stationarySinceMs = useRef<number | null>(null)
   const nearSinceMs = useRef<number | null>(null)
+  // PERF: scratch Vector3 refs reused every frame inside useFrame.
+  // Module-level globals would also work; useRef scopes them to this
+  // component so future contributors can't accidentally cross-mutate.
+  const scratchPos = useRef(new Vector3())
+  const scratchVel = useRef(new Vector3())
 
   // Reset trigger-state on scene change
   useEffect(() => {
@@ -61,14 +67,14 @@ function SceneController() {
     if (!body) return
     const t = body.translation()
     const v = body.linvel()
-    const pos = new Vector3(t.x, t.y, t.z)
-    const vel = new Vector3(v.x, v.y, v.z)
-    const emf = computeEMF(pos, vel)
+    scratchPos.current.set(t.x, t.y, t.z)
+    scratchVel.current.set(v.x, v.y, v.z)
+    const emf = computeEMF(scratchPos.current, scratchVel.current)
     setReadings({
       currentEMF: emf,
       bulbBrightness: computeBulbBrightness(emf),
       galvanometerAngle: computeGalvanometerAngle(emf),
-      magnetSpeed: vel.length(),
+      magnetSpeed: scratchVel.current.length(),
       magnetWorldZ: t.z,
     })
 
@@ -78,10 +84,10 @@ function SceneController() {
     const step = scene[currentStepIdx]
     if (!step) return
 
-    const distance = pos.distanceTo(COIL_CENTER)
+    const distance = scratchPos.current.distanceTo(COIL_CENTER)
     const inside = distance <= INFLUENCE_RADIUS
     const nowMs = clock.getElapsedTime() * 1000
-    const speed = vel.length()
+    const speed = scratchVel.current.length()
 
     if (step.motionTrigger === 'magnet-near-coil') {
       // Magnet has been inside the influence radius for >= 1500 ms
@@ -185,6 +191,11 @@ export function LabScene() {
           <Coil position={COIL_WORLD} active={true} />
           <Galvanometer position={GALVANOMETER_WORLD} />
           <Bulb position={BULB_WORLD} />
+          <Wires
+            coilWorld={COIL_WORLD}
+            galvanometerWorld={GALVANOMETER_WORLD}
+            bulbWorld={BULB_WORLD}
+          />
           <BarMagnet position={MAGNET_TRAY_WORLD} enabled={phase === 'in-progress'} />
           <SceneController />
         </Physics>
