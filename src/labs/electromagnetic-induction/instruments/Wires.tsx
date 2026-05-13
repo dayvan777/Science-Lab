@@ -21,6 +21,16 @@ const BULB_GLASS_R = 0.025        // Bulb.tsx:6
 const BULB_BASE_Y_LOCAL = BULB_BASE_HEIGHT / 2  // mid-base height
 const BULB_ATTACH_OFFSET_Z = BULB_GLASS_R * 0.4  // ~1 cm
 
+// Wire-drape parameters. Spec v2 reduced sag from 15% → 5% after live
+// smoke-test showed the blue return wire dipping ~5.5 cm below the table.
+// Y-clamp ensures the curve never goes below WIRE_MIN_Y regardless of
+// distance — keeps the drape readable even for long horizontal spans.
+const TABLE_TOP_Y = 0.85          // matches sdk/scene/Table.tsx surface
+const WIRE_MIN_Y = TABLE_TOP_Y + 0.005  // 5 mm above table
+
+const WIRE_SAG_FACTOR = 0.05      // was 0.15 in polish v1
+const WIRE_QUARTER_DIP = 0.02     // was 0.05 in polish v1
+
 type Props = {
   coilWorld: [number, number, number]
   galvanometerWorld: [number, number, number]
@@ -28,20 +38,22 @@ type Props = {
 }
 
 /**
- * Build a gentle catenary-like curve between two world points. Mid-point is
- * displaced downward by 15% of the start-to-end distance, with two
- * intermediate control points nudged slightly below the straight line for a
- * natural drape. Returns a CatmullRomCurve3 of 5 points.
+ * Build a gentle catenary-like curve between two world points. Mid-point
+ * is displaced downward by WIRE_SAG_FACTOR × distance, with two
+ * intermediate control points nudged slightly below the straight line for
+ * a natural drape. All three are clamped to ≥ WIRE_MIN_Y so the curve
+ * never dips below the table surface. Returns a CatmullRomCurve3 of 5
+ * points.
  */
 function makeWireCurve(start: Vector3, end: Vector3): CatmullRomCurve3 {
   const dist = start.distanceTo(end)
-  const sag = dist * 0.15
+  const sag = dist * WIRE_SAG_FACTOR
   const mid = new Vector3().addVectors(start, end).multiplyScalar(0.5)
-  mid.y -= sag
+  mid.y = Math.max(WIRE_MIN_Y, mid.y - sag)
   const quarter1 = new Vector3().lerpVectors(start, mid, 0.5)
-  quarter1.y -= dist * 0.05
+  quarter1.y = Math.max(WIRE_MIN_Y, quarter1.y - dist * WIRE_QUARTER_DIP)
   const quarter2 = new Vector3().lerpVectors(mid, end, 0.5)
-  quarter2.y -= dist * 0.05
+  quarter2.y = Math.max(WIRE_MIN_Y, quarter2.y - dist * WIRE_QUARTER_DIP)
   return new CatmullRomCurve3([start, quarter1, mid, quarter2, end], false, 'catmullrom', 0.5)
 }
 

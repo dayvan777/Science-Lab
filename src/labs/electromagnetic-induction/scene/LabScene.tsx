@@ -14,10 +14,12 @@ import { ZoomControls } from '../../../sdk/ui/ZoomControls'
 import { useStepEngine, isStepComplete } from '../../../sdk/guided/StepEngine'
 import { setActiveInstrument } from '../../../sdk/physics/snapTargets'
 import { useViewport } from '../../../sdk/a11y/useViewport'
-import { Coil } from '../instruments/Coil'
+import { Coil, COIL_LENGTH, COIL_OUTER_RADIUS } from '../instruments/Coil'
 import { Galvanometer } from '../instruments/Galvanometer'
 import { Bulb } from '../instruments/Bulb'
 import { Wires } from '../instruments/Wires'
+import { CoilStand } from '../instruments/CoilStand'
+import { LabClutter } from '../instruments/LabClutter'
 import { BarMagnet, BAR_MAGNET_BODY_ID } from '../objects/BarMagnet'
 import { useLabState } from '../state/LabState'
 import { useInductionReadings } from '../state/InductionReadings'
@@ -30,6 +32,12 @@ const COIL_WORLD: [number, number, number] = [COIL_CENTER.x, COIL_CENTER.y, COIL
 const GALVANOMETER_WORLD: [number, number, number] = [0.30, 0.85, 0]
 const BULB_WORLD: [number, number, number] = [0.55, 0.85, 0]
 const MAGNET_TRAY_WORLD: [number, number, number] = [-0.40, 0.94, 0.30]
+
+// Decorative clutter positions — chosen so they don't overlap any
+// interactive object and don't intersect the camera's focus-coil framing.
+const NOTEBOOK_WORLD: [number, number, number] = [-0.55, 0.86, 0.30]
+const SPOOL_WORLD: [number, number, number] = [0.10, 0.86, -0.35]
+const SPARE_MAGNET_WORLD: [number, number, number] = [0.55, 0.86, -0.30]
 
 function sceneToPreset(idx: number): CameraPreset {
   return idx === 0 ? 'overview' : 'focus-coil'
@@ -46,9 +54,13 @@ function SceneController() {
   const currentSceneIdx = useLabState(s => s.currentSceneIndex)
   const currentStepIdx = useStepEngine(s => s.currentStepIndex)
   const setReadings = useInductionReadings(s => s.setReadings)
+  // Accumulator-based timers — milliseconds spent in the relevant state.
+  // Polish v2 swap: `nearAccumulatedMs` no longer resets when the magnet
+  // momentarily leaves the influence radius, fixing the "sometimes the MC
+  // question doesn't appear" bug.
+  const nearAccumulatedMs = useRef(0)
+  const stationaryAccumulatedMs = useRef(0)
   const wasInside = useRef(false)
-  const stationarySinceMs = useRef<number | null>(null)
-  const nearSinceMs = useRef<number | null>(null)
   // PERF: scratch Vector3 refs reused every frame inside useFrame.
   // Module-level globals would also work; useRef scopes them to this
   // component so future contributors can't accidentally cross-mutate.
@@ -58,11 +70,11 @@ function SceneController() {
   // Reset trigger-state on scene change
   useEffect(() => {
     wasInside.current = false
-    stationarySinceMs.current = null
-    nearSinceMs.current = null
+    nearAccumulatedMs.current = 0
+    stationaryAccumulatedMs.current = 0
   }, [currentSceneIdx, currentStepIdx])
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, delta) => {
     const body = findBodyByTag(BAR_MAGNET_BODY_ID)
     if (!body) return
     const t = body.translation()
@@ -88,35 +100,42 @@ function SceneController() {
     const inside = distance <= INFLUENCE_RADIUS
     const nowMs = clock.getElapsedTime() * 1000
     const speed = scratchVel.current.length()
+    const deltaMs = delta * 1000
 
     if (step.motionTrigger === 'magnet-near-coil') {
-      // Magnet has been inside the influence radius for >= 1500 ms
+      // Polish v2: accumulate time inside; do NOT reset on momentary exit.
+      // Triggers after 600 ms cumulative — far more reliable than the old
+      // 1500 ms continuous check.
       if (inside) {
-        if (nearSinceMs.current === null) nearSinceMs.current = nowMs
-        if (nowMs - nearSinceMs.current >= 1500) {
-          advanceStep()
-          nearSinceMs.current = null
-        }
-      } else {
-        nearSinceMs.current = null
+        nearAccumulatedMs.current += deltaMs
+      }
+      if (nearAccumulatedMs.current >= 600) {
+        advanceStep()
+        nearAccumulatedMs.current = 0
       }
     } else if (step.motionTrigger === 'magnet-leaving-coil') {
-      // Magnet must first have been inside, then leaves (distance > influence)
-      if (inside) wasInside.current = true
-      else if (wasInside.current && !inside && speed > 0.05) {
+      // Polish v2: dropped the speed > 0.05 gate. Even slow withdrawal
+      // now counts. Trigger fires once on the first frame after entering
+      // and then leaving the influence radius.
+      if (inside) {
+        wasInside.current = true
+      } else if (wasInside.current) {
         advanceStep()
         wasInside.current = false
       }
     } else if (step.motionTrigger === 'magnet-stationary-in-coil') {
-      // Inside coil AND speed nearly zero for >= 2000 ms
-      if (inside && speed < 0.04) {
-        if (stationarySinceMs.current === null) stationarySinceMs.current = nowMs
-        if (nowMs - stationarySinceMs.current >= 2000) {
-          advanceStep()
-          stationarySinceMs.current = null
-        }
+      // Polish v2: speed gate widened 0.04 → 0.08 (absorbs Rapier jitter),
+      // continuous threshold shortened 2000 → 1500 ms. Still resets on
+      // motion OR exit — the pedagogy specifically asks the student to
+      // place the magnet inside and leave it alone.
+      if (inside && speed < 0.08) {
+        stationaryAccumulatedMs.current += deltaMs
       } else {
-        stationarySinceMs.current = null
+        stationaryAccumulatedMs.current = 0
+      }
+      if (stationaryAccumulatedMs.current >= 1500) {
+        advanceStep()
+        stationaryAccumulatedMs.current = 0
       }
     }
 
@@ -188,6 +207,7 @@ export function LabScene() {
         <Environment preset="studio" background={false} resolution={64} />
         <Physics key={resetKey} gravity={[0, -9.81, 0]} timeStep={1 / 60}>
           <Table />
+          <CoilStand coilWorld={COIL_WORLD} coilLength={COIL_LENGTH} coilOuterRadius={COIL_OUTER_RADIUS} />
           <Coil position={COIL_WORLD} active={true} />
           <Galvanometer position={GALVANOMETER_WORLD} />
           <Bulb position={BULB_WORLD} />
@@ -195,6 +215,11 @@ export function LabScene() {
             coilWorld={COIL_WORLD}
             galvanometerWorld={GALVANOMETER_WORLD}
             bulbWorld={BULB_WORLD}
+          />
+          <LabClutter
+            notebookWorld={NOTEBOOK_WORLD}
+            spoolWorld={SPOOL_WORLD}
+            spareMagnetWorld={SPARE_MAGNET_WORLD}
           />
           <BarMagnet position={MAGNET_TRAY_WORLD} enabled={phase === 'in-progress'} />
           <SceneController />
