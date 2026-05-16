@@ -98,7 +98,7 @@ export function HUD() {
           {step?.hintTitle ?? '...'}
         </div>
         {step?.hintExplanation && (
-          <div style={{ fontSize: 13, color: '#6e6e73', lineHeight: 1.5, marginBottom: 14 }}>
+          <div style={{ fontSize: breakpoint === 'phone' ? 14 : 13, color: '#6e6e73', lineHeight: 1.5, marginBottom: 14 }}>
             {step.hintExplanation}
           </div>
         )}

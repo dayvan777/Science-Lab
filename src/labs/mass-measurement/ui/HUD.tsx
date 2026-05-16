@@ -172,7 +172,7 @@ export function HUD() {
           {current.prompt}
         </div>
         <div style={{
-          fontSize: 13, color: '#6e6e73', lineHeight: 1.5,
+          fontSize: breakpoint === 'phone' ? 14 : 13, color: '#6e6e73', lineHeight: 1.5,
           padding: '12px 0', borderTop: '1px solid rgba(0,0,0,0.08)', borderBottom: '1px solid rgba(0,0,0,0.08)',
         }}>
           💡 {current.hint}
@@ -183,7 +183,7 @@ export function HUD() {
               {renderTemplate(currentStep.hintTitle ?? currentStep.hintTemplate ?? '', readings)}
             </div>
             {currentStep.hintExplanation && (
-              <div style={{ fontSize: 13, color: '#6e6e73', lineHeight: 1.5 }}>
+              <div style={{ fontSize: breakpoint === 'phone' ? 14 : 13, color: '#6e6e73', lineHeight: 1.5 }}>
                 {currentStep.hintExplanation}
               </div>
             )}
@@ -270,7 +270,7 @@ export function HUD() {
                   <div key={t.id} style={{
                     display: 'flex', justifyContent: 'space-between',
                     padding: '4px 0 4px 6px',
-                    fontSize: 12,
+                    fontSize: breakpoint === 'phone' ? 13 : 12,
                     opacity: isDone || isCurrent ? 1 : 0.6,
                   }}>
                     <span>
