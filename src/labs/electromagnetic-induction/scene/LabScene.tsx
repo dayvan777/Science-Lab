@@ -31,6 +31,7 @@ import { computeEMF, computeBulbBrightness, computeGalvanometerAngle, COIL_CENTE
 import { HUD } from '../ui/HUD'
 import { FieldToggleButton } from '../ui/FieldToggleButton'
 import { CoilTurnsButton } from '../ui/CoilTurnsButton'
+import { MagnetStrengthButton } from '../ui/MagnetStrengthButton'
 import { findBodyByTag } from '../../../sdk/physics/bodyRegistry'
 
 const COIL_WORLD: [number, number, number] = [COIL_CENTER.x, COIL_CENTER.y, COIL_CENTER.z]
@@ -270,6 +271,7 @@ export function LabScene() {
         <SoundToggle />
         <FieldToggleButton />
         <CoilTurnsButton />
+        <MagnetStrengthButton />
         <Button
           variant="secondary"
           onClick={() => respawnObjects()}
