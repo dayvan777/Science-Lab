@@ -8,6 +8,7 @@ import { CameraRig } from '../../../sdk/scene/CameraRig'
 import type { CameraPreset } from '../../../sdk/scene/CameraRig'
 import { PostFX } from '../../../sdk/scene/PostFX'
 import { Table } from '../../../sdk/scene/Table'
+import { CANVAS_BASE_STYLE } from '../../../sdk/scene/canvasStyle'
 import { Button } from '../../../sdk/ui/Button'
 import { SoundToggle } from '../../../sdk/ui/SoundToggle'
 import { ZoomControls } from '../../../sdk/ui/ZoomControls'
@@ -205,11 +206,7 @@ export function LabScene() {
         dpr={[1, 1.5]}
         shadows
         gl={{ toneMapping: ACESFilmicToneMapping, toneMappingExposure: 0.55 }}
-        style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'radial-gradient(ellipse at center, #2a2a30 0%, #1a1a1e 50%, #0a0a0c 100%)',
-        }}
+        style={{ ...CANVAS_BASE_STYLE, background: 'radial-gradient(ellipse at center, #2a2a30 0%, #1a1a1e 50%, #0a0a0c 100%)' }}
       >
         <CinematicLighting />
         <CameraRig preset={preset} />
