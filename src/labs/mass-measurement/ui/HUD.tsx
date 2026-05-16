@@ -8,6 +8,7 @@ import { CollapsibleGlassPanel } from '../../../sdk/ui/CollapsibleGlassPanel'
 import { useReadings } from '../state/InstrumentReadings'
 import { useStepEngine } from '../../../sdk/guided/StepEngine'
 import { useViewport } from '../../../sdk/a11y/useViewport'
+import { safeAreaTop, safeAreaBottom } from '../../../sdk/a11y/safeArea'
 
 const TOTAL = 9
 const BASE_FONT = '"SF Pro Display", "Inter", system-ui, sans-serif'
@@ -92,7 +93,7 @@ export function HUD() {
     if (breakpoint === 'phone') {
       return {
         // Top pill stays small at top-centre.
-        topPill: { top: 8, padding: '6px 14px', fontSize: 12 } as const,
+        topPill: { top: safeAreaTop(8), padding: '6px 14px', fontSize: 12 } as const,
         // Task panel becomes a bottom drawer (above the input bar).
         taskPanel: {
           left: 8, right: 8, bottom: 96, top: undefined,
@@ -100,11 +101,11 @@ export function HUD() {
         } as const,
         // Journal moves above the task panel as a compact strip — only the group headers visible.
         journalPanel: {
-          left: 8, right: 8, bottom: undefined, top: 56,
+          left: 8, right: 8, bottom: undefined, top: safeAreaTop(56),
           width: 'auto', maxHeight: 120, padding: 10, fontSize: 12,
         } as const,
         // Input bar pinned to the bottom edge.
-        inputBar: { left: 8, right: 8, bottom: 8, padding: '10px 14px' } as const,
+        inputBar: { left: 8, right: 8, bottom: safeAreaBottom(8), padding: '10px 14px' } as const,
       }
     }
     if (breakpoint === 'tablet') {
@@ -217,7 +218,7 @@ export function HUD() {
         style={{ overflow: 'auto', ...layout.journalPanel }}
         collapsedStyle={
           breakpoint === 'phone'
-            ? { top: 56, right: 8 }
+            ? { top: safeAreaTop(56), right: 8 }
             : { top: layout.journalPanel.top ?? 64, right: 8 }
         }
       >

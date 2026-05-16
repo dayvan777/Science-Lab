@@ -4,6 +4,7 @@ import { CollapsibleGlassPanel } from '../../../sdk/ui/CollapsibleGlassPanel'
 import { Button } from '../../../sdk/ui/Button'
 import { MultipleChoice } from '../../../sdk/ui/MultipleChoice'
 import { useViewport } from '../../../sdk/a11y/useViewport'
+import { safeAreaTop } from '../../../sdk/a11y/safeArea'
 import { useLabState } from '../state/LabState'
 import { useStepEngine } from '../../../sdk/guided/StepEngine'
 import { SCENES } from '../content/scenes'
@@ -42,9 +43,9 @@ export function HUD() {
   const layout = (() => {
     if (breakpoint === 'phone') {
       return {
-        topPill: { top: 8, padding: '6px 14px', fontSize: 12 } as const,
+        topPill: { top: safeAreaTop(8), padding: '6px 14px', fontSize: 12 } as const,
         taskPanel: { left: 8, right: 8, bottom: 96, top: undefined, width: 'auto', maxHeight: '40vh', padding: 14 } as const,
-        journalPanel: { left: 8, right: 8, bottom: undefined, top: 56, width: 'auto', maxHeight: 120, padding: 10, fontSize: 12 } as const,
+        journalPanel: { left: 8, right: 8, bottom: undefined, top: safeAreaTop(56), width: 'auto', maxHeight: 120, padding: 10, fontSize: 12 } as const,
       }
     }
     if (breakpoint === 'tablet') {
@@ -133,7 +134,7 @@ export function HUD() {
         aria-labelledby="em-journal-label"
         style={{ overflow: 'auto', ...layout.journalPanel }}
         collapsedStyle={
-          breakpoint === 'phone' ? { top: 56, right: 8 } : { top: layout.journalPanel.top ?? 64, right: 8 }
+          breakpoint === 'phone' ? { top: safeAreaTop(56), right: 8 } : { top: layout.journalPanel.top ?? 64, right: 8 }
         }
       >
         <div id="em-journal-label" style={{ fontSize: 11, letterSpacing: '0.15em', color: '#86868b', textTransform: 'uppercase', marginBottom: 8 }}>
