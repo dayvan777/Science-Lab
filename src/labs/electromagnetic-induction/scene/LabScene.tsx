@@ -25,7 +25,7 @@ import { CurrentArrows } from '../instruments/CurrentArrows'
 import { BarMagnet, BAR_MAGNET_BODY_ID } from '../objects/BarMagnet'
 import { useLabState } from '../state/LabState'
 import { useInductionReadings } from '../state/InductionReadings'
-import { useVisualState } from '../state/VisualState'
+import { useLabSettings } from '../state/LabSettingsState'
 import { SCENES } from '../content/scenes'
 import { computeEMF, computeBulbBrightness, computeGalvanometerAngle, COIL_CENTER, INFLUENCE_RADIUS } from '../physics/induction'
 import { HUD } from '../ui/HUD'
@@ -185,7 +185,7 @@ export function LabScene() {
   const { breakpoint } = useViewport()
   const isPhone = breakpoint === 'phone'
   const preset: CameraPreset = sceneToPreset(idx)
-  const fieldVisibleToggle = useVisualState((s) => s.fieldVisible)
+  const fieldVisibleToggle = useLabSettings((s) => s.fieldVisible)
   // Field + current arrows are hidden during Scene 1 (intro) regardless of
   // the toggle — the student should see the bare equipment first. From
   // Scene 2 onward, the toggle takes effect.
