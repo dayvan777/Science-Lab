@@ -192,6 +192,11 @@ export function LabScene() {
   const preset: CameraPreset = sceneToPreset(idx)
   const fieldVisibleToggle = useLabSettings((s) => s.fieldVisible)
   const coilTurns = useLabSettings((s) => s.coilTurns)
+  const magnetStrength = useLabSettings((s) => s.magnetStrength)
+  const opacityScale =
+    magnetStrength === 'weak' ? 0.5
+    : magnetStrength === 'strong' ? 1.5
+    : 1.0
   // Field + current arrows are hidden during Scene 1 (intro) regardless of
   // the toggle — the student should see the bare equipment first. From
   // Scene 2 onward, the toggle takes effect.
@@ -247,7 +252,7 @@ export function LabScene() {
             spareMagnetWorld={SPARE_MAGNET_WORLD}
           />
           <BarMagnet position={MAGNET_TRAY_WORLD} enabled={phase === 'in-progress'} />
-          <FieldLines magnetBodyId={BAR_MAGNET_BODY_ID} visible={fieldVisible} />
+          <FieldLines magnetBodyId={BAR_MAGNET_BODY_ID} visible={fieldVisible} opacityScale={opacityScale} />
           <SceneController />
         </Physics>
         <PostFX />
