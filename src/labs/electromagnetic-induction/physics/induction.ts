@@ -31,6 +31,13 @@ export const BULB_THRESHOLD = 1.5
 export const BULB_MAX = 4.5
 
 /**
+ * Default number of helix wraps in the coil. `computeEMF` uses
+ * `turns / DEFAULT_COIL_TURNS` as a linear gain — so at the default
+ * (10 turns) the gain is 1.0 and matches Phase 2's EMF magnitudes.
+ */
+export const DEFAULT_COIL_TURNS = 10
+
+/**
  * EMF induced in the coil by the moving magnet, in arbitrary units
  * matched to the ±EMF_MAX galvanometer scale.
  *
@@ -53,7 +60,12 @@ export const BULB_MAX = 4.5
 // concurrent mutation is not a concern.
 const _scratchOffset = new Vector3()
 
-export function computeEMF(magnetPos: Vector3, magnetVel: Vector3): number {
+export function computeEMF(
+  magnetPos: Vector3,
+  magnetVel: Vector3,
+  turns: number,
+  strengthMultiplier: number,
+): number {
   _scratchOffset.subVectors(magnetPos, COIL_CENTER)
   const distance = _scratchOffset.length()
   if (distance > INFLUENCE_RADIUS) return 0
@@ -62,7 +74,8 @@ export function computeEMF(magnetPos: Vector3, magnetVel: Vector3): number {
   const proximity = 1 - t * t
   // Velocity component along coil axis (positive = entering from -x, negative = leaving)
   const velAlongAxis = magnetVel.dot(COIL_AXIS)
-  const emf = EMF_GAIN * velAlongAxis * proximity
+  const turnsScale = turns / DEFAULT_COIL_TURNS
+  const emf = EMF_GAIN * velAlongAxis * proximity * turnsScale * strengthMultiplier
   return Math.max(-EMF_MAX, Math.min(EMF_MAX, emf))
 }
 

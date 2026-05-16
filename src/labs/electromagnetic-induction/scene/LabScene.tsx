@@ -85,7 +85,12 @@ function SceneController() {
     const v = body.linvel()
     scratchPos.current.set(t.x, t.y, t.z)
     scratchVel.current.set(v.x, v.y, v.z)
-    const emf = computeEMF(scratchPos.current, scratchVel.current)
+    const settings = useLabSettings.getState()
+    const strengthMul =
+      settings.magnetStrength === 'weak' ? 0.5
+      : settings.magnetStrength === 'strong' ? 1.5
+      : 1.0
+    const emf = computeEMF(scratchPos.current, scratchVel.current, settings.coilTurns, strengthMul)
     setReadings({
       currentEMF: emf,
       bulbBrightness: computeBulbBrightness(emf),
