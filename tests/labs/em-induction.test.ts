@@ -22,25 +22,25 @@ describe('computeEMF', () => {
     expect(computeEMF(pos, vel)).toBe(0)
   })
 
-  it('positive z-velocity inside coil → positive EMF', () => {
+  it('positive x-velocity inside coil → positive EMF', () => {
     const pos = COIL_CENTER.clone()
-    const vel = new Vector3(0, 0, 0.5)
+    const vel = new Vector3(0.5, 0, 0)
     const emf = computeEMF(pos, vel)
     expect(emf).toBeGreaterThan(0)
   })
 
-  it('negative z-velocity inside coil → negative EMF (Lenz)', () => {
+  it('negative x-velocity inside coil → negative EMF (Lenz)', () => {
     const pos = COIL_CENTER.clone()
-    const vel = new Vector3(0, 0, -0.5)
+    const vel = new Vector3(-0.5, 0, 0)
     const emf = computeEMF(pos, vel)
     expect(emf).toBeLessThan(0)
   })
 
   it('EMF clamps at ±EMF_MAX even for very fast motion', () => {
     const pos = COIL_CENTER.clone()
-    const fast = new Vector3(0, 0, 100)
+    const fast = new Vector3(100, 0, 0)
     expect(computeEMF(pos, fast)).toBe(EMF_MAX)
-    expect(computeEMF(pos, new Vector3(0, 0, -100))).toBe(-EMF_MAX)
+    expect(computeEMF(pos, new Vector3(-100, 0, 0))).toBe(-EMF_MAX)
   })
 })
 

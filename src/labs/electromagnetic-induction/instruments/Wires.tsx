@@ -66,18 +66,19 @@ export function Wires({ coilWorld, galvanometerWorld, bulbWorld }: Props) {
   const galvCentre = new Vector3(...galvanometerWorld)
   const bulbCentre = new Vector3(...bulbWorld)
 
-  // Coil end attach points (z ends, outer radius below coil top)
-  // The wires emerge from the BOTTOM of the coil (radius * sin(-π/2)) so they
-  // drop down to the table and curve toward the next instrument.
+  // Coil end attach points — with the coil now oriented along world X, the
+  // "left" end sits at -COIL_LENGTH/2 (low x) and "right" at +COIL_LENGTH/2.
+  // Wires emerge from the BOTTOM of the coil (y - outerRadius) so they drop
+  // down to the table and curve toward the next instrument.
   const coilRightEnd = new Vector3(
-    coilCentre.x,
+    coilCentre.x + COIL_LENGTH / 2,
     coilCentre.y - COIL_OUTER_RADIUS,
-    coilCentre.z + COIL_LENGTH / 2,
+    coilCentre.z,
   )
   const coilLeftEnd = new Vector3(
-    coilCentre.x,
+    coilCentre.x - COIL_LENGTH / 2,
     coilCentre.y - COIL_OUTER_RADIUS,
-    coilCentre.z - COIL_LENGTH / 2,
+    coilCentre.z,
   )
 
   // Galvanometer terminal posts (world)

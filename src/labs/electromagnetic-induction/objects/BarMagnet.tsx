@@ -22,6 +22,7 @@ export function BarMagnet({ position, enabled = true }: Props) {
       }}
       bodyId={BAR_MAGNET_BODY_ID}
       enabled={enabled}
+      dragHeight={0.95}
     >
       {/* N pole (red) — left half (-x) */}
       <mesh position={[-MAGNET_HALF_LENGTH / 2, 0, 0]} castShadow receiveShadow>

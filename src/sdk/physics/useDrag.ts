@@ -7,7 +7,6 @@ import { findSnapNear, snapProgress } from './snapTargets'
 import { useStepEngine } from '../../sdk/guided/StepEngine'
 import { clamp } from '../animation'
 
-const DRAG_HEIGHT = 1.0
 const SMOOTHING = 0.3
 // Drag bounds — keep dragged objects within the table footprint so the user
 // cannot accidentally drop something off the edge and lose it. Default values
@@ -46,9 +45,18 @@ function animateMagneticSnap(
   requestAnimationFrame(step)
 }
 
-type Props = { rigidBody: RefObject<RapierRigidBody | null>; bodyId?: string }
+type Props = {
+  rigidBody: RefObject<RapierRigidBody | null>
+  bodyId?: string
+  /** Y-plane the dragged body slides on during drag. Default 1.0 — floats
+   *  objects above the table for visibility. Labs whose interaction needs
+   *  the dragged body to align with another object's geometry (e.g. the
+   *  EM-induction bar magnet passing through the coil's bore at y=0.95)
+   *  pass an explicit value. */
+  dragHeight?: number
+}
 
-export function useDrag({ rigidBody, bodyId }: Props) {
+export function useDrag({ rigidBody, bodyId, dragHeight = 1.0 }: Props) {
   const { camera, gl } = useThree()
   const target = useRef(new Vector3())
   const isDragging = useRef(false)
@@ -62,9 +70,9 @@ export function useDrag({ rigidBody, bodyId }: Props) {
     const y = -((native.clientY - rect.top) / rect.height) * 2 + 1
     const ndc = new Vector3(x, y, 0.5).unproject(camera)
     const dir = ndc.sub(camera.position).normalize()
-    const t = -(camera.position.y - DRAG_HEIGHT) / dir.y
+    const t = -(camera.position.y - dragHeight) / dir.y
     return camera.position.clone().add(dir.multiplyScalar(t))
-  }, [camera, gl])
+  }, [camera, gl, dragHeight])
 
   const onPointerDown = (ev: ThreeEvent<PointerEvent>) => {
     // Filter: for mouse pointers, require an actual button press (prevents hover-induced drags)

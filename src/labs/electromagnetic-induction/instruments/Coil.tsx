@@ -5,7 +5,7 @@ import { registerSnap } from '../../../sdk/physics/snapTargets'
 
 export const COIL_OUTER_RADIUS = 0.04   // 4 cm
 export const COIL_TUBE_RADIUS = 0.0035  // copper wire thickness
-export const COIL_LENGTH = 0.12         // 12 cm long along z
+export const COIL_LENGTH = 0.12         // 12 cm long along x
 export const COIL_TURNS = 16
 export const COIL_SNAP_RADIUS = 0.10
 
@@ -22,12 +22,12 @@ function buildCoilGeometry(): TubeGeometry {
   for (let i = 0; i <= SEGMENTS; i++) {
     const t = i / SEGMENTS
     const angle = t * COIL_TURNS * Math.PI * 2
-    // axis along z: vary z linearly, oscillate x and y
-    const z = -COIL_LENGTH / 2 + t * COIL_LENGTH
+    // axis along x: vary x linearly, oscillate y and z (cross-section in y-z plane).
+    const x = -COIL_LENGTH / 2 + t * COIL_LENGTH
     points.push(new Vector3(
-      Math.cos(angle) * COIL_OUTER_RADIUS,
+      x,
       Math.sin(angle) * COIL_OUTER_RADIUS,
-      z,
+      Math.cos(angle) * COIL_OUTER_RADIUS,
     ))
   }
   const curve = new CatmullRomCurve3(points)

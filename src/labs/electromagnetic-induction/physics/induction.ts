@@ -8,10 +8,12 @@ export const COIL_CENTER = new Vector3(-0.05, 0.95, 0)
 
 /**
  * Coil axis — magnetic flux through the coil is the component of the
- * magnet's velocity along this direction. Coil's bore is oriented along z
- * so the student drags the magnet toward/away from the camera.
+ * magnet's velocity along this direction. Coil's bore is oriented along x
+ * (lateral, left-right of the viewer), so the student drags the magnet
+ * sideways through the bore. Matches the PhET Faraday Lab layout and the
+ * user's reference photos.
  */
-export const COIL_AXIS = new Vector3(0, 0, 1)
+export const COIL_AXIS = new Vector3(1, 0, 0)
 
 /** Outside this radius, the magnet has no effect on the coil. */
 export const INFLUENCE_RADIUS = 0.18
@@ -58,7 +60,7 @@ export function computeEMF(magnetPos: Vector3, magnetVel: Vector3): number {
   // Proximity factor: 1 at the centre, smoothly tapering to 0 at the edge
   const t = distance / INFLUENCE_RADIUS
   const proximity = 1 - t * t
-  // Velocity component along coil axis (positive = entering from -z, negative = leaving)
+  // Velocity component along coil axis (positive = entering from -x, negative = leaving)
   const velAlongAxis = magnetVel.dot(COIL_AXIS)
   const emf = EMF_GAIN * velAlongAxis * proximity
   return Math.max(-EMF_MAX, Math.min(EMF_MAX, emf))

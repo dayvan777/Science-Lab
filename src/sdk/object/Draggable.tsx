@@ -12,13 +12,17 @@ type Props = {
   shape: Shape
   bodyId?: string       // for guided step detection
   enabled?: boolean     // if false, pointer-down is blocked (object not pickable)
+  /** Y-plane the body slides on during drag. Default 1.0 (floats above the
+   *  table). EM-induction's BarMagnet passes 0.95 so the magnet aligns with
+   *  the coil's bore centre. */
+  dragHeight?: number
   children: ReactNode
 }
 
-export function Draggable({ position, mass, shape, bodyId, enabled = true, children }: Props) {
+export function Draggable({ position, mass, shape, bodyId, enabled = true, dragHeight, children }: Props) {
   const ref = useRef<RapierRigidBody>(null)
   const setDragging = useStepEngine(s => s.setDragging)
-  const { onPointerDown: rawDown, onPointerMove, onPointerUp: rawUp } = useDrag({ rigidBody: ref, bodyId })
+  const { onPointerDown: rawDown, onPointerMove, onPointerUp: rawUp } = useDrag({ rigidBody: ref, bodyId, dragHeight })
   const massKg = mass / 1000
   // Half the vertical extent of the body — used by stacking layouts (lever pans).
   const halfHeight = shape.type === 'ball' ? shape.radius : shape.halfExtents[1]
