@@ -14,18 +14,22 @@ import { ZoomControls } from '../../../sdk/ui/ZoomControls'
 import { useStepEngine, isStepComplete } from '../../../sdk/guided/StepEngine'
 import { setActiveInstrument } from '../../../sdk/physics/snapTargets'
 import { useViewport } from '../../../sdk/a11y/useViewport'
-import { Coil, COIL_LENGTH, COIL_OUTER_RADIUS } from '../instruments/Coil'
+import { Coil, COIL_LENGTH, COIL_OUTER_RADIUS, COIL_TURNS } from '../instruments/Coil'
 import { Galvanometer } from '../instruments/Galvanometer'
 import { Bulb } from '../instruments/Bulb'
 import { Wires } from '../instruments/Wires'
 import { CoilStand } from '../instruments/CoilStand'
 import { LabClutter } from '../instruments/LabClutter'
+import { FieldLines } from '../instruments/FieldLines'
+import { CurrentArrows } from '../instruments/CurrentArrows'
 import { BarMagnet, BAR_MAGNET_BODY_ID } from '../objects/BarMagnet'
 import { useLabState } from '../state/LabState'
 import { useInductionReadings } from '../state/InductionReadings'
+import { useVisualState } from '../state/VisualState'
 import { SCENES } from '../content/scenes'
 import { computeEMF, computeBulbBrightness, computeGalvanometerAngle, COIL_CENTER, INFLUENCE_RADIUS } from '../physics/induction'
 import { HUD } from '../ui/HUD'
+import { FieldToggleButton } from '../ui/FieldToggleButton'
 import { findBodyByTag } from '../../../sdk/physics/bodyRegistry'
 
 const COIL_WORLD: [number, number, number] = [COIL_CENTER.x, COIL_CENTER.y, COIL_CENTER.z]
@@ -181,6 +185,11 @@ export function LabScene() {
   const { breakpoint } = useViewport()
   const isPhone = breakpoint === 'phone'
   const preset: CameraPreset = sceneToPreset(idx)
+  const fieldVisibleToggle = useVisualState((s) => s.fieldVisible)
+  // Field + current arrows are hidden during Scene 1 (intro) regardless of
+  // the toggle — the student should see the bare equipment first. From
+  // Scene 2 onward, the toggle takes effect.
+  const fieldVisible = fieldVisibleToggle && idx > 0
 
   // Tell the snap-target system the active instrument is the coil — this
   // is a no-op since the magnet is free-form, but keeps the SDK happy.
@@ -212,6 +221,13 @@ export function LabScene() {
               blue <Outlines> highlight from mass-measurement's pattern just looked
               like noise around the 16-turn copper helix. */}
           <Coil position={COIL_WORLD} />
+          <CurrentArrows
+            coilWorld={COIL_WORLD}
+            coilLength={COIL_LENGTH}
+            coilOuterRadius={COIL_OUTER_RADIUS}
+            coilTurns={COIL_TURNS}
+            visible={fieldVisible}
+          />
           <Galvanometer position={GALVANOMETER_WORLD} />
           <Bulb position={BULB_WORLD} />
           <Wires
@@ -225,6 +241,7 @@ export function LabScene() {
             spareMagnetWorld={SPARE_MAGNET_WORLD}
           />
           <BarMagnet position={MAGNET_TRAY_WORLD} enabled={phase === 'in-progress'} />
+          <FieldLines magnetBodyId={BAR_MAGNET_BODY_ID} visible={fieldVisible} />
           <SceneController />
         </Physics>
         <PostFX />
@@ -239,6 +256,7 @@ export function LabScene() {
       >
         <ZoomControls />
         <SoundToggle />
+        <FieldToggleButton />
         <Button
           variant="secondary"
           onClick={() => respawnObjects()}
