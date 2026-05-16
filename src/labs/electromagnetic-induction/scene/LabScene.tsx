@@ -14,7 +14,7 @@ import { ZoomControls } from '../../../sdk/ui/ZoomControls'
 import { useStepEngine, isStepComplete } from '../../../sdk/guided/StepEngine'
 import { setActiveInstrument } from '../../../sdk/physics/snapTargets'
 import { useViewport } from '../../../sdk/a11y/useViewport'
-import { Coil, COIL_LENGTH, COIL_OUTER_RADIUS, COIL_TURNS } from '../instruments/Coil'
+import { Coil, COIL_LENGTH, COIL_OUTER_RADIUS } from '../instruments/Coil'
 import { Galvanometer } from '../instruments/Galvanometer'
 import { Bulb } from '../instruments/Bulb'
 import { Wires } from '../instruments/Wires'
@@ -191,6 +191,7 @@ export function LabScene() {
   const isPhone = breakpoint === 'phone'
   const preset: CameraPreset = sceneToPreset(idx)
   const fieldVisibleToggle = useLabSettings((s) => s.fieldVisible)
+  const coilTurns = useLabSettings((s) => s.coilTurns)
   // Field + current arrows are hidden during Scene 1 (intro) regardless of
   // the toggle — the student should see the bare equipment first. From
   // Scene 2 onward, the toggle takes effect.
@@ -224,13 +225,13 @@ export function LabScene() {
           <CoilStand coilWorld={COIL_WORLD} coilLength={COIL_LENGTH} coilOuterRadius={COIL_OUTER_RADIUS} />
           {/* No `active` prop — there's only one instrument in this lab, so the
               blue <Outlines> highlight from mass-measurement's pattern just looked
-              like noise around the 16-turn copper helix. */}
-          <Coil position={COIL_WORLD} />
+              like noise around the copper helix. */}
+          <Coil position={COIL_WORLD} turns={coilTurns} />
           <CurrentArrows
             coilWorld={COIL_WORLD}
             coilLength={COIL_LENGTH}
             coilOuterRadius={COIL_OUTER_RADIUS}
-            coilTurns={COIL_TURNS}
+            coilTurns={coilTurns}
             visible={fieldVisible}
           />
           <Galvanometer position={GALVANOMETER_WORLD} />
