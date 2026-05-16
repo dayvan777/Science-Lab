@@ -29,6 +29,7 @@ import { GuidedOverlay } from '../../../sdk/guided/GuidedOverlay'
 import { useGuidance, SkipGuidanceToggle } from '../../../sdk/guided/SkipGuidanceToggle'
 import { setActiveInstrument } from '../../../sdk/physics/snapTargets'
 import { useViewport } from '../../../sdk/a11y/useViewport'
+import { safeAreaBottom } from '../../../sdk/a11y/safeArea'
 
 function instrumentToPreset(id: string | null): CameraPreset {
   if (id === 'digital-scale') return 'focus-scale'
@@ -160,7 +161,7 @@ export function LabScene() {
               }
             : {
                 position: 'fixed',
-                bottom: 16,
+                bottom: safeAreaBottom(16),
                 right: 16,
                 display: 'flex',
                 gap: 8,

@@ -15,6 +15,7 @@ import { ZoomControls } from '../../../sdk/ui/ZoomControls'
 import { useStepEngine, isStepComplete } from '../../../sdk/guided/StepEngine'
 import { setActiveInstrument } from '../../../sdk/physics/snapTargets'
 import { useViewport } from '../../../sdk/a11y/useViewport'
+import { safeAreaBottom } from '../../../sdk/a11y/safeArea'
 import { Coil, COIL_LENGTH, COIL_OUTER_RADIUS, COIL_TURNS } from '../instruments/Coil'
 import { Galvanometer } from '../instruments/Galvanometer'
 import { Bulb } from '../instruments/Bulb'
@@ -248,7 +249,7 @@ export function LabScene() {
         style={
           isPhone
             ? { position: 'fixed', top: 110, right: 8, display: 'flex', flexDirection: 'column', gap: 8, zIndex: 10 }
-            : { position: 'fixed', bottom: 16, right: 16, display: 'flex', gap: 8, zIndex: 10 }
+            : { position: 'fixed', bottom: safeAreaBottom(16), right: 16, display: 'flex', gap: 8, zIndex: 10 }
         }
       >
         <ZoomControls />
