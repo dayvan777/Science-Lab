@@ -30,6 +30,7 @@ import { SCENES } from '../content/scenes'
 import { computeEMF, computeBulbBrightness, computeGalvanometerAngle, COIL_CENTER, INFLUENCE_RADIUS } from '../physics/induction'
 import { HUD } from '../ui/HUD'
 import { FieldToggleButton } from '../ui/FieldToggleButton'
+import { CoilTurnsButton } from '../ui/CoilTurnsButton'
 import { findBodyByTag } from '../../../sdk/physics/bodyRegistry'
 
 const COIL_WORLD: [number, number, number] = [COIL_CENTER.x, COIL_CENTER.y, COIL_CENTER.z]
@@ -268,6 +269,7 @@ export function LabScene() {
         <ZoomControls />
         <SoundToggle />
         <FieldToggleButton />
+        <CoilTurnsButton />
         <Button
           variant="secondary"
           onClick={() => respawnObjects()}
