@@ -16,6 +16,7 @@ export type CameraPreset =
   | 'focus-coil'
   | 'focus-magnet'
   | 'focus-galv'
+  | 'focus-bulb'
   | 'reveal'
 
 type Pose = { position: [number, number, number]; lookAt: [number, number, number] }
@@ -33,6 +34,7 @@ const POSES: Record<CameraPreset, Pose> = {
   'focus-coil':   { position: [-0.05, 1.35, 1.1], lookAt: [-0.05, 0.95, 0] },
   'focus-magnet': { position: [-0.30, 1.35, 1.1], lookAt: [-0.30, 0.95, 0] },
   'focus-galv':   { position: [0.30, 1.35, 1.1],  lookAt: [0.30, 0.95, 0]  },
+  'focus-bulb':   { position: [0.55, 1.35, 1.1],  lookAt: [0.55, 0.95, 0]  },
   reveal:        { position: [0, 3.0, 3.2],   lookAt: [0, 1.0, 0]    },
 }
 
@@ -78,8 +80,19 @@ export function CameraRig({ preset }: Props) {
   const targetLook = useRef(new Vector3())
   const lastPreset = useRef<CameraPreset | null>(null)
   const userZoomMul = useCameraStore(s => s.zoomMul)
+  const focusTarget = useCameraStore(s => s.focusTarget)
   const reducedMotion = useReducedMotion()
   const { breakpoint } = useViewport()
+
+  // User-driven focus override. When a focusTarget is set, it wins over
+  // the scene-driven `preset` prop. Tap-on-instrument dispatches set this
+  // via useCameraStore; FocusResetButton or a scene change clears it.
+  const effectivePreset: CameraPreset =
+    focusTarget === 'magnet' ? 'focus-magnet' :
+    focusTarget === 'coil'   ? 'focus-coil'   :
+    focusTarget === 'bulb'   ? 'focus-bulb'   :
+    focusTarget === 'galv'   ? 'focus-galv'   :
+    preset
 
   // Compose user zoom with the per-breakpoint distance multiplier.
   const deviceZoomMul =
@@ -117,19 +130,19 @@ export function CameraRig({ preset }: Props) {
 
   // Start a tween whenever the active preset changes.
   useEffect(() => {
-    if (lastPreset.current === preset) return
+    if (lastPreset.current === effectivePreset) return
     fromPos.current.copy(camera.position)
     const dir = new Vector3()
     camera.getWorldDirection(dir)
     fromLook.current.copy(camera.position).add(dir)
-    const target = POSES[preset]
+    const target = POSES[effectivePreset]
     targetLook.current.set(...target.lookAt)
     tweenStart.current = performance.now()
-    lastPreset.current = preset
-  }, [preset, camera])
+    lastPreset.current = effectivePreset
+  }, [effectivePreset, camera])
 
   useFrame(() => {
-    const target = POSES[preset]
+    const target = POSES[effectivePreset]
     const targetPos = applyZoom(target.position, target.lookAt, zoomMul)
 
     if (tweenStart.current !== null) {

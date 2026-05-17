@@ -5,6 +5,8 @@ import type { Mesh } from 'three'
 import { useInductionReadings } from '../state/InductionReadings'
 import { createGalvanometerDialTexture } from '../textures/galvanometerDial'
 import { springStep } from '../../../sdk/animation'
+import { useTapDetector } from '../../../sdk/object/useTapDetector'
+import { useCameraStore } from '../../../sdk/scene/cameraStore'
 
 const HOUSING_W = 0.16
 const HOUSING_H = 0.18
@@ -28,6 +30,9 @@ export function Galvanometer({ position }: Props) {
   useEffect(() => {
     return () => { dialTexture.dispose() }
   }, [dialTexture])
+
+  const setFocusTarget = useCameraStore(s => s.setFocusTarget)
+  const tap = useTapDetector(() => setFocusTarget('galv'))
 
   useFrame((_, delta) => {
     // PERF: read from store via getState() instead of selector — avoids
@@ -53,7 +58,7 @@ export function Galvanometer({ position }: Props) {
   })
 
   return (
-    <group position={position}>
+    <group position={position} {...tap}>
       {/* Black housing */}
       <RoundedBox
         args={[HOUSING_W, HOUSING_H, HOUSING_D]}

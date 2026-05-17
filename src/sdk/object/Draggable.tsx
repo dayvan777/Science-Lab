@@ -20,13 +20,17 @@ type Props = {
    *  corridor's x-extent, its z is forced to the corridor's z. Used by EM-
    *  induction so the bar magnet enters the coil only through the bore axis. */
   dragCorridor?: DragCorridor
+  /** Optional tap callback. Fires on a quick stationary touch (no drag).
+   *  Used by EM-induction so the bar magnet can be tapped to focus the
+   *  camera while still being dragged normally. */
+  onTap?: () => void
   children: ReactNode
 }
 
-export function Draggable({ position, mass, shape, bodyId, enabled = true, dragHeight, dragCorridor, children }: Props) {
+export function Draggable({ position, mass, shape, bodyId, enabled = true, dragHeight, dragCorridor, onTap, children }: Props) {
   const ref = useRef<RapierRigidBody>(null)
   const setDragging = useStepEngine(s => s.setDragging)
-  const { onPointerDown: rawDown, onPointerMove, onPointerUp: rawUp } = useDrag({ rigidBody: ref, bodyId, dragHeight, dragCorridor })
+  const { onPointerDown: rawDown, onPointerMove, onPointerUp: rawUp } = useDrag({ rigidBody: ref, bodyId, dragHeight, dragCorridor, onTap })
   const massKg = mass / 1000
   // Half the vertical extent of the body — used by stacking layouts (lever pans).
   const halfHeight = shape.type === 'ball' ? shape.radius : shape.halfExtents[1]

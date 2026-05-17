@@ -2,6 +2,8 @@ import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import type { PointLight, MeshStandardMaterial } from 'three'
 import { useInductionReadings } from '../state/InductionReadings'
+import { useTapDetector } from '../../../sdk/object/useTapDetector'
+import { useCameraStore } from '../../../sdk/scene/cameraStore'
 
 const BULB_GLASS_R = 0.025
 const BASE_HEIGHT = 0.020
@@ -18,6 +20,9 @@ export function Bulb({ position }: Props) {
   // Smoothed brightness — exponentially lerps toward the store's instantaneous
   // bulbBrightness with a 150ms time constant. Frame-rate-independent.
   const smoothBrightness = useRef(0)
+
+  const setFocusTarget = useCameraStore(s => s.setFocusTarget)
+  const tap = useTapDetector(() => setFocusTarget('bulb'))
 
   // Update light + emissive every frame via refs — avoids React re-render churn.
   // PERF: read from store via getState() instead of selector — same reasoning
@@ -36,7 +41,7 @@ export function Bulb({ position }: Props) {
   })
 
   return (
-    <group position={position}>
+    <group position={position} {...tap}>
       {/* Brass base */}
       <mesh position={[0, BASE_HEIGHT / 2, 0]} castShadow>
         <cylinderGeometry args={[BULB_GLASS_R * 0.55, BULB_GLASS_R * 0.7, BASE_HEIGHT, 24]} />

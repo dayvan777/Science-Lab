@@ -34,6 +34,8 @@ import { HUD } from '../ui/HUD'
 import { FieldToggleButton } from '../ui/FieldToggleButton'
 import { CoilTurnsButton } from '../ui/CoilTurnsButton'
 import { MagnetStrengthButton } from '../ui/MagnetStrengthButton'
+import { useCameraStore } from '../../../sdk/scene/cameraStore'
+import { FocusResetButton } from '../ui/FocusResetButton'
 import { findBodyByTag } from '../../../sdk/physics/bodyRegistry'
 
 const COIL_WORLD: [number, number, number] = [COIL_CENTER.x, COIL_CENTER.y, COIL_CENTER.z]
@@ -212,6 +214,14 @@ export function LabScene() {
     return () => { setActiveInstrument(null) }
   }, [])
 
+  // Clear manual focus on scene change. The guided flow's scene-default
+  // preset takes over; if the student wants a different focus, they tap
+  // the instrument again.
+  const setFocusTarget = useCameraStore(s => s.setFocusTarget)
+  useEffect(() => {
+    setFocusTarget(null)
+  }, [idx, setFocusTarget])
+
   return (
     <>
       <Canvas
@@ -269,6 +279,7 @@ export function LabScene() {
         <FieldToggleButton />
         <CoilTurnsButton />
         <MagnetStrengthButton />
+        <FocusResetButton />
         <Button
           variant="secondary"
           onClick={() => respawnObjects()}
