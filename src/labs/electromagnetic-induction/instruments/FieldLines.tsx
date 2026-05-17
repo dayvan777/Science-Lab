@@ -4,8 +4,10 @@ import {
   Vector3,
   TubeGeometry,
   CatmullRomCurve3,
+  ConeGeometry,
   Group,
   MeshBasicMaterial,
+  Quaternion,
 } from 'three'
 import { findBodyByTag } from '../../../sdk/physics/bodyRegistry'
 import { MAGNET_HALF_LENGTH } from '../objects/BarMagnet'
@@ -34,6 +36,11 @@ const LINE_EXTENTS = [0.04, 0.10, 0.20, 0.40] as const
 const FIELD_OPACITY = 0.55
 const FADE_STIFFNESS = 4   // 1 / (250ms / 1000) = 4 — opacity converges in ~250ms
 
+const ARROW_T_VALUES = [0.2, 0.5, 0.8] as const   // parameter values along each curve
+const ARROW_RADIUS = TUBE_RADIUS * 1.6              // ~2.4 mm — visible at scene scale
+const ARROW_HEIGHT = TUBE_RADIUS * 4                 // ~6 mm
+const ARROW_RADIAL_SEGMENTS = 6                      // low-poly cones; 24 cones × 12 tris ≈ 288 triangles total
+
 type Props = {
   /** Body-id of the bar magnet (matches Draggable.bodyId). */
   magnetBodyId: string
@@ -50,7 +57,7 @@ type Props = {
  */
 function makeFieldLine(extent: number, mirror: boolean): CatmullRomCurve3 {
   const sign = mirror ? -1 : 1
-  const yMax = extent * 0.6
+  const yMax = extent * 0.85
   return new CatmullRomCurve3(
     [
       new Vector3(-MAGNET_HALF_LENGTH, 0, 0),
@@ -77,6 +84,32 @@ export function FieldLines({ magnetBodyId, visible, opacityScale }: Props) {
     return out
   }, [])
 
+  // Pre-compute arrow transforms once per mount. Each line gets 3 arrows
+  // at evenly-spaced parameter values. Cone is oriented along the curve's
+  // tangent at that point so the apex points N→S externally.
+  const arrowTransforms = useMemo(() => {
+    const out: Array<{ position: Vector3; quaternion: Quaternion }> = []
+    const up = new Vector3(0, 1, 0)  // coneGeometry default axis
+    for (const extent of LINE_EXTENTS) {
+      for (const mirror of [false, true]) {
+        const curve = makeFieldLine(extent, mirror)
+        for (const t of ARROW_T_VALUES) {
+          const position = curve.getPoint(t)
+          const tangent = curve.getTangent(t).normalize()
+          const quaternion = new Quaternion().setFromUnitVectors(up, tangent)
+          out.push({ position, quaternion })
+        }
+      }
+    }
+    return out
+  }, [])
+
+  // Single shared cone geometry — disposed alongside the tubes.
+  const arrowGeometry = useMemo(
+    () => new ConeGeometry(ARROW_RADIUS, ARROW_HEIGHT, ARROW_RADIAL_SEGMENTS),
+    [],
+  )
+
   const material = useMemo(
     () =>
       new MeshBasicMaterial({
@@ -94,9 +127,10 @@ export function FieldLines({ magnetBodyId, visible, opacityScale }: Props) {
   useEffect(() => {
     return () => {
       for (const g of geometries) g.dispose()
+      arrowGeometry.dispose()
       material.dispose()
     }
-  }, [geometries, material])
+  }, [geometries, arrowGeometry, material])
 
   useFrame((_, delta) => {
     const body = findBodyByTag(magnetBodyId)
@@ -114,7 +148,16 @@ export function FieldLines({ magnetBodyId, visible, opacityScale }: Props) {
   return (
     <group ref={groupRef}>
       {geometries.map((geometry, i) => (
-        <mesh key={i} geometry={geometry} material={material} />
+        <mesh key={`tube-${i}`} geometry={geometry} material={material} />
+      ))}
+      {arrowTransforms.map((tr, i) => (
+        <mesh
+          key={`arrow-${i}`}
+          geometry={arrowGeometry}
+          material={material}
+          position={tr.position}
+          quaternion={tr.quaternion}
+        />
       ))}
     </group>
   )
