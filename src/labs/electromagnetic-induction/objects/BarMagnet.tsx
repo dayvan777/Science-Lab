@@ -1,9 +1,17 @@
 import { Draggable } from '../../../sdk/object/Draggable'
+import { COIL_CENTER } from '../physics/induction'
+import { COIL_LENGTH } from '../instruments/Coil'
 
 export const MAGNET_HALF_LENGTH = 0.045  // total length 9 cm
 export const MAGNET_HALF_DEPTH = 0.012   // square cross-section 24 mm side
 export const MAGNET_MASS_GRAMS = 80      // arbitrary — not used by EM-induction physics
 export const BAR_MAGNET_BODY_ID = 'bar-magnet'
+
+// Drag corridor — when the magnet's centre is within ±CORRIDOR_HALF_LENGTH of
+// the coil's centre along x, the drag handler forces z to the coil bore axis.
+// This guarantees the magnet enters the coil only through the bore, never
+// clipping the helical wire mesh.
+const CORRIDOR_HALF_LENGTH = COIL_LENGTH / 2 + MAGNET_HALF_LENGTH
 
 type Props = { position: [number, number, number]; enabled?: boolean }
 
@@ -23,6 +31,7 @@ export function BarMagnet({ position, enabled = true }: Props) {
       bodyId={BAR_MAGNET_BODY_ID}
       enabled={enabled}
       dragHeight={0.95}
+      dragCorridor={{ center: COIL_CENTER, halfLength: CORRIDOR_HALF_LENGTH }}
     >
       {/* N pole (red) — left half (-x) */}
       <mesh position={[-MAGNET_HALF_LENGTH / 2, 0, 0]} castShadow receiveShadow>
