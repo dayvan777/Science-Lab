@@ -16,6 +16,13 @@ const DRAG_MIN_X = -1.15
 const DRAG_MAX_X = 1.15
 const DRAG_MIN_Z = -0.5
 const DRAG_MAX_Z = 0.5
+// Tap-vs-drag thresholds. A pointer-down + pointer-up sequence with cumulative
+// screen-space movement under TAP_MOVE_THRESHOLD_PX and total duration under
+// TAP_MAX_DURATION_MS counts as a tap → fires onTap?(). Anything more becomes
+// a drag (existing flow). Used by EM-induction so the bar magnet can be
+// tapped (focus camera) or dragged (move) without ambiguity.
+const TAP_MOVE_THRESHOLD_PX = 8
+const TAP_MAX_DURATION_MS = 250
 
 /**
  * Optional drag-time constraint. When passed via `dragCorridor`, the
@@ -74,13 +81,25 @@ type Props = {
    *  the corridor's x-extent. Used in EM-induction so the bar magnet
    *  can only enter the coil through its bore axis. */
   dragCorridor?: DragCorridor
+  /** Optional tap handler. Fires on a quick stationary pointer-down/up
+   *  (movement < 8 px, duration < 250 ms). Used by EM-induction so the
+   *  bar magnet can be tapped to focus the camera without triggering a
+   *  drag. Stationary taps leave the rigid body unchanged. */
+  onTap?: () => void
 }
 
-export function useDrag({ rigidBody, bodyId, dragHeight = 1.0, dragCorridor }: Props) {
+export function useDrag({ rigidBody, bodyId, dragHeight = 1.0, dragCorridor, onTap }: Props) {
   const { camera, gl } = useThree()
   const target = useRef(new Vector3())
   const isDragging = useRef(false)
   const pointerId = useRef<number | null>(null)
+  // Tap detection state — see TAP_MOVE_THRESHOLD_PX / TAP_MAX_DURATION_MS.
+  const tapStartTime = useRef<number | null>(null)
+  const tapStartScreenX = useRef(0)
+  const tapStartScreenY = useRef(0)
+  // True once movement has exceeded the tap threshold this gesture →
+  // drag-start side effects have fired and onPointerUp must finalize drag.
+  const hasExceededThreshold = useRef(false)
   const setLastSnap = useStepEngine.getState().setLastSnap
 
   const intersectPlane = useCallback((ev: ThreeEvent<PointerEvent>) => {
@@ -101,20 +120,41 @@ export function useDrag({ rigidBody, bodyId, dragHeight = 1.0, dragCorridor }: P
     ev.stopPropagation()
     isDragging.current = true
     pointerId.current = ev.pointerId
-    rigidBody.current.setBodyType(RigidBodyType.KinematicPositionBased, true)
-    rigidBody.current.setAngvel({ x: 0, y: 0, z: 0 }, true)
-    // Make collider a sensor during drag so dragged body passes through other objects
-    // without launching them (kinematic→dynamic collisions otherwise apply huge impulses).
-    const n = rigidBody.current.numColliders()
-    for (let i = 0; i < n; i++) {
-      rigidBody.current.collider(i).setSensor(true)
-    }
-    target.current.copy(intersectPlane(ev))
+    // Record tap-start state. Drag-start side effects (setBodyType, setSensor,
+    // setAngvel, target reset) are DEFERRED until movement exceeds the tap
+    // threshold. If the user releases within thresholds, this becomes a tap
+    // and the rigid body stays unchanged.
+    tapStartTime.current = performance.now()
+    tapStartScreenX.current = ev.nativeEvent.clientX
+    tapStartScreenY.current = ev.nativeEvent.clientY
+    hasExceededThreshold.current = false
     ;(ev.target as Element).setPointerCapture(ev.pointerId)
   }
 
   const onPointerMove = (ev: ThreeEvent<PointerEvent>) => {
     if (!isDragging.current || ev.pointerId !== pointerId.current) return
+    // Check whether movement exceeds the tap threshold. If yes (and we
+    // haven't already escalated this gesture), commit to drag now: fire
+    // the deferred drag-start side effects.
+    if (!hasExceededThreshold.current) {
+      const dx = ev.nativeEvent.clientX - tapStartScreenX.current
+      const dy = ev.nativeEvent.clientY - tapStartScreenY.current
+      if (Math.abs(dx) >= TAP_MOVE_THRESHOLD_PX || Math.abs(dy) >= TAP_MOVE_THRESHOLD_PX) {
+        hasExceededThreshold.current = true
+        if (rigidBody.current) {
+          rigidBody.current.setBodyType(RigidBodyType.KinematicPositionBased, true)
+          rigidBody.current.setAngvel({ x: 0, y: 0, z: 0 }, true)
+          const n = rigidBody.current.numColliders()
+          for (let i = 0; i < n; i++) {
+            rigidBody.current.collider(i).setSensor(true)
+          }
+          target.current.copy(intersectPlane(ev))
+        }
+      } else {
+        // Still in the tap window — don't move the body yet.
+        return
+      }
+    }
     const next = intersectPlane(ev)
     target.current.lerp(next, SMOOTHING)
     // Clamp drag position to within table bounds — prevents user from
@@ -142,9 +182,22 @@ export function useDrag({ rigidBody, bodyId, dragHeight = 1.0, dragCorridor }: P
 
   const onPointerUp = (ev: ThreeEvent<PointerEvent>) => {
     if (ev.pointerId !== pointerId.current) return
+    const tapT = tapStartTime.current
+    const wasTap =
+      !hasExceededThreshold.current &&
+      tapT !== null &&
+      (performance.now() - tapT) < TAP_MAX_DURATION_MS
     isDragging.current = false
     pointerId.current = null
+    tapStartTime.current = null
     ;(ev.target as Element).releasePointerCapture(ev.pointerId)
+    if (wasTap) {
+      // Stationary quick tap → fire onTap callback. The rigid body was
+      // never converted to kinematic (drag-start side effects deferred),
+      // so nothing else needs to be undone here.
+      onTap?.()
+      return
+    }
     if (!rigidBody.current) return
     // Restore solid collider before resolving snap/drop
     const n = rigidBody.current.numColliders()
