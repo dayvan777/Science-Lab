@@ -48,8 +48,8 @@ export function Coil({ position, turns, active = false }: Props) {
       instrumentId: 'coil',
       position: new Vector3(...position),
       radius: COIL_SNAP_RADIUS,
-      keepKinematic: false,
-      onAttach: () => { /* magnet is free-form; no kinematic snap */ },
+      keepKinematic: true,
+      onAttach: () => { /* magnet stays kinematic at bore centre after snap. */ },
     })
     return unregister
   }, [position])
