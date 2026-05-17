@@ -2,7 +2,7 @@ import { Draggable } from '../../../sdk/object/Draggable'
 import { COIL_CENTER } from '../physics/induction'
 import { COIL_LENGTH } from '../instruments/Coil'
 
-export const MAGNET_HALF_LENGTH = 0.045  // total length 9 cm
+export const MAGNET_HALF_LENGTH = 0.09   // total length 18 cm
 export const MAGNET_HALF_DEPTH = 0.012   // square cross-section 24 mm side
 export const MAGNET_MASS_GRAMS = 80      // arbitrary — not used by EM-induction physics
 export const BAR_MAGNET_BODY_ID = 'bar-magnet'
