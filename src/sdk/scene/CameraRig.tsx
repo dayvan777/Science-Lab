@@ -48,9 +48,9 @@ const FOV_TABLET  = 56
 const FOV_PHONE   = 70
 
 // Multiplier on the camera-to-lookAt distance, layered on top of the user's
-// manual zoomMul. On phone the camera sits 40 % farther; on tablet 10 %.
+// manual zoomMul. On phone the camera sits 15 % farther; on tablet 10 %.
 const DISTANCE_MUL_TABLET = 1.10
-const DISTANCE_MUL_PHONE  = 1.40
+const DISTANCE_MUL_PHONE  = 1.15
 
 type Props = { preset: CameraPreset }
 
