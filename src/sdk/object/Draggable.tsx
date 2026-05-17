@@ -1,6 +1,6 @@
 import { ReactNode, useRef, useEffect } from 'react'
 import { RigidBody, RapierRigidBody, BallCollider, CuboidCollider } from '@react-three/rapier'
-import { useDrag } from '../physics/useDrag'
+import { useDrag, type DragCorridor } from '../physics/useDrag'
 import { useStepEngine } from '../guided/StepEngine'
 import { registerBody, notifyDragStart } from '../physics/bodyRegistry'
 
@@ -16,13 +16,17 @@ type Props = {
    *  table). EM-induction's BarMagnet passes 0.95 so the magnet aligns with
    *  the coil's bore centre. */
   dragHeight?: number
+  /** Optional drag corridor — when the dragged object's x falls within the
+   *  corridor's x-extent, its z is forced to the corridor's z. Used by EM-
+   *  induction so the bar magnet enters the coil only through the bore axis. */
+  dragCorridor?: DragCorridor
   children: ReactNode
 }
 
-export function Draggable({ position, mass, shape, bodyId, enabled = true, dragHeight, children }: Props) {
+export function Draggable({ position, mass, shape, bodyId, enabled = true, dragHeight, dragCorridor, children }: Props) {
   const ref = useRef<RapierRigidBody>(null)
   const setDragging = useStepEngine(s => s.setDragging)
-  const { onPointerDown: rawDown, onPointerMove, onPointerUp: rawUp } = useDrag({ rigidBody: ref, bodyId, dragHeight })
+  const { onPointerDown: rawDown, onPointerMove, onPointerUp: rawUp } = useDrag({ rigidBody: ref, bodyId, dragHeight, dragCorridor })
   const massKg = mass / 1000
   // Half the vertical extent of the body — used by stacking layouts (lever pans).
   const halfHeight = shape.type === 'ball' ? shape.radius : shape.halfExtents[1]

@@ -17,6 +17,22 @@ const DRAG_MAX_X = 1.15
 const DRAG_MIN_Z = -0.5
 const DRAG_MAX_Z = 0.5
 
+/**
+ * Optional drag-time constraint. When passed via `dragCorridor`, the
+ * drag handler forces the target z to `center.z` whenever the target's
+ * x falls within `±halfLength` of `center.x`. Used by EM-induction's
+ * bar magnet so it can only enter the coil through the bore axis.
+ *
+ * Generic enough to reuse for any future "thread through a tube"
+ * interaction; opt-in via the optional `dragCorridor` prop.
+ */
+export type DragCorridor = {
+  /** World position of the corridor's centre. */
+  center: Vector3
+  /** Half-length of the corridor along the world x-axis. */
+  halfLength: number
+}
+
 function animateMagneticSnap(
   body: RapierRigidBody,
   from: Vector3,
@@ -54,9 +70,13 @@ type Props = {
    *  EM-induction bar magnet passing through the coil's bore at y=0.95)
    *  pass an explicit value. */
   dragHeight?: number
+  /** Optional corridor that constrains drag z when the object enters
+   *  the corridor's x-extent. Used in EM-induction so the bar magnet
+   *  can only enter the coil through its bore axis. */
+  dragCorridor?: DragCorridor
 }
 
-export function useDrag({ rigidBody, bodyId, dragHeight = 1.0 }: Props) {
+export function useDrag({ rigidBody, bodyId, dragHeight = 1.0, dragCorridor }: Props) {
   const { camera, gl } = useThree()
   const target = useRef(new Vector3())
   const isDragging = useRef(false)
@@ -101,6 +121,16 @@ export function useDrag({ rigidBody, bodyId, dragHeight = 1.0 }: Props) {
     // dragging objects off the edge where they'd fall and become unreachable.
     target.current.x = clamp(target.current.x, DRAG_MIN_X, DRAG_MAX_X)
     target.current.z = clamp(target.current.z, DRAG_MIN_Z, DRAG_MAX_Z)
+    // Drag-corridor constraint — when enabled by the consumer, forces z
+    // to the corridor's axis while inside the corridor's x-extent. Used
+    // in EM-induction so the bar magnet can only enter the coil through
+    // its bore axis, never clipping through the helical wire mesh.
+    if (dragCorridor) {
+      const dx = target.current.x - dragCorridor.center.x
+      if (Math.abs(dx) < dragCorridor.halfLength) {
+        target.current.z = dragCorridor.center.z
+      }
+    }
     if (rigidBody.current) {
       rigidBody.current.setNextKinematicTranslation({
         x: target.current.x,
