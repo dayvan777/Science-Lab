@@ -1,4 +1,5 @@
 import { Draggable } from '../../../sdk/object/Draggable'
+import { useCameraStore } from '../../../sdk/scene/cameraStore'
 import { COIL_CENTER } from '../physics/induction'
 import { COIL_LENGTH } from '../instruments/Coil'
 
@@ -32,6 +33,7 @@ export function BarMagnet({ position, enabled = true }: Props) {
       enabled={enabled}
       dragHeight={0.95}
       dragCorridor={{ center: COIL_CENTER, halfLength: CORRIDOR_HALF_LENGTH }}
+      onTap={() => useCameraStore.getState().setFocusTarget('magnet')}
     >
       {/* N pole (red) — left half (-x) */}
       <mesh position={[-MAGNET_HALF_LENGTH / 2, 0, 0]} castShadow receiveShadow>
