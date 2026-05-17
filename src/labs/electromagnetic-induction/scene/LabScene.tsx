@@ -201,10 +201,9 @@ export function LabScene() {
     magnetStrength === 'weak' ? 0.5
     : magnetStrength === 'strong' ? 1.5
     : 1.0
-  // Field + current arrows are hidden during Scene 1 (intro) regardless of
-  // the toggle — the student should see the bare equipment first. From
-  // Scene 2 onward, the toggle takes effect.
-  const fieldVisible = fieldVisibleToggle && idx > 0
+  // Field + current arrows visibility follows the user's toggle on every
+  // scene. Default is on (fieldVisible: true in LabSettingsState).
+  const fieldVisible = fieldVisibleToggle
 
   // Tell the snap-target system the active instrument is the coil — this
   // is a no-op since the magnet is free-form, but keeps the SDK happy.
