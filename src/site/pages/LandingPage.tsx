@@ -3,18 +3,21 @@ import { GlowBackground } from '../components/GlowBackground'
 import { BrandHero } from '../components/BrandHero'
 import { SubjectPill } from '../components/SubjectPill'
 import { SUBJECTS } from '../content/subjects'
+import { useViewport } from '../../sdk/a11y/useViewport'
 
 const KICKER = 'ОСВІТНЯ ПЛАТФОРМА • 6–7 КЛАС • BETA'
 const TAGLINE = 'Інтерактивні предмети для шкільної програми'
 
 export function LandingPage() {
+  const { breakpoint } = useViewport()
+
   const wrapStyle: CSSProperties = {
     minHeight: '100vh',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '48px 24px',
+    padding: breakpoint === 'phone' ? '32px 16px' : '48px 24px',
   }
 
   const pillsStyle: CSSProperties = {
