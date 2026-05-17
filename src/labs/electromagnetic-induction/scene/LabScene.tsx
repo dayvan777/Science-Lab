@@ -14,7 +14,7 @@ import { ZoomControls } from '../../../sdk/ui/ZoomControls'
 import { useStepEngine, isStepComplete } from '../../../sdk/guided/StepEngine'
 import { setActiveInstrument } from '../../../sdk/physics/snapTargets'
 import { useViewport } from '../../../sdk/a11y/useViewport'
-import { Coil, COIL_LENGTH, COIL_OUTER_RADIUS, COIL_TURNS } from '../instruments/Coil'
+import { Coil, COIL_LENGTH, COIL_OUTER_RADIUS } from '../instruments/Coil'
 import { Galvanometer } from '../instruments/Galvanometer'
 import { Bulb } from '../instruments/Bulb'
 import { Wires } from '../instruments/Wires'
@@ -25,11 +25,13 @@ import { CurrentArrows } from '../instruments/CurrentArrows'
 import { BarMagnet, BAR_MAGNET_BODY_ID } from '../objects/BarMagnet'
 import { useLabState } from '../state/LabState'
 import { useInductionReadings } from '../state/InductionReadings'
-import { useVisualState } from '../state/VisualState'
+import { useLabSettings } from '../state/LabSettingsState'
 import { SCENES } from '../content/scenes'
 import { computeEMF, computeBulbBrightness, computeGalvanometerAngle, COIL_CENTER, INFLUENCE_RADIUS } from '../physics/induction'
 import { HUD } from '../ui/HUD'
 import { FieldToggleButton } from '../ui/FieldToggleButton'
+import { CoilTurnsButton } from '../ui/CoilTurnsButton'
+import { MagnetStrengthButton } from '../ui/MagnetStrengthButton'
 import { findBodyByTag } from '../../../sdk/physics/bodyRegistry'
 
 const COIL_WORLD: [number, number, number] = [COIL_CENTER.x, COIL_CENTER.y, COIL_CENTER.z]
@@ -85,7 +87,12 @@ function SceneController() {
     const v = body.linvel()
     scratchPos.current.set(t.x, t.y, t.z)
     scratchVel.current.set(v.x, v.y, v.z)
-    const emf = computeEMF(scratchPos.current, scratchVel.current)
+    const settings = useLabSettings.getState()
+    const strengthMul =
+      settings.magnetStrength === 'weak' ? 0.5
+      : settings.magnetStrength === 'strong' ? 1.5
+      : 1.0
+    const emf = computeEMF(scratchPos.current, scratchVel.current, settings.coilTurns, strengthMul)
     setReadings({
       currentEMF: emf,
       bulbBrightness: computeBulbBrightness(emf),
@@ -185,7 +192,13 @@ export function LabScene() {
   const { breakpoint } = useViewport()
   const isPhone = breakpoint === 'phone'
   const preset: CameraPreset = sceneToPreset(idx)
-  const fieldVisibleToggle = useVisualState((s) => s.fieldVisible)
+  const fieldVisibleToggle = useLabSettings((s) => s.fieldVisible)
+  const coilTurns = useLabSettings((s) => s.coilTurns)
+  const magnetStrength = useLabSettings((s) => s.magnetStrength)
+  const opacityScale =
+    magnetStrength === 'weak' ? 0.5
+    : magnetStrength === 'strong' ? 1.5
+    : 1.0
   // Field + current arrows are hidden during Scene 1 (intro) regardless of
   // the toggle — the student should see the bare equipment first. From
   // Scene 2 onward, the toggle takes effect.
@@ -219,13 +232,13 @@ export function LabScene() {
           <CoilStand coilWorld={COIL_WORLD} coilLength={COIL_LENGTH} coilOuterRadius={COIL_OUTER_RADIUS} />
           {/* No `active` prop — there's only one instrument in this lab, so the
               blue <Outlines> highlight from mass-measurement's pattern just looked
-              like noise around the 16-turn copper helix. */}
-          <Coil position={COIL_WORLD} />
+              like noise around the copper helix. */}
+          <Coil position={COIL_WORLD} turns={coilTurns} />
           <CurrentArrows
             coilWorld={COIL_WORLD}
             coilLength={COIL_LENGTH}
             coilOuterRadius={COIL_OUTER_RADIUS}
-            coilTurns={COIL_TURNS}
+            coilTurns={coilTurns}
             visible={fieldVisible}
           />
           <Galvanometer position={GALVANOMETER_WORLD} />
@@ -241,7 +254,7 @@ export function LabScene() {
             spareMagnetWorld={SPARE_MAGNET_WORLD}
           />
           <BarMagnet position={MAGNET_TRAY_WORLD} enabled={phase === 'in-progress'} />
-          <FieldLines magnetBodyId={BAR_MAGNET_BODY_ID} visible={fieldVisible} />
+          <FieldLines magnetBodyId={BAR_MAGNET_BODY_ID} visible={fieldVisible} opacityScale={opacityScale} />
           <SceneController />
         </Physics>
         <PostFX />
@@ -257,6 +270,8 @@ export function LabScene() {
         <ZoomControls />
         <SoundToggle />
         <FieldToggleButton />
+        <CoilTurnsButton />
+        <MagnetStrengthButton />
         <Button
           variant="secondary"
           onClick={() => respawnObjects()}

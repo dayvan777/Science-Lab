@@ -39,6 +39,8 @@ type Props = {
   magnetBodyId: string
   /** When false, the entire group fades to opacity 0 over ~250 ms. */
   visible: boolean
+  /** Multiplier on the field-line opacity (e.g. 0.5 weak, 1.0 normal, 1.5 strong). */
+  opacityScale: number
 }
 
 /**
@@ -63,7 +65,7 @@ function makeFieldLine(extent: number, mirror: boolean): CatmullRomCurve3 {
   )
 }
 
-export function FieldLines({ magnetBodyId, visible }: Props) {
+export function FieldLines({ magnetBodyId, visible, opacityScale }: Props) {
   const groupRef = useRef<Group>(null)
 
   const geometries = useMemo(() => {
@@ -104,7 +106,7 @@ export function FieldLines({ magnetBodyId, visible }: Props) {
       groupRef.current.position.set(t.x, t.y, t.z)
       groupRef.current.quaternion.set(r.x, r.y, r.z, r.w)
     }
-    const target = visible ? FIELD_OPACITY : 0
+    const target = visible ? Math.min(1, FIELD_OPACITY * opacityScale) : 0
     const step = Math.min(1, delta * FADE_STIFFNESS)
     material.opacity += (target - material.opacity) * step
   })

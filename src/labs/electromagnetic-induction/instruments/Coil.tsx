@@ -6,23 +6,24 @@ import { registerSnap } from '../../../sdk/physics/snapTargets'
 export const COIL_OUTER_RADIUS = 0.04   // 4 cm
 export const COIL_TUBE_RADIUS = 0.0035  // copper wire thickness
 export const COIL_LENGTH = 0.12         // 12 cm long along x
-export const COIL_TURNS = 16
+export const DEFAULT_COIL_TURNS = 10
 export const COIL_SNAP_RADIUS = 0.10
 
 type Props = {
   /** World position of the coil's CENTRE. */
   position: [number, number, number]
+  /** Number of helix wraps. Drives geometry rebuild. */
+  turns: number
   /** True when this lab is the active instrument — toggles highlight. */
   active?: boolean
 }
 
-function buildCoilGeometry(): TubeGeometry {
+function buildCoilGeometry(turns: number): TubeGeometry {
   const SEGMENTS = 96
   const points: Vector3[] = []
   for (let i = 0; i <= SEGMENTS; i++) {
     const t = i / SEGMENTS
-    const angle = t * COIL_TURNS * Math.PI * 2
-    // axis along x: vary x linearly, oscillate y and z (cross-section in y-z plane).
+    const angle = t * turns * Math.PI * 2
     const x = -COIL_LENGTH / 2 + t * COIL_LENGTH
     points.push(new Vector3(
       x,
@@ -34,8 +35,8 @@ function buildCoilGeometry(): TubeGeometry {
   return new TubeGeometry(curve, SEGMENTS * 2, COIL_TUBE_RADIUS, 6, false)
 }
 
-export function Coil({ position, active = false }: Props) {
-  const geometry = useMemo(() => buildCoilGeometry(), [])
+export function Coil({ position, turns, active = false }: Props) {
+  const geometry = useMemo(() => buildCoilGeometry(turns), [turns])
 
   useEffect(() => {
     return () => { geometry.dispose() }
