@@ -2,6 +2,8 @@ import { useMemo, useEffect } from 'react'
 import { Vector3, TubeGeometry, CatmullRomCurve3 } from 'three'
 import { Outlines } from '@react-three/drei'
 import { registerSnap } from '../../../sdk/physics/snapTargets'
+import { useTapDetector } from '../../../sdk/object/useTapDetector'
+import { useCameraStore } from '../../../sdk/scene/cameraStore'
 
 export const COIL_OUTER_RADIUS = 0.04   // 4 cm
 export const COIL_TUBE_RADIUS = 0.0035  // copper wire thickness
@@ -54,8 +56,11 @@ export function Coil({ position, turns, active = false }: Props) {
     return unregister
   }, [position])
 
+  const setFocusTarget = useCameraStore(s => s.setFocusTarget)
+  const tap = useTapDetector(() => setFocusTarget('coil'))
+
   return (
-    <group position={position}>
+    <group position={position} {...tap}>
       <mesh geometry={geometry}>
         <meshStandardMaterial
           color="#b67333"
