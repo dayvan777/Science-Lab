@@ -11,8 +11,8 @@ type CameraStore = {
   resetZoom: () => void
 }
 
-const MIN_ZOOM = 0.5
-const MAX_ZOOM = 1.8
+const MIN_ZOOM = 0.25
+const MAX_ZOOM = 2.0
 
 export const useCameraStore = create<CameraStore>((set) => ({
   zoomMul: 1,
