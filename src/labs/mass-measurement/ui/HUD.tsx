@@ -8,6 +8,7 @@ import { CollapsibleGlassPanel } from '../../../sdk/ui/CollapsibleGlassPanel'
 import { useReadings } from '../state/InstrumentReadings'
 import { useStepEngine } from '../../../sdk/guided/StepEngine'
 import { useViewport } from '../../../sdk/a11y/useViewport'
+import { safeAreaTop, safeAreaBottom } from '../../../sdk/a11y/safeArea'
 
 const TOTAL = 9
 const BASE_FONT = '"SF Pro Display", "Inter", system-ui, sans-serif'
@@ -92,7 +93,7 @@ export function HUD() {
     if (breakpoint === 'phone') {
       return {
         // Top pill stays small at top-centre.
-        topPill: { top: 8, padding: '6px 14px', fontSize: 12 } as const,
+        topPill: { top: safeAreaTop(8), padding: '6px 14px', fontSize: 12 } as const,
         // Task panel becomes a bottom drawer (above the input bar).
         taskPanel: {
           left: 8, right: 8, bottom: 96, top: undefined,
@@ -100,11 +101,11 @@ export function HUD() {
         } as const,
         // Journal moves above the task panel as a compact strip — only the group headers visible.
         journalPanel: {
-          left: 8, right: 8, bottom: undefined, top: 56,
+          left: 8, right: 8, bottom: undefined, top: safeAreaTop(56),
           width: 'auto', maxHeight: 120, padding: 10, fontSize: 12,
         } as const,
         // Input bar pinned to the bottom edge.
-        inputBar: { left: 8, right: 8, bottom: 8, padding: '10px 14px' } as const,
+        inputBar: { left: 8, right: 8, bottom: safeAreaBottom(8), padding: '10px 14px' } as const,
       }
     }
     if (breakpoint === 'tablet') {
@@ -171,7 +172,7 @@ export function HUD() {
           {current.prompt}
         </div>
         <div style={{
-          fontSize: 13, color: '#6e6e73', lineHeight: 1.5,
+          fontSize: breakpoint === 'phone' ? 14 : 13, color: '#6e6e73', lineHeight: 1.5,
           padding: '12px 0', borderTop: '1px solid rgba(0,0,0,0.08)', borderBottom: '1px solid rgba(0,0,0,0.08)',
         }}>
           💡 {current.hint}
@@ -182,7 +183,7 @@ export function HUD() {
               {renderTemplate(currentStep.hintTitle ?? currentStep.hintTemplate ?? '', readings)}
             </div>
             {currentStep.hintExplanation && (
-              <div style={{ fontSize: 13, color: '#6e6e73', lineHeight: 1.5 }}>
+              <div style={{ fontSize: breakpoint === 'phone' ? 14 : 13, color: '#6e6e73', lineHeight: 1.5 }}>
                 {currentStep.hintExplanation}
               </div>
             )}
@@ -217,7 +218,7 @@ export function HUD() {
         style={{ overflow: 'auto', ...layout.journalPanel }}
         collapsedStyle={
           breakpoint === 'phone'
-            ? { top: 56, right: 8 }
+            ? { top: safeAreaTop(56), right: 8 }
             : { top: layout.journalPanel.top ?? 64, right: 8 }
         }
       >
@@ -269,7 +270,7 @@ export function HUD() {
                   <div key={t.id} style={{
                     display: 'flex', justifyContent: 'space-between',
                     padding: '4px 0 4px 6px',
-                    fontSize: 12,
+                    fontSize: breakpoint === 'phone' ? 13 : 12,
                     opacity: isDone || isCurrent ? 1 : 0.6,
                   }}>
                     <span>
