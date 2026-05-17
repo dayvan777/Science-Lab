@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { useViewport } from '../../sdk/a11y/useViewport'
 
 type Props = {
   /** Kicker line above the logo (e.g. "ОСВІТНЯ ПЛАТФОРМА · 6–7 КЛАС · BETA"). */
@@ -12,7 +13,13 @@ type Props = {
 const KICKER_PARTS_SEPARATOR = '•'  // bullet "•"
 
 export function BrandHero({ kicker, tagline, size = 'large' }: Props) {
-  const logoHeight = size === 'large' ? 100 : 72
+  const { breakpoint } = useViewport()
+  const isPhone = breakpoint === 'phone'
+  const isTablet = breakpoint === 'tablet'
+
+  const logoHeight = size === 'large'
+    ? (isPhone ? 64 : isTablet ? 80 : 100)
+    : (isPhone ? 56 : 72)
   const tagFontSize = size === 'large' ? 16 : 14
   const kickerFontSize = size === 'large' ? 12 : 11
 
@@ -27,7 +34,7 @@ export function BrandHero({ kicker, tagline, size = 'large' }: Props) {
 
   const kickerStyle: CSSProperties = {
     fontSize: kickerFontSize,
-    letterSpacing: '0.3em',
+    letterSpacing: isPhone ? '0.2em' : '0.3em',
     textTransform: 'uppercase',
     color: 'rgba(255, 255, 255, 0.5)',
     fontWeight: 500,
@@ -42,6 +49,8 @@ export function BrandHero({ kicker, tagline, size = 'large' }: Props) {
   const logoStyle: CSSProperties = {
     height: logoHeight,
     width: 'auto',
+    maxWidth: '100%',
+    objectFit: 'contain',
     userSelect: 'none',
     marginBottom: tagline ? 18 : 0,
   }
@@ -51,7 +60,7 @@ export function BrandHero({ kicker, tagline, size = 'large' }: Props) {
     color: 'rgba(255, 255, 255, 0.6)',
     fontWeight: 400,
     marginBottom: size === 'large' ? 44 : 24,
-    maxWidth: 600,
+    maxWidth: 'min(600px, 90vw)',
     lineHeight: 1.5,
   }
 
