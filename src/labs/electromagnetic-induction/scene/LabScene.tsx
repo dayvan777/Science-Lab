@@ -44,11 +44,9 @@ const BULB_WORLD: [number, number, number] = [0.55, 0.85, 0]
 const MAGNET_TRAY_WORLD: [number, number, number] = [-0.40, 0.94, 0.30]
 const SHORT_MAGNET_TRAY_WORLD: [number, number, number] = [-0.40, 0.94, 0.50]
 
-// Decorative clutter positions — chosen so they don't overlap any
-// interactive object and don't intersect the camera's focus-coil framing.
+// Decorative clutter position — chosen so it doesn't overlap any
+// interactive object and doesn't intersect the camera's focus-coil framing.
 const NOTEBOOK_WORLD: [number, number, number] = [-0.55, 0.86, 0.30]
-const SPOOL_WORLD: [number, number, number] = [0.10, 0.86, -0.35]
-const SPARE_MAGNET_WORLD: [number, number, number] = [0.55, 0.86, -0.30]
 
 function sceneToPreset(idx: number): CameraPreset {
   return idx === 0 ? 'overview' : 'focus-coil'
@@ -256,11 +254,7 @@ export function LabScene() {
             galvanometerWorld={GALVANOMETER_WORLD}
             bulbWorld={BULB_WORLD}
           />
-          <LabClutter
-            notebookWorld={NOTEBOOK_WORLD}
-            spoolWorld={SPOOL_WORLD}
-            spareMagnetWorld={SPARE_MAGNET_WORLD}
-          />
+          <LabClutter notebookWorld={NOTEBOOK_WORLD} />
           <BarMagnet
             position={MAGNET_TRAY_WORLD}
             enabled={phase === 'in-progress'}
