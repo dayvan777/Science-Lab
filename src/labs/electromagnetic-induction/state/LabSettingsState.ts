@@ -17,6 +17,7 @@ import { persist } from 'zustand/middleware'
  */
 export type CoilTurns = 3 | 5 | 10 | 20
 export type MagnetStrength = 'weak' | 'normal' | 'strong'
+export type ActiveMagnet = 'long' | 'short'
 
 const COIL_TURNS_CYCLE: CoilTurns[] = [3, 5, 10, 20]
 const MAGNET_STRENGTH_CYCLE: MagnetStrength[] = ['weak', 'normal', 'strong']
@@ -25,9 +26,11 @@ type LabSettings = {
   fieldVisible: boolean
   coilTurns: CoilTurns
   magnetStrength: MagnetStrength
+  activeMagnet: ActiveMagnet
   setFieldVisible: (v: boolean) => void
   cycleCoilTurns: () => void
   cycleMagnetStrength: () => void
+  setActiveMagnet: (m: ActiveMagnet) => void
 }
 
 export const useLabSettings = create<LabSettings>()(
@@ -36,6 +39,7 @@ export const useLabSettings = create<LabSettings>()(
       fieldVisible: true,
       coilTurns: 10,
       magnetStrength: 'normal',
+      activeMagnet: 'long',
       setFieldVisible: (fieldVisible) => set({ fieldVisible }),
       cycleCoilTurns: () => {
         const idx = COIL_TURNS_CYCLE.indexOf(get().coilTurns)
@@ -47,6 +51,7 @@ export const useLabSettings = create<LabSettings>()(
         const next = MAGNET_STRENGTH_CYCLE[(idx + 1) % MAGNET_STRENGTH_CYCLE.length]
         set({ magnetStrength: next })
       },
+      setActiveMagnet: (activeMagnet) => set({ activeMagnet }),
     }),
     { name: 'em-induction.lab-settings' },
   ),

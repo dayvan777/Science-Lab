@@ -10,7 +10,7 @@ import {
   Quaternion,
 } from 'three'
 import { findBodyByTag } from '../../../sdk/physics/bodyRegistry'
-import { MAGNET_HALF_LENGTH } from '../objects/BarMagnet'
+import { LONG_MAGNET_HALF_LENGTH } from '../objects/BarMagnet'
 
 /**
  * Eight amber field-line tubes around the bar magnet. Each line emerges
@@ -60,11 +60,11 @@ function makeFieldLine(extent: number, mirror: boolean): CatmullRomCurve3 {
   const yMax = extent * 0.85
   return new CatmullRomCurve3(
     [
-      new Vector3(-MAGNET_HALF_LENGTH, 0, 0),
+      new Vector3(-LONG_MAGNET_HALF_LENGTH, 0, 0),
       new Vector3(-extent * 0.5, sign * yMax * 0.6, 0),
       new Vector3(0, sign * yMax, 0),
       new Vector3(extent * 0.5, sign * yMax * 0.6, 0),
-      new Vector3(MAGNET_HALF_LENGTH, 0, 0),
+      new Vector3(LONG_MAGNET_HALF_LENGTH, 0, 0),
     ],
     false,
     'catmullrom',

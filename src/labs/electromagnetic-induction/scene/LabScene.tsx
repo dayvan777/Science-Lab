@@ -24,7 +24,7 @@ import { CoilStand } from '../instruments/CoilStand'
 import { LabClutter } from '../instruments/LabClutter'
 import { FieldLines } from '../instruments/FieldLines'
 import { CurrentArrows } from '../instruments/CurrentArrows'
-import { BarMagnet, BAR_MAGNET_BODY_ID } from '../objects/BarMagnet'
+import { BarMagnet, LONG_MAGNET_HALF_LENGTH, SHORT_MAGNET_HALF_LENGTH } from '../objects/BarMagnet'
 import { useLabState } from '../state/LabState'
 import { useInductionReadings } from '../state/InductionReadings'
 import { useLabSettings } from '../state/LabSettingsState'
@@ -42,6 +42,7 @@ const COIL_WORLD: [number, number, number] = [COIL_CENTER.x, COIL_CENTER.y, COIL
 const GALVANOMETER_WORLD: [number, number, number] = [0.30, 0.85, 0]
 const BULB_WORLD: [number, number, number] = [0.55, 0.85, 0]
 const MAGNET_TRAY_WORLD: [number, number, number] = [-0.40, 0.94, 0.30]
+const SHORT_MAGNET_TRAY_WORLD: [number, number, number] = [-0.40, 0.94, 0.50]
 
 // Decorative clutter positions — chosen so they don't overlap any
 // interactive object and don't intersect the camera's focus-coil framing.
@@ -85,7 +86,7 @@ function SceneController() {
   }, [currentSceneIdx, currentStepIdx])
 
   useFrame(({ clock }, delta) => {
-    const body = findBodyByTag(BAR_MAGNET_BODY_ID)
+    const body = findBodyByTag('bar-magnet-long')
     if (!body) return
     const t = body.translation()
     const v = body.linvel()
@@ -260,8 +261,21 @@ export function LabScene() {
             spoolWorld={SPOOL_WORLD}
             spareMagnetWorld={SPARE_MAGNET_WORLD}
           />
-          <BarMagnet position={MAGNET_TRAY_WORLD} enabled={phase === 'in-progress'} />
-          <FieldLines magnetBodyId={BAR_MAGNET_BODY_ID} visible={fieldVisible} opacityScale={opacityScale} />
+          <BarMagnet
+            position={MAGNET_TRAY_WORLD}
+            enabled={phase === 'in-progress'}
+            halfLength={LONG_MAGNET_HALF_LENGTH}
+            bodyId="bar-magnet-long"
+            magnetSize="long"
+          />
+          <BarMagnet
+            position={SHORT_MAGNET_TRAY_WORLD}
+            enabled={phase === 'in-progress'}
+            halfLength={SHORT_MAGNET_HALF_LENGTH}
+            bodyId="bar-magnet-short"
+            magnetSize="short"
+          />
+          <FieldLines magnetBodyId="bar-magnet-long" visible={fieldVisible} opacityScale={opacityScale} />
           <SceneController />
         </Physics>
         <PostFX />
