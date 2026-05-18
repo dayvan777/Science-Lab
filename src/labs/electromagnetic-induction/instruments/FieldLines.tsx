@@ -10,7 +10,6 @@ import {
   Quaternion,
 } from 'three'
 import { findBodyByTag } from '../../../sdk/physics/bodyRegistry'
-import { LONG_MAGNET_HALF_LENGTH } from '../objects/BarMagnet'
 
 /**
  * Eight amber field-line tubes around the bar magnet. Each line emerges
@@ -48,6 +47,9 @@ type Props = {
   visible: boolean
   /** Multiplier on the field-line opacity (e.g. 0.5 weak, 1.0 normal, 1.5 strong). */
   opacityScale: number
+  /** Half-length of the magnet this field belongs to. Used to place the
+   *  N/S tip points of each curve. Long magnet: 0.09; short magnet: 0.045. */
+  magnetHalfLength: number
 }
 
 /**
@@ -55,16 +57,16 @@ type Props = {
  *   - 5 control points: N tip → arc up & out → mid → arc down & in → S tip.
  *   - `mirror = true` reflects across y=0 (the line goes BELOW the magnet).
  */
-function makeFieldLine(extent: number, mirror: boolean): CatmullRomCurve3 {
+function makeFieldLine(extent: number, mirror: boolean, halfLength: number): CatmullRomCurve3 {
   const sign = mirror ? -1 : 1
   const yMax = extent * 0.85
   return new CatmullRomCurve3(
     [
-      new Vector3(-LONG_MAGNET_HALF_LENGTH, 0, 0),
+      new Vector3(-halfLength, 0, 0),
       new Vector3(-extent * 0.5, sign * yMax * 0.6, 0),
       new Vector3(0, sign * yMax, 0),
       new Vector3(extent * 0.5, sign * yMax * 0.6, 0),
-      new Vector3(LONG_MAGNET_HALF_LENGTH, 0, 0),
+      new Vector3(halfLength, 0, 0),
     ],
     false,
     'catmullrom',
@@ -72,17 +74,17 @@ function makeFieldLine(extent: number, mirror: boolean): CatmullRomCurve3 {
   )
 }
 
-export function FieldLines({ magnetBodyId, visible, opacityScale }: Props) {
+export function FieldLines({ magnetBodyId, visible, opacityScale, magnetHalfLength }: Props) {
   const groupRef = useRef<Group>(null)
 
   const geometries = useMemo(() => {
     const out: TubeGeometry[] = []
     for (const extent of LINE_EXTENTS) {
-      out.push(new TubeGeometry(makeFieldLine(extent, false), PATH_SEGMENTS, TUBE_RADIUS, RADIAL_SEGMENTS, false))
-      out.push(new TubeGeometry(makeFieldLine(extent, true), PATH_SEGMENTS, TUBE_RADIUS, RADIAL_SEGMENTS, false))
+      out.push(new TubeGeometry(makeFieldLine(extent, false, magnetHalfLength), PATH_SEGMENTS, TUBE_RADIUS, RADIAL_SEGMENTS, false))
+      out.push(new TubeGeometry(makeFieldLine(extent, true, magnetHalfLength), PATH_SEGMENTS, TUBE_RADIUS, RADIAL_SEGMENTS, false))
     }
     return out
-  }, [])
+  }, [magnetHalfLength])
 
   // Pre-compute arrow transforms once per mount. Each line gets 3 arrows
   // at evenly-spaced parameter values. Cone is oriented along the curve's
@@ -92,7 +94,7 @@ export function FieldLines({ magnetBodyId, visible, opacityScale }: Props) {
     const up = new Vector3(0, 1, 0)  // coneGeometry default axis
     for (const extent of LINE_EXTENTS) {
       for (const mirror of [false, true]) {
-        const curve = makeFieldLine(extent, mirror)
+        const curve = makeFieldLine(extent, mirror, magnetHalfLength)
         for (const t of ARROW_T_VALUES) {
           const position = curve.getPoint(t)
           const tangent = curve.getTangent(t).normalize()
@@ -102,7 +104,7 @@ export function FieldLines({ magnetBodyId, visible, opacityScale }: Props) {
       }
     }
     return out
-  }, [])
+  }, [magnetHalfLength])
 
   // Single shared cone geometry — disposed alongside the tubes.
   const arrowGeometry = useMemo(

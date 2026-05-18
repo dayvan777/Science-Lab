@@ -83,8 +83,24 @@ function SceneController() {
     stationaryAccumulatedMs.current = 0
   }, [currentSceneIdx, currentStepIdx])
 
+  // Sync activeMagnet to whichever magnet is currently being dragged.
+  // Belt-and-suspenders with BarMagnet's onTap dispatch — handles the case
+  // where the student starts a drag without first tapping.
+  const draggingBodyId = useStepEngine(s => s.draggingBodyId)
+  useEffect(() => {
+    if (draggingBodyId === 'bar-magnet-long') {
+      useLabSettings.getState().setActiveMagnet('long')
+    } else if (draggingBodyId === 'bar-magnet-short') {
+      useLabSettings.getState().setActiveMagnet('short')
+    }
+  }, [draggingBodyId])
+
   useFrame(({ clock }, delta) => {
-    const body = findBodyByTag('bar-magnet-long')
+    const activeBodyId =
+      useLabSettings.getState().activeMagnet === 'long'
+        ? 'bar-magnet-long'
+        : 'bar-magnet-short'
+    const body = findBodyByTag(activeBodyId)
     if (!body) return
     const t = body.translation()
     const v = body.linvel()
@@ -198,6 +214,7 @@ export function LabScene() {
   const fieldVisibleToggle = useLabSettings((s) => s.fieldVisible)
   const coilTurns = useLabSettings((s) => s.coilTurns)
   const magnetStrength = useLabSettings((s) => s.magnetStrength)
+  const activeMagnet = useLabSettings((s) => s.activeMagnet)
   const opacityScale =
     magnetStrength === 'weak' ? 0.5
     : magnetStrength === 'strong' ? 1.5
@@ -269,7 +286,18 @@ export function LabScene() {
             bodyId="bar-magnet-short"
             magnetSize="short"
           />
-          <FieldLines magnetBodyId="bar-magnet-long" visible={fieldVisible} opacityScale={opacityScale} />
+          <FieldLines
+            magnetBodyId="bar-magnet-long"
+            magnetHalfLength={LONG_MAGNET_HALF_LENGTH}
+            visible={fieldVisible && activeMagnet === 'long'}
+            opacityScale={opacityScale}
+          />
+          <FieldLines
+            magnetBodyId="bar-magnet-short"
+            magnetHalfLength={SHORT_MAGNET_HALF_LENGTH}
+            visible={fieldVisible && activeMagnet === 'short'}
+            opacityScale={opacityScale}
+          />
           <SceneController />
         </Physics>
         <PostFX />
