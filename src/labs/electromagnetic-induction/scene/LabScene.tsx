@@ -24,7 +24,7 @@ import { CoilStand } from '../instruments/CoilStand'
 import { LabClutter } from '../instruments/LabClutter'
 import { FieldLines } from '../instruments/FieldLines'
 import { CurrentArrows } from '../instruments/CurrentArrows'
-import { BarMagnet, BAR_MAGNET_BODY_ID } from '../objects/BarMagnet'
+import { BarMagnet, LONG_MAGNET_HALF_LENGTH, SHORT_MAGNET_HALF_LENGTH } from '../objects/BarMagnet'
 import { useLabState } from '../state/LabState'
 import { useInductionReadings } from '../state/InductionReadings'
 import { useLabSettings } from '../state/LabSettingsState'
@@ -42,12 +42,11 @@ const COIL_WORLD: [number, number, number] = [COIL_CENTER.x, COIL_CENTER.y, COIL
 const GALVANOMETER_WORLD: [number, number, number] = [0.30, 0.85, 0]
 const BULB_WORLD: [number, number, number] = [0.55, 0.85, 0]
 const MAGNET_TRAY_WORLD: [number, number, number] = [-0.40, 0.94, 0.30]
+const SHORT_MAGNET_TRAY_WORLD: [number, number, number] = [-0.40, 0.94, 0.50]
 
-// Decorative clutter positions — chosen so they don't overlap any
-// interactive object and don't intersect the camera's focus-coil framing.
+// Decorative clutter position — chosen so it doesn't overlap any
+// interactive object and doesn't intersect the camera's focus-coil framing.
 const NOTEBOOK_WORLD: [number, number, number] = [-0.55, 0.86, 0.30]
-const SPOOL_WORLD: [number, number, number] = [0.10, 0.86, -0.35]
-const SPARE_MAGNET_WORLD: [number, number, number] = [0.55, 0.86, -0.30]
 
 function sceneToPreset(idx: number): CameraPreset {
   return idx === 0 ? 'overview' : 'focus-coil'
@@ -84,8 +83,24 @@ function SceneController() {
     stationaryAccumulatedMs.current = 0
   }, [currentSceneIdx, currentStepIdx])
 
+  // Sync activeMagnet to whichever magnet is currently being dragged.
+  // Belt-and-suspenders with BarMagnet's onTap dispatch — handles the case
+  // where the student starts a drag without first tapping.
+  const draggingBodyId = useStepEngine(s => s.draggingBodyId)
+  useEffect(() => {
+    if (draggingBodyId === 'bar-magnet-long') {
+      useLabSettings.getState().setActiveMagnet('long')
+    } else if (draggingBodyId === 'bar-magnet-short') {
+      useLabSettings.getState().setActiveMagnet('short')
+    }
+  }, [draggingBodyId])
+
   useFrame(({ clock }, delta) => {
-    const body = findBodyByTag(BAR_MAGNET_BODY_ID)
+    const activeBodyId =
+      useLabSettings.getState().activeMagnet === 'long'
+        ? 'bar-magnet-long'
+        : 'bar-magnet-short'
+    const body = findBodyByTag(activeBodyId)
     if (!body) return
     const t = body.translation()
     const v = body.linvel()
@@ -199,6 +214,7 @@ export function LabScene() {
   const fieldVisibleToggle = useLabSettings((s) => s.fieldVisible)
   const coilTurns = useLabSettings((s) => s.coilTurns)
   const magnetStrength = useLabSettings((s) => s.magnetStrength)
+  const activeMagnet = useLabSettings((s) => s.activeMagnet)
   const opacityScale =
     magnetStrength === 'weak' ? 0.5
     : magnetStrength === 'strong' ? 1.5
@@ -255,13 +271,33 @@ export function LabScene() {
             galvanometerWorld={GALVANOMETER_WORLD}
             bulbWorld={BULB_WORLD}
           />
-          <LabClutter
-            notebookWorld={NOTEBOOK_WORLD}
-            spoolWorld={SPOOL_WORLD}
-            spareMagnetWorld={SPARE_MAGNET_WORLD}
+          <LabClutter notebookWorld={NOTEBOOK_WORLD} />
+          <BarMagnet
+            position={MAGNET_TRAY_WORLD}
+            enabled={phase === 'in-progress'}
+            halfLength={LONG_MAGNET_HALF_LENGTH}
+            bodyId="bar-magnet-long"
+            magnetSize="long"
           />
-          <BarMagnet position={MAGNET_TRAY_WORLD} enabled={phase === 'in-progress'} />
-          <FieldLines magnetBodyId={BAR_MAGNET_BODY_ID} visible={fieldVisible} opacityScale={opacityScale} />
+          <BarMagnet
+            position={SHORT_MAGNET_TRAY_WORLD}
+            enabled={phase === 'in-progress'}
+            halfLength={SHORT_MAGNET_HALF_LENGTH}
+            bodyId="bar-magnet-short"
+            magnetSize="short"
+          />
+          <FieldLines
+            magnetBodyId="bar-magnet-long"
+            magnetHalfLength={LONG_MAGNET_HALF_LENGTH}
+            visible={fieldVisible && activeMagnet === 'long'}
+            opacityScale={opacityScale}
+          />
+          <FieldLines
+            magnetBodyId="bar-magnet-short"
+            magnetHalfLength={SHORT_MAGNET_HALF_LENGTH}
+            visible={fieldVisible && activeMagnet === 'short'}
+            opacityScale={opacityScale}
+          />
           <SceneController />
         </Physics>
         <PostFX />

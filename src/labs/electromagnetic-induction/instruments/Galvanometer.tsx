@@ -1,7 +1,7 @@
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
-import type { Mesh } from 'three'
+import type { Group } from 'three'
 import { useInductionReadings } from '../state/InductionReadings'
 import { createGalvanometerDialTexture } from '../textures/galvanometerDial'
 import { springStep } from '../../../sdk/animation'
@@ -14,7 +14,7 @@ const HOUSING_D = 0.06
 const FACE_W = 0.13
 const FACE_H = 0.13
 const NEEDLE_LEN = 0.05
-const NEEDLE_PIVOT_Y_LOCAL = -FACE_H / 2 + 0.005  // near the bottom of the face
+const NEEDLE_PIVOT_Y_LOCAL = +FACE_H / 2 - 0.005  // near the TOP of the face (needle hangs down from here)
 
 const NEEDLE_STIFFNESS = 70
 const NEEDLE_DAMPING = 8
@@ -23,7 +23,7 @@ type Props = { position: [number, number, number] }
 
 export function Galvanometer({ position }: Props) {
   const dialTexture = useMemo(() => createGalvanometerDialTexture(), [])
-  const needleRef = useRef<Mesh>(null)
+  const needleRef = useRef<Group>(null)
   const displayedAngle = useRef(0)
   const velocity = useRef(0)
 
@@ -53,7 +53,7 @@ export function Galvanometer({ position }: Props) {
     displayedAngle.current = r.current
     velocity.current = r.velocity
     if (needleRef.current) {
-      needleRef.current.rotation.z = -r.current
+      needleRef.current.rotation.z = r.current
     }
   })
 
@@ -77,11 +77,22 @@ export function Galvanometer({ position }: Props) {
         <meshBasicMaterial map={dialTexture} />
       </mesh>
 
-      {/* Needle — thin red box rotating around its base */}
-      <group position={[0, HOUSING_H / 2 + NEEDLE_PIVOT_Y_LOCAL, HOUSING_D / 2 + 0.002]}>
-        <mesh ref={needleRef} position={[0, NEEDLE_LEN / 2, 0]}>
+      {/* Needle — thin red box hanging DOWN from a pivot at the top of the face.
+          Rotation is applied to the wrapping group (whose origin IS the pivot),
+          so the needle swings like a clock pendulum. A small black sphere marks
+          the pivot point visibly. */}
+      <group
+        ref={needleRef}
+        position={[0, HOUSING_H / 2 + NEEDLE_PIVOT_Y_LOCAL, HOUSING_D / 2 + 0.002]}
+      >
+        <mesh position={[0, -NEEDLE_LEN / 2, 0]}>
           <boxGeometry args={[0.0028, NEEDLE_LEN, 0.002]} />
           <meshStandardMaterial color="#ff3b30" emissive="#ff3b30" emissiveIntensity={0.7} toneMapped={false} />
+        </mesh>
+        {/* Pivot dot — small black sphere at the group origin (the pivot itself) */}
+        <mesh>
+          <sphereGeometry args={[0.004, 8, 8]} />
+          <meshStandardMaterial color="#0a0a0a" metalness={0.8} roughness={0.2} />
         </mesh>
       </group>
 
