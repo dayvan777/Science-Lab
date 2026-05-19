@@ -12,18 +12,18 @@ import {
 import { findBodyByTag } from '../../../sdk/physics/bodyRegistry'
 
 /**
- * Eight amber field-line tubes around the bar magnet. Each line emerges
+ * Ten amber field-line tubes around the bar magnet. Each line emerges
  * from the N pole tip (-x in magnet-local), arcs out into space, and
- * curves back into the S pole tip (+x). Four extents (0.04 / 0.10 / 0.20
- * / 0.40 m) produce inner-to-outer "shells"; each extent has a mirror
- * pair (one above, one below) for a total of 8 lines in the magnet's
+ * curves back into the S pole tip (+x). Five extents (0.04 / 0.08 / 0.14
+ * / 0.22 / 0.32 m) produce inner-to-outer "shells"; each extent has a mirror
+ * pair (one above, one below) for a total of 10 lines in the magnet's
  * local XY plane.
  *
  * The whole group's transform copies the magnet's world translation +
  * rotation each frame, so the lines stay locked to the magnet as the
  * student drags it.
  *
- * Geometry budget: 8 lines × 24 path × 4 radial = 768 triangles. Material
+ * Geometry budget: 10 lines × 24 path × 4 radial ≈ 960 triangles. Material
  * is `meshBasicMaterial` with `transparent + toneMapped:false` so the
  * lines glow softly without picking up bloom.
  */
@@ -31,7 +31,7 @@ import { findBodyByTag } from '../../../sdk/physics/bodyRegistry'
 const TUBE_RADIUS = 0.0015
 const PATH_SEGMENTS = 24
 const RADIAL_SEGMENTS = 4
-const LINE_EXTENTS = [0.04, 0.10, 0.20, 0.40] as const
+const LINE_EXTENTS = [0.04, 0.08, 0.14, 0.22, 0.32] as const
 const FIELD_OPACITY = 0.55
 const FADE_STIFFNESS = 4   // 1 / (250ms / 1000) = 4 — opacity converges in ~250ms
 
@@ -53,25 +53,29 @@ type Props = {
 }
 
 /**
- * Build one closed-loop curve in the magnet's local frame.
- *   - 5 control points: N tip → arc up & out → mid → arc down & in → S tip.
+ * Build one half-ellipse curve in the magnet's local frame.
+ *   - 17 control points along parametric half-ellipse from N tip to S tip.
  *   - `mirror = true` reflects across y=0 (the line goes BELOW the magnet).
  */
 function makeFieldLine(extent: number, mirror: boolean, halfLength: number): CatmullRomCurve3 {
   const sign = mirror ? -1 : 1
-  const yMax = extent * 0.85
-  return new CatmullRomCurve3(
-    [
-      new Vector3(-halfLength, 0, 0),
-      new Vector3(-extent * 0.5, sign * yMax * 0.6, 0),
-      new Vector3(0, sign * yMax, 0),
-      new Vector3(extent * 0.5, sign * yMax * 0.6, 0),
-      new Vector3(halfLength, 0, 0),
-    ],
-    false,
-    'catmullrom',
-    0.5,
-  )
+  // Smooth half-ellipse from N tip to S tip, bulging out by `extent` at the
+  // apex. 17 control points spaced along the true elliptical parameterization
+  // give the spline enough samples to render as a visually smooth "textbook"
+  // field line instead of the old 5-point kite-shaped approximation.
+  //   x = halfLength * sin(θ)   → starts at -halfLength (N tip), ends at +halfLength (S tip)
+  //   y = sign * extent * cos(θ) → 0 at the poles, ±extent at the apex
+  // θ sweeps from -π/2 (N tip) through 0 (apex) to +π/2 (S tip).
+  const N_POINTS = 17
+  const points: Vector3[] = []
+  for (let i = 0; i < N_POINTS; i++) {
+    const t = i / (N_POINTS - 1)
+    const theta = -Math.PI / 2 + t * Math.PI
+    const x = halfLength * Math.sin(theta)
+    const y = sign * extent * Math.cos(theta)
+    points.push(new Vector3(x, y, 0))
+  }
+  return new CatmullRomCurve3(points, false, 'catmullrom', 0.5)
 }
 
 export function FieldLines({ magnetBodyId, visible, opacityScale, magnetHalfLength }: Props) {
