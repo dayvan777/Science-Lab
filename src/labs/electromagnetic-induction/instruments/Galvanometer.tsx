@@ -14,7 +14,7 @@ const HOUSING_D = 0.06
 const FACE_W = 0.13
 const FACE_H = 0.13
 const NEEDLE_LEN = 0.05
-const NEEDLE_PIVOT_Y_LOCAL = +FACE_H / 2 - 0.005  // near the TOP of the face (needle hangs down from here)
+const NEEDLE_PIVOT_Y_LOCAL = -FACE_H / 2 + 0.005  // near the BOTTOM of the face (needle points up like a speedometer)
 
 const NEEDLE_STIFFNESS = 70
 const NEEDLE_DAMPING = 8
@@ -53,7 +53,7 @@ export function Galvanometer({ position }: Props) {
     displayedAngle.current = r.current
     velocity.current = r.velocity
     if (needleRef.current) {
-      needleRef.current.rotation.z = r.current
+      needleRef.current.rotation.z = -r.current
     }
   })
 
@@ -77,15 +77,15 @@ export function Galvanometer({ position }: Props) {
         <meshBasicMaterial map={dialTexture} />
       </mesh>
 
-      {/* Needle — thin red box hanging DOWN from a pivot at the top of the face.
+      {/* Needle — thin red box pointing UP from a pivot at the bottom of the face.
           Rotation is applied to the wrapping group (whose origin IS the pivot),
-          so the needle swings like a clock pendulum. A small black sphere marks
+          so the needle swings like a speedometer. A small black sphere marks
           the pivot point visibly. */}
       <group
         ref={needleRef}
         position={[0, HOUSING_H / 2 + NEEDLE_PIVOT_Y_LOCAL, HOUSING_D / 2 + 0.002]}
       >
-        <mesh position={[0, -NEEDLE_LEN / 2, 0]}>
+        <mesh position={[0, NEEDLE_LEN / 2, 0]}>
           <boxGeometry args={[0.0028, NEEDLE_LEN, 0.002]} />
           <meshStandardMaterial color="#ff3b30" emissive="#ff3b30" emissiveIntensity={0.7} toneMapped={false} />
         </mesh>

@@ -35,6 +35,7 @@ import { FieldToggleButton } from '../ui/FieldToggleButton'
 import { CoilTurnsButton } from '../ui/CoilTurnsButton'
 import { MagnetStrengthButton } from '../ui/MagnetStrengthButton'
 import { useCameraStore } from '../../../sdk/scene/cameraStore'
+import { useTapDetector } from '../../../sdk/object/useTapDetector'
 import { FocusResetButton } from '../ui/FocusResetButton'
 import { findBodyByTag } from '../../../sdk/physics/bodyRegistry'
 
@@ -232,11 +233,21 @@ export function LabScene() {
 
   // Clear manual focus on scene change. The guided flow's scene-default
   // preset takes over; if the student wants a different focus, they tap
-  // the instrument again.
+  // the instrument or the table again.
   const setFocusTarget = useCameraStore(s => s.setFocusTarget)
+  const setFreeFocusPoint = useCameraStore(s => s.setFreeFocusPoint)
   useEffect(() => {
     setFocusTarget(null)
-  }, [idx, setFocusTarget])
+    setFreeFocusPoint(null)
+  }, [idx, setFocusTarget, setFreeFocusPoint])
+
+  // Click-to-focus: tap any point on the table surface and the camera
+  // flies in close to that exact world position. Instrument taps (Coil,
+  // Bulb, Galvanometer, BarMagnet) still take precedence because R3F's
+  // raycasting picks the closest mesh first.
+  const tableTap = useTapDetector((e) => {
+    useCameraStore.getState().setFreeFocusPoint(e.point.clone())
+  })
 
   return (
     <>
@@ -251,7 +262,9 @@ export function LabScene() {
         <CameraRig preset={preset} />
         <Environment preset="studio" background={false} resolution={64} />
         <Physics key={resetKey} gravity={[0, -9.81, 0]} timeStep={1 / 60}>
-          <Table />
+          <group {...tableTap}>
+            <Table />
+          </group>
           <CoilStand coilWorld={COIL_WORLD} coilLength={COIL_LENGTH} coilOuterRadius={COIL_OUTER_RADIUS} />
           {/* No `active` prop — there's only one instrument in this lab, so the
               blue <Outlines> highlight from mass-measurement's pattern just looked

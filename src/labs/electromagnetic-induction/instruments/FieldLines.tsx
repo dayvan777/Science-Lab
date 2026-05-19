@@ -97,7 +97,7 @@ export function FieldLines({ magnetBodyId, visible, opacityScale, magnetHalfLeng
         const curve = makeFieldLine(extent, mirror, magnetHalfLength)
         for (const t of ARROW_T_VALUES) {
           const position = curve.getPoint(t)
-          const tangent = curve.getTangent(t).normalize()
+          const tangent = curve.getTangent(t).normalize().negate()
           const quaternion = new Quaternion().setFromUnitVectors(up, tangent)
           out.push({ position, quaternion })
         }
