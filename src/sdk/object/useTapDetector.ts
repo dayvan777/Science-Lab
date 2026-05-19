@@ -9,11 +9,15 @@ const TAP_MAX_DURATION_MS = 250
  * or group. Returns `onPointerDown` and `onPointerUp` handlers to spread
  * onto the target.
  *
- * Used by non-draggable EM-induction instruments (Coil, Bulb,
- * Galvanometer) so the student can tap any of them to focus the camera.
+ * The `onTap` callback receives the ThreeEvent so consumers that need
+ * the world-space hit position (e.g. "click any point on the table to
+ * focus the camera there") can read `e.point`. Consumers that just
+ * trigger a discrete action can ignore the argument — JavaScript drops
+ * extra args silently.
+ *
  * Same tap heuristic as `useDrag` (8 px / 250 ms).
  */
-export function useTapDetector(onTap: () => void) {
+export function useTapDetector(onTap: (e: ThreeEvent<PointerEvent>) => void) {
   const startTime = useRef<number | null>(null)
   const startX = useRef(0)
   const startY = useRef(0)
@@ -32,7 +36,7 @@ export function useTapDetector(onTap: () => void) {
     const dy = Math.abs(e.nativeEvent.clientY - startY.current)
     startTime.current = null
     if (dt < TAP_MAX_DURATION_MS && dx < TAP_MOVE_THRESHOLD_PX && dy < TAP_MOVE_THRESHOLD_PX) {
-      onTap()
+      onTap(e)
     }
   }
 
