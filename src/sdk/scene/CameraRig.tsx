@@ -78,21 +78,41 @@ export function CameraRig({ preset }: Props) {
   const fromPos = useRef(new Vector3())
   const fromLook = useRef(new Vector3())
   const targetLook = useRef(new Vector3())
-  const lastPreset = useRef<CameraPreset | null>(null)
+  const lastPoseKey = useRef<string | null>(null)
   const userZoomMul = useCameraStore(s => s.zoomMul)
   const focusTarget = useCameraStore(s => s.focusTarget)
+  const freeFocusPoint = useCameraStore(s => s.freeFocusPoint)
   const reducedMotion = useReducedMotion()
   const { breakpoint } = useViewport()
 
-  // User-driven focus override. When a focusTarget is set, it wins over
-  // the scene-driven `preset` prop. Tap-on-instrument dispatches set this
-  // via useCameraStore; FocusResetButton or a scene change clears it.
+  // User-driven focus override. Precedence:
+  //   1. freeFocusPoint (user clicked an arbitrary point) — dynamic pose
+  //   2. focusTarget (user tapped an instrument) — fixed preset
+  //   3. preset prop (scene-driven default) — fixed preset
+  // FocusResetButton or a scene change clears the user-driven values.
   const effectivePreset: CameraPreset =
     focusTarget === 'magnet' ? 'focus-magnet' :
     focusTarget === 'coil'   ? 'focus-coil'   :
     focusTarget === 'bulb'   ? 'focus-bulb'   :
     focusTarget === 'galv'   ? 'focus-galv'   :
     preset
+
+  // Compute the effective pose. When freeFocusPoint is set, build a pose
+  // dynamically around it (camera ~40 cm above and ~1.1 m in front, looking
+  // straight at the point). Otherwise, use the named preset's POSES entry.
+  const effectivePose: Pose = freeFocusPoint
+    ? {
+        position: [freeFocusPoint.x, freeFocusPoint.y + 0.4, freeFocusPoint.z + 1.1],
+        lookAt: [freeFocusPoint.x, freeFocusPoint.y, freeFocusPoint.z],
+      }
+    : POSES[effectivePreset]
+
+  // Stable string key for tween change detection. When freeFocusPoint is
+  // set, encode its coordinates (rounded to mm) so different clicks
+  // trigger a new tween.
+  const effectivePoseKey: string = freeFocusPoint
+    ? `free:${freeFocusPoint.x.toFixed(3)},${freeFocusPoint.y.toFixed(3)},${freeFocusPoint.z.toFixed(3)}`
+    : effectivePreset
 
   // Compose user zoom with the per-breakpoint distance multiplier.
   const deviceZoomMul =
@@ -128,21 +148,21 @@ export function CameraRig({ preset }: Props) {
     return () => dom.removeEventListener('wheel', onWheel)
   }, [gl])
 
-  // Start a tween whenever the active preset changes.
+  // Start a tween whenever the effective pose changes. The pose key
+  // uniquely identifies named presets and dynamic free-focus points.
   useEffect(() => {
-    if (lastPreset.current === effectivePreset) return
+    if (lastPoseKey.current === effectivePoseKey) return
     fromPos.current.copy(camera.position)
     const dir = new Vector3()
     camera.getWorldDirection(dir)
     fromLook.current.copy(camera.position).add(dir)
-    const target = POSES[effectivePreset]
-    targetLook.current.set(...target.lookAt)
+    targetLook.current.set(...effectivePose.lookAt)
     tweenStart.current = performance.now()
-    lastPreset.current = effectivePreset
-  }, [effectivePreset, camera])
+    lastPoseKey.current = effectivePoseKey
+  }, [effectivePoseKey, effectivePose, camera])
 
   useFrame(() => {
-    const target = POSES[effectivePreset]
+    const target = effectivePose
     const targetPos = applyZoom(target.position, target.lookAt, zoomMul)
 
     if (tweenStart.current !== null) {
