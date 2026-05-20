@@ -148,7 +148,7 @@ export function BottomSheet({ open, onClose, title = 'Налаштування',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            padding: '8px 20px 12px',
+            padding: '12px 20px 12px 20px',
             borderBottom: '1px solid rgba(0,0,0,0.08)',
           }}>
             <div id="bottom-sheet-title" style={{ fontSize: 18, fontWeight: 600 }}>
