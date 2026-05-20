@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useRef, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 
 type Props = {
   /** Controlled-open flag. Parent owns the state. */
@@ -38,7 +38,9 @@ export function BottomSheet({ open, onClose, title = 'Налаштування',
   const [visible, setVisible] = useState(false)
 
   // Swipe-down state — pointer events on handle+header only.
-  const dragStartY = useRef<number | null>(null)
+  // dragStartY is state (not a ref) so toggling it triggers a re-render
+  // and the `dragging` flag below stays in sync with the actual gesture.
+  const [dragStartY, setDragStartY] = useState<number | null>(null)
   const [dragOffset, setDragOffset] = useState(0)
 
   // Mount/unmount + visibility flip on every `open` change.
@@ -67,22 +69,25 @@ export function BottomSheet({ open, onClose, title = 'Налаштування',
 
   if (!mounted) return null
 
-  const dragging = dragStartY.current !== null
+  const dragging = dragStartY !== null
 
   function onPointerDown(e: React.PointerEvent) {
-    dragStartY.current = e.clientY
+    setDragStartY(e.clientY)
     ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
   }
   function onPointerMove(e: React.PointerEvent) {
-    if (dragStartY.current === null) return
-    const delta = Math.max(0, e.clientY - dragStartY.current)
+    if (dragStartY === null) return
+    const delta = Math.max(0, e.clientY - dragStartY)
     setDragOffset(delta)
   }
-  function onPointerUp() {
-    if (dragStartY.current === null) return
-    const finalDelta = dragOffset
-    dragStartY.current = null
+  function onPointerUp(e: React.PointerEvent) {
+    if (dragStartY === null) return
+    // Compute final delta from the live pointer position rather than
+    // `dragOffset`, which could lag if a render hasn't committed yet.
+    const finalDelta = Math.max(0, e.clientY - dragStartY)
+    setDragStartY(null)
     setDragOffset(0)
+    // Dismiss the sheet when dragged more than 100 px downward; otherwise snap back.
     if (finalDelta > 100) onClose()
   }
 
@@ -92,6 +97,7 @@ export function BottomSheet({ open, onClose, title = 'Налаштування',
       <div
         onClick={(e) => { e.stopPropagation(); onClose() }}
         role="presentation"
+        aria-hidden="true"
         style={{
           position: 'fixed',
           inset: 0,
