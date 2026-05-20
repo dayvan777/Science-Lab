@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
 import { ACESFilmicToneMapping } from 'three'
@@ -16,6 +16,8 @@ import { Baseball, RADIUS as BASEBALL_RADIUS } from '../objects/Baseball'
 import { Button } from '../../../sdk/ui/Button'
 import { SoundToggle } from '../../../sdk/ui/SoundToggle'
 import { ZoomControls } from '../../../sdk/ui/ZoomControls'
+import { BottomSheet } from '../../../sdk/ui/BottomSheet'
+import { SheetTriggerButton } from '../../../sdk/ui/SheetTriggerButton'
 import { HUD } from '../ui/HUD'
 import { IntroTitle } from '../ui/IntroTitle'
 import { MilestoneOverlay } from '../ui/MilestoneOverlay'
@@ -45,7 +47,8 @@ export function LabScene() {
   const respawnObjects = useLabState(s => s.respawnObjects)
   const guidanceOn = useGuidance(s => s.enabled)
   const { breakpoint } = useViewport()
-  const isPhone = breakpoint === 'phone'
+  const isMobile = breakpoint === 'phone' || breakpoint === 'tablet'
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   const currentTask = phase === 'in-progress' ? tasks[idx] : null
   const activeObjectId = currentTask?.objectId ?? null
@@ -142,44 +145,88 @@ export function LabScene() {
       <SkipGuidanceToggle />
       {introActive && <IntroTitle onComplete={() => { /* fade-out handled internally */ }} />}
       <MilestoneOverlay objectId={milestoneObjectId} onDismiss={() => setMilestoneObjectId(null)} />
-      {/* Utility controls — desktop/tablet keep them in the bottom-right
-          row alongside the input bar. On phone the input bar already
-          occupies the full bottom strip, so we move the controls into a
-          right-side vertical column starting just below the journal pill
-          (top: 110), and shrink "Скинути предмети" to icon-only. */}
-      <div
-        style={
-          isPhone
-            ? {
-                position: 'fixed',
-                top: 110,
-                right: 8,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 8,
-                zIndex: 10,
-              }
-            : {
-                position: 'fixed',
-                bottom: safeAreaBottom(16),
-                right: 16,
-                display: 'flex',
-                gap: 8,
-                zIndex: 10,
-              }
-        }
-      >
-        <ZoomControls />
-        <SoundToggle />
-        <Button
-          variant="secondary"
-          onClick={() => respawnObjects()}
-          aria-label="Скинути предмети"
-          title="Скинути предмети"
+      {/* Utility controls — on phone+tablet (<900 px) the secondary controls
+          live inside a bottom sheet behind a ⚙ button, leaving just Zoom +/−
+          and the sheet trigger outside. On desktop (≥900 px) all three
+          controls render inline as a horizontal row in the bottom-right. */}
+      {isMobile ? (
+        <>
+          {/* Outside the sheet — bottom-right vertical stack on phone+tablet. */}
+          <div
+            style={{
+              position: 'fixed',
+              bottom: safeAreaBottom(16),
+              right: 8,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+              zIndex: 10,
+            }}
+          >
+            <ZoomControls />
+            <SheetTriggerButton onClick={() => setSheetOpen(true)} />
+          </div>
+
+          {/* Sheet content — sound + respawn action. */}
+          <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
+            <SheetSection label="Звук">
+              <SoundToggle />
+            </SheetSection>
+            <div style={{ marginTop: 8 }}>
+              <Button
+                variant="secondary"
+                onClick={() => respawnObjects()}
+                aria-label="Скинути предмети"
+                title="Скинути предмети"
+              >
+                ↻ Скинути предмети
+              </Button>
+            </div>
+          </BottomSheet>
+        </>
+      ) : (
+        /* Desktop ≥900 — inline horizontal row, unchanged behaviour. */
+        <div
+          style={{
+            position: 'fixed',
+            bottom: safeAreaBottom(16),
+            right: 16,
+            display: 'flex',
+            gap: 8,
+            zIndex: 10,
+          }}
         >
-          {isPhone ? '↻' : '↻ Скинути предмети'}
-        </Button>
-      </div>
+          <ZoomControls />
+          <SoundToggle />
+          <Button
+            variant="secondary"
+            onClick={() => respawnObjects()}
+            aria-label="Скинути предмети"
+            title="Скинути предмети"
+          >
+            ↻ Скинути предмети
+          </Button>
+        </div>
+      )}
     </>
+  )
+}
+
+function SheetSection({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <div
+        style={{
+          fontSize: 11,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          color: '#86868b',
+          marginBottom: 8,
+        }}
+      >
+        {label}
+      </div>
+      {children}
+    </div>
   )
 }
