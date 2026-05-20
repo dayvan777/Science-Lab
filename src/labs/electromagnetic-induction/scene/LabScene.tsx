@@ -212,8 +212,6 @@ export function LabScene() {
   const resetKey = useLabState(s => s.sessionId)
   const respawnObjects = useLabState(s => s.respawnObjects)
   const { breakpoint } = useViewport()
-  // Retained for safety; kept via void to satisfy noUnusedLocals.
-  void (breakpoint === 'phone')
   const isMobile = breakpoint === 'phone' || breakpoint === 'tablet'
   const [sheetOpen, setSheetOpen] = useState(false)
   const preset: CameraPreset = sceneToPreset(idx)
