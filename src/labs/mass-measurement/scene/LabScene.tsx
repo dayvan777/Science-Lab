@@ -145,11 +145,10 @@ export function LabScene() {
       <SkipGuidanceToggle />
       {introActive && <IntroTitle onComplete={() => { /* fade-out handled internally */ }} />}
       <MilestoneOverlay objectId={milestoneObjectId} onDismiss={() => setMilestoneObjectId(null)} />
-      {/* Utility controls — desktop/tablet keep them in the bottom-right
-          row alongside the input bar. On phone the input bar already
-          occupies the full bottom strip, so we move the controls into a
-          right-side vertical column starting just below the journal pill
-          (top: 110), and shrink "Скинути предмети" to icon-only. */}
+      {/* Utility controls — on phone+tablet (<900 px) the secondary controls
+          live inside a bottom sheet behind a ⚙ button, leaving just Zoom +/−
+          and the sheet trigger outside. On desktop (≥900 px) all three
+          controls render inline as a horizontal row in the bottom-right. */}
       {isMobile ? (
         <>
           {/* Outside the sheet — bottom-right vertical stack on phone+tablet. */}
