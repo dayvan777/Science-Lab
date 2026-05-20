@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
 import { Vector3, ACESFilmicToneMapping } from 'three'
@@ -12,6 +12,8 @@ import { CANVAS_BASE_STYLE } from '../../../sdk/scene/canvasStyle'
 import { Button } from '../../../sdk/ui/Button'
 import { SoundToggle } from '../../../sdk/ui/SoundToggle'
 import { ZoomControls } from '../../../sdk/ui/ZoomControls'
+import { BottomSheet } from '../../../sdk/ui/BottomSheet'
+import { SheetTriggerButton } from '../../../sdk/ui/SheetTriggerButton'
 import { useStepEngine, isStepComplete } from '../../../sdk/guided/StepEngine'
 import { setActiveInstrument } from '../../../sdk/physics/snapTargets'
 import { useViewport } from '../../../sdk/a11y/useViewport'
@@ -210,7 +212,10 @@ export function LabScene() {
   const resetKey = useLabState(s => s.sessionId)
   const respawnObjects = useLabState(s => s.respawnObjects)
   const { breakpoint } = useViewport()
-  const isPhone = breakpoint === 'phone'
+  // Retained for safety; kept via void to satisfy noUnusedLocals.
+  void (breakpoint === 'phone')
+  const isMobile = breakpoint === 'phone' || breakpoint === 'tablet'
+  const [sheetOpen, setSheetOpen] = useState(false)
   const preset: CameraPreset = sceneToPreset(idx)
   const fieldVisibleToggle = useLabSettings((s) => s.fieldVisible)
   const coilTurns = useLabSettings((s) => s.coilTurns)
@@ -316,28 +321,98 @@ export function LabScene() {
         <PostFX />
       </Canvas>
       <HUD />
-      <div
-        style={
-          isPhone
-            ? { position: 'fixed', top: 110, right: 8, display: 'flex', flexDirection: 'column', gap: 8, zIndex: 10 }
-            : { position: 'fixed', bottom: safeAreaBottom(16), right: 16, display: 'flex', gap: 8, zIndex: 10 }
-        }
-      >
-        <ZoomControls />
-        <SoundToggle />
-        <FieldToggleButton />
-        <CoilTurnsButton />
-        <MagnetStrengthButton />
-        <FocusResetButton />
-        <Button
-          variant="secondary"
-          onClick={() => respawnObjects()}
-          aria-label="Скинути предмети"
-          title="Скинути предмети"
+      {isMobile ? (
+        <>
+          {/* Outside the sheet — bottom-right vertical stack on phone+tablet. */}
+          <div
+            style={{
+              position: 'fixed',
+              bottom: safeAreaBottom(16),
+              right: 8,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+              zIndex: 10,
+            }}
+          >
+            <FocusResetButton />
+            <ZoomControls />
+            <SheetTriggerButton onClick={() => setSheetOpen(true)} />
+          </div>
+
+          {/* Sheet content — secondary settings + respawn action. */}
+          <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
+            <SheetSection label="Магнітне поле">
+              <FieldToggleButton />
+            </SheetSection>
+            <SheetSection label="Витки котушки">
+              <CoilTurnsButton />
+            </SheetSection>
+            <SheetSection label="Сила магніту">
+              <MagnetStrengthButton />
+            </SheetSection>
+            <SheetSection label="Звук">
+              <SoundToggle />
+            </SheetSection>
+            <div style={{ marginTop: 8 }}>
+              <Button
+                variant="secondary"
+                onClick={() => respawnObjects()}
+                aria-label="Скинути предмети"
+                title="Скинути предмети"
+              >
+                ↻ Скинути предмети
+              </Button>
+            </div>
+          </BottomSheet>
+        </>
+      ) : (
+        /* Desktop ≥900 — inline horizontal row, unchanged behaviour. */
+        <div
+          style={{
+            position: 'fixed',
+            bottom: safeAreaBottom(16),
+            right: 16,
+            display: 'flex',
+            gap: 8,
+            zIndex: 10,
+          }}
         >
-          {isPhone ? '↻' : '↻ Скинути предмети'}
-        </Button>
-      </div>
+          <ZoomControls />
+          <SoundToggle />
+          <FieldToggleButton />
+          <CoilTurnsButton />
+          <MagnetStrengthButton />
+          <FocusResetButton />
+          <Button
+            variant="secondary"
+            onClick={() => respawnObjects()}
+            aria-label="Скинути предмети"
+            title="Скинути предмети"
+          >
+            ↻ Скинути предмети
+          </Button>
+        </div>
+      )}
     </>
+  )
+}
+
+function SheetSection({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <div
+        style={{
+          fontSize: 11,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          color: '#86868b',
+          marginBottom: 8,
+        }}
+      >
+        {label}
+      </div>
+      {children}
+    </div>
   )
 }
