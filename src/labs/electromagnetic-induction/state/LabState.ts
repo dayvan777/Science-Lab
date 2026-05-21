@@ -1,9 +1,11 @@
 import { create } from 'zustand'
+import { SCENES } from '../content/scenes'
 
 export type LabPhase = 'intro' | 'in-progress' | 'finished'
 
 export type JournalEntry = {
-  sceneId: string
+  /** Friendly Ukrainian scene title, e.g., 'Повільний рух'. */
+  sceneTitle: string
   chosenIndex: number
   timestamp: number
 }
@@ -14,7 +16,7 @@ type LabState = {
   journal: JournalEntry[]
   sessionId: number
   start: () => void
-  recordMCAnswer: (sceneId: string, chosenIndex: number) => void
+  recordMCAnswer: (chosenIndex: number) => void
   advanceScene: () => void
   reset: () => void
   respawnObjects: () => void
@@ -30,10 +32,12 @@ export const useLabState = create<LabState>((set, get) => ({
 
   start: () => set({ phase: 'in-progress' }),
 
-  recordMCAnswer: (sceneId, chosenIndex) => {
-    const { journal } = get()
+  recordMCAnswer: (chosenIndex) => {
+    const { journal, currentSceneIndex } = get()
+    const scene = SCENES[currentSceneIndex]
+    if (!scene) return
     set({
-      journal: [...journal, { sceneId, chosenIndex, timestamp: Date.now() }],
+      journal: [...journal, { sceneTitle: scene.title, chosenIndex, timestamp: Date.now() }],
     })
   },
 

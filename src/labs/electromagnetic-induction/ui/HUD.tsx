@@ -124,7 +124,7 @@ export function HUD() {
             choices={step.choices}
             correctIndex={step.complete.correctIndex}
             onCorrect={(idx) => {
-              recordMCAnswer(step.id, idx)
+              recordMCAnswer(idx)
               setLastMCChoice(idx)
             }}
           />
@@ -163,7 +163,7 @@ export function HUD() {
             {journal.map((entry, i) => (
               <li key={i} style={{ padding: '6px 0', borderBottom: '1px solid rgba(0,0,0,0.06)', color: '#1d1d1f' }}>
                 <span style={{ color: '#34c759', marginRight: 6 }}>✓</span>
-                {entry.sceneId}
+                {entry.sceneTitle}
               </li>
             ))}
           </ul>
