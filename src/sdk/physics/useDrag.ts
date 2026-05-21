@@ -1,9 +1,10 @@
-import { useRef, useCallback, RefObject } from 'react'
+import { useRef, useEffect, useCallback, RefObject } from 'react'
 import { ThreeEvent, useThree } from '@react-three/fiber'
 import { Vector3 } from 'three'
 import { RapierRigidBody } from '@react-three/rapier'
 import { RigidBodyType } from '@dimforge/rapier3d-compat'
 import { findSnapNear, snapProgress } from './snapTargets'
+import { dragBus } from './dragBus'
 import { useStepEngine } from '../../sdk/guided/StepEngine'
 import { clamp } from '../animation'
 
@@ -101,6 +102,28 @@ export function useDrag({ rigidBody, bodyId, dragHeight = 1.0, dragCorridor, onT
   // drag-start side effects have fired and onPointerUp must finalize drag.
   const hasExceededThreshold = useRef(false)
   const setLastSnap = useStepEngine.getState().setLastSnap
+
+  // Cancel any in-flight drag — invoked via dragBus when a pinch begins.
+  // Restores the body to Dynamic, clears sensor flags, and resets internal
+  // state. No snap-pull tween; the body stays where it currently is and
+  // gravity resumes.
+  useEffect(() => {
+    return dragBus.onCancel(() => {
+      if (!isDragging.current) return
+      const wasFullDrag = hasExceededThreshold.current
+      isDragging.current = false
+      pointerId.current = null
+      tapStartTime.current = null
+      hasExceededThreshold.current = false
+      if (wasFullDrag && rigidBody.current) {
+        const n = rigidBody.current.numColliders()
+        for (let i = 0; i < n; i++) {
+          rigidBody.current.collider(i).setSensor(false)
+        }
+        rigidBody.current.setBodyType(RigidBodyType.Dynamic, true)
+      }
+    })
+  }, [rigidBody])
 
   const intersectPlane = useCallback((ev: ThreeEvent<PointerEvent>) => {
     const native = ev.nativeEvent
