@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { GlassPanel } from '../../../sdk/ui/GlassPanel'
 import { CollapsibleGlassPanel } from '../../../sdk/ui/CollapsibleGlassPanel'
 import { Button } from '../../../sdk/ui/Button'
@@ -18,7 +18,21 @@ export function HUD() {
   const stepIdx = useStepEngine(s => s.currentStepIndex)
   const setLastMCChoice = useStepEngine(s => s.setLastMCChoice)
   const resetForTask = useStepEngine(s => s.resetForTask)
+  const draggingBodyId = useStepEngine(s => s.draggingBodyId)
   const { breakpoint } = useViewport()
+
+  // Auto-collapse HUD panels while the student is actively dragging an
+  // object. 300 ms grace period on the release so a quick re-grab does
+  // not flicker the panel open/closed.
+  const [forceCollapsed, setForceCollapsed] = useState(false)
+  useEffect(() => {
+    if (draggingBodyId !== null) {
+      setForceCollapsed(true)
+      return
+    }
+    const t = setTimeout(() => setForceCollapsed(false), 300)
+    return () => clearTimeout(t)
+  }, [draggingBodyId])
 
   useEffect(() => {
     resetForTask(sceneIdx)
@@ -85,6 +99,7 @@ export function HUD() {
         storageKey="em-task-panel"
         label="панель сцени"
         defaultCollapsed={breakpoint === 'phone'}
+        forceCollapsed={forceCollapsed}
         aria-labelledby="em-task-label"
         style={{ overflow: 'auto', ...layout.taskPanel }}
         collapsedStyle={
@@ -131,6 +146,7 @@ export function HUD() {
         storageKey="em-journal-panel"
         label="журнал"
         defaultCollapsed={breakpoint === 'phone'}
+        forceCollapsed={forceCollapsed}
         aria-labelledby="em-journal-label"
         style={{ overflow: 'auto', ...layout.journalPanel }}
         collapsedStyle={
