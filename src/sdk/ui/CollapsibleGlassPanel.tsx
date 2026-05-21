@@ -17,6 +17,12 @@ type Props = {
   collapsedStyle?: CSSProperties
   /** ARIA region label id (the element with this id labels the panel). */
   'aria-labelledby'?: string
+  /**
+   * External override — render the collapsed pill even when the persisted
+   * state is "expanded". Used by labs to hide HUD panels while the student
+   * is actively dragging an object. Does NOT mutate persistence.
+   */
+  forceCollapsed?: boolean
   children: ReactNode
 }
 
@@ -43,6 +49,7 @@ export function CollapsibleGlassPanel({
   collapsedStyle,
   children,
   'aria-labelledby': ariaLabelledBy,
+  forceCollapsed = false,
 }: Props) {
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     if (typeof localStorage === 'undefined') return defaultCollapsed
@@ -61,7 +68,8 @@ export function CollapsibleGlassPanel({
     try { localStorage.setItem(`lab.collapse.${storageKey}`, collapsed ? '1' : '0') } catch {}
   }, [collapsed, storageKey])
 
-  if (collapsed) {
+  const showCollapsed = forceCollapsed || collapsed
+  if (showCollapsed) {
     // NOTE: callers MUST provide `collapsedStyle` with at least one vertical
     // anchor (top OR bottom) and one horizontal anchor (left OR right).
     // Previously this block also set `top: 16, left: 16` as defaults, but

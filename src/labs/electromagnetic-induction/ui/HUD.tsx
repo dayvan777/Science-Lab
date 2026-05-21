@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { GlassPanel } from '../../../sdk/ui/GlassPanel'
 import { CollapsibleGlassPanel } from '../../../sdk/ui/CollapsibleGlassPanel'
 import { Button } from '../../../sdk/ui/Button'
@@ -18,14 +18,28 @@ export function HUD() {
   const stepIdx = useStepEngine(s => s.currentStepIndex)
   const setLastMCChoice = useStepEngine(s => s.setLastMCChoice)
   const resetForTask = useStepEngine(s => s.resetForTask)
+  const draggingBodyId = useStepEngine(s => s.draggingBodyId)
   const { breakpoint } = useViewport()
+
+  // Auto-collapse HUD panels while the student is actively dragging an
+  // object. 300 ms grace period on the release so a quick re-grab does
+  // not flicker the panel open/closed.
+  const [forceCollapsed, setForceCollapsed] = useState(false)
+  useEffect(() => {
+    if (draggingBodyId !== null) {
+      setForceCollapsed(true)
+      return
+    }
+    const t = setTimeout(() => setForceCollapsed(false), 300)
+    return () => clearTimeout(t)
+  }, [draggingBodyId])
 
   useEffect(() => {
     resetForTask(sceneIdx)
   }, [sceneIdx, resetForTask])
 
   const scene = SCENES[sceneIdx]
-  const step = scene?.[stepIdx]
+  const step = scene?.steps[stepIdx]
   const sceneComplete = !!scene && !step
 
   // If the scene's last step completed, advance to next scene
@@ -85,6 +99,7 @@ export function HUD() {
         storageKey="em-task-panel"
         label="панель сцени"
         defaultCollapsed={breakpoint === 'phone'}
+        forceCollapsed={forceCollapsed}
         aria-labelledby="em-task-label"
         style={{ overflow: 'auto', ...layout.taskPanel }}
         collapsedStyle={
@@ -109,7 +124,7 @@ export function HUD() {
             choices={step.choices}
             correctIndex={step.complete.correctIndex}
             onCorrect={(idx) => {
-              recordMCAnswer(step.id, idx)
+              recordMCAnswer(idx)
               setLastMCChoice(idx)
             }}
           />
@@ -131,6 +146,7 @@ export function HUD() {
         storageKey="em-journal-panel"
         label="журнал"
         defaultCollapsed={breakpoint === 'phone'}
+        forceCollapsed={forceCollapsed}
         aria-labelledby="em-journal-label"
         style={{ overflow: 'auto', ...layout.journalPanel }}
         collapsedStyle={
@@ -147,7 +163,7 @@ export function HUD() {
             {journal.map((entry, i) => (
               <li key={i} style={{ padding: '6px 0', borderBottom: '1px solid rgba(0,0,0,0.06)', color: '#1d1d1f' }}>
                 <span style={{ color: '#34c759', marginRight: 6 }}>✓</span>
-                {entry.sceneId}
+                {entry.sceneTitle}
               </li>
             ))}
           </ul>

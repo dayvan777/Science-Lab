@@ -127,7 +127,7 @@ function SceneController() {
     // ---------- Step advance ----------
     const scene = SCENES[currentSceneIdx]
     if (!scene) return
-    const step = scene[currentStepIdx]
+    const step = scene.steps[currentStepIdx]
     if (!step) return
 
     const distance = scratchPos.current.distanceTo(COIL_CENTER)
