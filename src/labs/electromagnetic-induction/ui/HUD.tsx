@@ -39,7 +39,7 @@ export function HUD() {
   }, [sceneIdx, resetForTask])
 
   const scene = SCENES[sceneIdx]
-  const step = scene?.[stepIdx]
+  const step = scene?.steps[stepIdx]
   const sceneComplete = !!scene && !step
 
   // If the scene's last step completed, advance to next scene

@@ -24,9 +24,17 @@ export type EmStep = Step & {
   motionTrigger?: 'magnet-near-coil' | 'magnet-leaving-coil' | 'magnet-stationary-in-coil'
 }
 
-export const SCENES: EmStep[][] = [
+export type EmScene = {
+  /** Short Ukrainian title shown in the journal. */
+  title: string
+  steps: EmStep[]
+}
+
+export const SCENES: EmScene[] = [
   // Scene 1 — Знайомство (intro, single advance step)
-  [
+  {
+    title: 'Знайомство',
+    steps: [
     {
       id: 'intro-ack',
       target: { kind: 'ui', id: 'submit' },
@@ -37,10 +45,13 @@ export const SCENES: EmStep[][] = [
         "Ми будемо рухати магніт біля котушки і дослідимо, коли в колі виникає струм.",
       complete: { kind: 'submitted' },
     },
-  ],
+    ],
+  },
 
   // Scene 2 — Повільний рух
-  [
+  {
+    title: 'Повільний рух',
+    steps: [
     {
       id: 'pickup-slow',
       target: { kind: 'object', id: 'bar-magnet' },
@@ -70,10 +81,13 @@ export const SCENES: EmStep[][] = [
       ],
       complete: { kind: 'mc-selected', correctIndex: 0 },
     },
-  ],
+    ],
+  },
 
   // Scene 3 — Швидкий рух
-  [
+  {
+    title: 'Швидкий рух',
+    steps: [
     {
       id: 'pickup-fast',
       target: { kind: 'object', id: 'bar-magnet' },
@@ -102,10 +116,13 @@ export const SCENES: EmStep[][] = [
       ],
       complete: { kind: 'mc-selected', correctIndex: 1 },
     },
-  ],
+    ],
+  },
 
   // Scene 4 — Зміна напрямку
-  [
+  {
+    title: 'Зміна напрямку',
+    steps: [
     {
       id: 'pull-away',
       target: { kind: 'instrument', id: 'coil' },
@@ -127,10 +144,13 @@ export const SCENES: EmStep[][] = [
       ],
       complete: { kind: 'mc-selected', correctIndex: 1 },
     },
-  ],
+    ],
+  },
 
   // Scene 5 — Нерухомий магніт
-  [
+  {
+    title: 'Нерухомий магніт',
+    steps: [
     {
       id: 'place-inside',
       target: { kind: 'instrument', id: 'coil' },
@@ -152,5 +172,6 @@ export const SCENES: EmStep[][] = [
       ],
       complete: { kind: 'mc-selected', correctIndex: 1 },
     },
-  ],
+    ],
+  },
 ]
