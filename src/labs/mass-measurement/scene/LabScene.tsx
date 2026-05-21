@@ -18,6 +18,7 @@ import { SoundToggle } from '../../../sdk/ui/SoundToggle'
 import { ZoomControls } from '../../../sdk/ui/ZoomControls'
 import { BottomSheet } from '../../../sdk/ui/BottomSheet'
 import { SheetTriggerButton } from '../../../sdk/ui/SheetTriggerButton'
+import { PinchZoomController } from '../../../sdk/scene/PinchZoomController'
 import { HUD } from '../ui/HUD'
 import { IntroTitle } from '../ui/IntroTitle'
 import { MilestoneOverlay } from '../ui/MilestoneOverlay'
@@ -113,6 +114,7 @@ export function LabScene() {
       >
         <CinematicLighting />
         <CameraRig preset={preset} />
+        <PinchZoomController />
         <Environment preset="studio" background={false} resolution={64} />
         <Physics key={resetKey} gravity={[0, -9.81, 0]} timeStep={1/60}>
           <Table />
