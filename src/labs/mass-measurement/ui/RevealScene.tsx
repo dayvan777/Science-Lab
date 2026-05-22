@@ -20,7 +20,7 @@ type ObjectGroup = {
 
 const OBJECT_EMOJI: Record<string, string> = {
   'tennis-ball': '🏓',
-  apple: '⚙️',
+  apple: '🍎',
   baseball: '⚾',
 }
 
@@ -66,6 +66,7 @@ export function RevealScene() {
   const maxMass = Math.max(...groups.map(g => g.massGrams), 1)
 
   const [phase, setPhase] = useState<RevealPhase>('fade-in')
+  const [showComingSoon, setShowComingSoon] = useState(false)
 
   // Tick-up progress per measurement (0 to 1). Drives both the displayed
   // number and the bar width.
@@ -244,10 +245,26 @@ export function RevealScene() {
         pointerEvents: phase === 'cta' ? 'auto' : 'none',
       }}>
         <Button onClick={reset}>Спробувати знову</Button>
-        <Button variant="secondary" onClick={() => alert('Наступна лабораторна — скоро!')}>
+        <Button variant="secondary" onClick={() => {
+          setShowComingSoon(true)
+          setTimeout(() => setShowComingSoon(false), 3000)
+        }}>
           Наступна лабораторна (скоро)
         </Button>
       </div>
+      {showComingSoon && (
+        <div
+          role="status"
+          style={{
+            marginTop: 16,
+            fontSize: 14,
+            color: '#a8a8b0',
+            transition: 'opacity 300ms ease',
+          }}
+        >
+          Наступна лабораторна — скоро! 🚧
+        </div>
+      )}
     </div>
   )
 }
