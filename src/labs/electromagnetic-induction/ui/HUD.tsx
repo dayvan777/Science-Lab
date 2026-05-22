@@ -123,6 +123,7 @@ export function HUD() {
             question=""
             choices={step.choices}
             correctIndex={step.complete.correctIndex}
+            compact={breakpoint === 'phone'}
             onCorrect={(idx) => {
               recordMCAnswer(idx)
               setLastMCChoice(idx)
