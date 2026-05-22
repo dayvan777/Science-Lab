@@ -38,7 +38,8 @@ export class SoundManager {
   private ensureContext(): AudioContext | null {
     if (this.ctx) return this.ctx
     if (typeof window === 'undefined') return null
-    const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+    const w = window as Window & { webkitAudioContext?: typeof AudioContext }
+    const Ctor = window.AudioContext ?? w.webkitAudioContext
     if (!Ctor) return null
     this.ctx = new Ctor()
     return this.ctx

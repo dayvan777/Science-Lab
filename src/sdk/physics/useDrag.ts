@@ -138,7 +138,7 @@ export function useDrag({ rigidBody, bodyId, dragHeight = 1.0, dragCorridor, onT
 
   const onPointerDown = (ev: ThreeEvent<PointerEvent>) => {
     // Filter: for mouse pointers, require an actual button press (prevents hover-induced drags)
-    if (ev.pointerType === 'mouse' && (ev as unknown as { buttons: number }).buttons === 0) return
+    if (ev.pointerType === 'mouse' && ev.nativeEvent.buttons === 0) return
     if (!rigidBody.current) return
     ev.stopPropagation()
     isDragging.current = true
