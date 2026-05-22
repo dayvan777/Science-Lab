@@ -18,6 +18,7 @@ import { SoundToggle } from '../../../sdk/ui/SoundToggle'
 import { ZoomControls } from '../../../sdk/ui/ZoomControls'
 import { BottomSheet } from '../../../sdk/ui/BottomSheet'
 import { SheetTriggerButton } from '../../../sdk/ui/SheetTriggerButton'
+import { LoadingScreen } from '../../../sdk/ui/LoadingScreen'
 import { PinchZoomController } from '../../../sdk/scene/PinchZoomController'
 import { HUD } from '../ui/HUD'
 import { IntroTitle } from '../ui/IntroTitle'
@@ -59,6 +60,7 @@ export function LabScene() {
   // first ~3 seconds while the title fades, then dollies to the
   // task-driven focus preset.
   const [introActive, setIntroActive] = useState(true)
+  const [ready, setReady] = useState(false)
   useEffect(() => {
     const t = setTimeout(() => setIntroActive(false), 3000)
     return () => clearTimeout(t)
@@ -111,6 +113,7 @@ export function LabScene() {
         shadows
         gl={{ toneMapping: ACESFilmicToneMapping, toneMappingExposure: 0.55 }}
         style={{ ...CANVAS_BASE_STYLE, background: 'radial-gradient(ellipse at center, #2a2a30 0%, #1a1a1e 50%, #0a0a0c 100%)' }}
+        onCreated={() => setReady(true)}
       >
         <CinematicLighting />
         <CameraRig preset={preset} />
@@ -143,6 +146,7 @@ export function LabScene() {
         </Physics>
         <PostFX />
       </Canvas>
+      <LoadingScreen done={ready} />
       <HUD />
       <SkipGuidanceToggle />
       {introActive && <IntroTitle onComplete={() => { /* fade-out handled internally */ }} />}

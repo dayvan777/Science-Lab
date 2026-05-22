@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { sound } from '../../sdk/audio/SoundManager'
 import { LabScene } from './scene/LabScene'
 import { useLabState } from './state/LabState'
@@ -6,6 +7,8 @@ import { IntroScreen } from './ui/IntroScreen'
 import { RevealScene } from './ui/RevealScene'
 import { DemoController } from './demo/DemoController'
 import { DemoBadge } from './demo/DemoBadge'
+import { isWebGLAvailable } from '../../sdk/scene/webgl'
+import { WebGLUnsupported } from '../../sdk/ui/WebGLUnsupported'
 
 export const massMeasurementDefinition = {
   id: 'mass-measurement',
@@ -32,6 +35,8 @@ function useDemoMode(): boolean {
 export function MassMeasurementLab() {
   const phase = useLabState(s => s.phase)
   const demoMode = useDemoMode()
+  const navigate = useNavigate()
+  const webglOk = isWebGLAvailable()
 
   useEffect(() => {
     if (phase !== 'in-progress') return
@@ -46,7 +51,10 @@ export function MassMeasurementLab() {
       {demoMode && <DemoBadge />}
       {phase === 'intro' && <IntroScreen />}
       {phase === 'finished' && <RevealScene />}
-      {phase === 'in-progress' && <LabScene />}
+      {phase === 'in-progress' && (webglOk
+        ? <LabScene />
+        : <WebGLUnsupported onHome={() => navigate('/')} />
+      )}
     </>
   )
 }

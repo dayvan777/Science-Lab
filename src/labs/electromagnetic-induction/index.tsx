@@ -1,9 +1,12 @@
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { sound } from '../../sdk/audio/SoundManager'
 import { LabScene } from './scene/LabScene'
 import { useLabState } from './state/LabState'
 import { IntroScreen } from './ui/IntroScreen'
 import { RevealScene } from './ui/RevealScene'
+import { isWebGLAvailable } from '../../sdk/scene/webgl'
+import { WebGLUnsupported } from '../../sdk/ui/WebGLUnsupported'
 
 export const emInductionLabDefinition = {
   id: 'em-induction',
@@ -20,6 +23,8 @@ const SOUND_CATALOG = {
 
 export function EMInductionLab() {
   const phase = useLabState(s => s.phase)
+  const navigate = useNavigate()
+  const webglOk = isWebGLAvailable()
 
   useEffect(() => {
     if (phase !== 'in-progress') return
@@ -30,7 +35,10 @@ export function EMInductionLab() {
     <>
       {phase === 'intro' && <IntroScreen />}
       {phase === 'finished' && <RevealScene />}
-      {phase === 'in-progress' && <LabScene />}
+      {phase === 'in-progress' && (webglOk
+        ? <LabScene />
+        : <WebGLUnsupported onHome={() => navigate('/')} />
+      )}
     </>
   )
 }
