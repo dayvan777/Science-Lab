@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { GlassPanel } from '../../../sdk/ui/GlassPanel'
 import { CollapsibleGlassPanel } from '../../../sdk/ui/CollapsibleGlassPanel'
 import { Button } from '../../../sdk/ui/Button'
@@ -8,6 +8,7 @@ import { safeAreaTop } from '../../../sdk/a11y/safeArea'
 import { useLabState } from '../state/LabState'
 import { useStepEngine } from '../../../sdk/guided/StepEngine'
 import { SCENES } from '../content/scenes'
+import { useForceCollapsed } from '../../../sdk/ui/useForceCollapsed'
 
 export function HUD() {
   const phase = useLabState(s => s.phase)
@@ -22,17 +23,8 @@ export function HUD() {
   const { breakpoint } = useViewport()
 
   // Auto-collapse HUD panels while the student is actively dragging an
-  // object. 300 ms grace period on the release so a quick re-grab does
-  // not flicker the panel open/closed.
-  const [forceCollapsed, setForceCollapsed] = useState(false)
-  useEffect(() => {
-    if (draggingBodyId !== null) {
-      setForceCollapsed(true)
-      return
-    }
-    const t = setTimeout(() => setForceCollapsed(false), 300)
-    return () => clearTimeout(t)
-  }, [draggingBodyId])
+  // object (300 ms grace on release to avoid flicker).
+  const forceCollapsed = useForceCollapsed(draggingBodyId)
 
   useEffect(() => {
     resetForTask(sceneIdx)

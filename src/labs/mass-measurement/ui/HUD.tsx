@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useLabState } from '../state/LabState'
 import { tasks } from '../content/tasks'
 import { TASK_STEPS } from '../content/steps'
@@ -9,6 +9,7 @@ import { useReadings } from '../state/InstrumentReadings'
 import { useStepEngine } from '../../../sdk/guided/StepEngine'
 import { useViewport } from '../../../sdk/a11y/useViewport'
 import { safeAreaTop, safeAreaBottom } from '../../../sdk/a11y/safeArea'
+import { useForceCollapsed } from '../../../sdk/ui/useForceCollapsed'
 
 const TOTAL = 9
 const BASE_FONT = '"SF Pro Display", "Inter", system-ui, sans-serif'
@@ -52,17 +53,8 @@ export function HUD() {
   const draggingBodyId = useStepEngine(s => s.draggingBodyId)
 
   // Auto-collapse HUD panels while the student is actively dragging an
-  // object. 300 ms grace period on the release so a quick re-grab does
-  // not flicker the panel open/closed.
-  const [forceCollapsed, setForceCollapsed] = useState(false)
-  useEffect(() => {
-    if (draggingBodyId !== null) {
-      setForceCollapsed(true)
-      return
-    }
-    const t = setTimeout(() => setForceCollapsed(false), 300)
-    return () => clearTimeout(t)
-  }, [draggingBodyId])
+  // object (300 ms grace on release to avoid flicker).
+  const forceCollapsed = useForceCollapsed(draggingBodyId)
 
   if (phase !== 'in-progress') return null
   const current = tasks[idx]

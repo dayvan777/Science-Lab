@@ -3,6 +3,7 @@ import { RigidBody, RapierRigidBody, BallCollider, CuboidCollider } from '@react
 import { useDrag, type DragCorridor } from '../physics/useDrag'
 import { useStepEngine } from '../guided/StepEngine'
 import { registerBody, notifyDragStart } from '../physics/bodyRegistry'
+import type { ThreeEvent } from '@react-three/fiber'
 
 type Shape = { type: 'ball'; radius: number } | { type: 'cuboid'; halfExtents: [number, number, number] }
 
@@ -56,17 +57,17 @@ export function Draggable({ position, mass, shape, bodyId, enabled = true, dragH
     }
   }, [massKg, halfHeight, bodyId])
 
-  const onPointerDown = (ev: React.PointerEvent) => {
+  const onPointerDown = (ev: ThreeEvent<PointerEvent>) => {
     if (!enabled) return  // BLOCK pickup when not the active object
     if (bodyId) setDragging(bodyId)
     // Notify snap systems so they can release this body from any pan/platform tracking
     if (ref.current) notifyDragStart(ref.current)
-    rawDown(ev as unknown as Parameters<typeof rawDown>[0])
+    rawDown(ev)
   }
 
-  const onPointerUp = (ev: React.PointerEvent) => {
+  const onPointerUp = (ev: ThreeEvent<PointerEvent>) => {
     if (bodyId) setDragging(null)
-    rawUp(ev as unknown as Parameters<typeof rawUp>[0])
+    rawUp(ev)
   }
 
   return (

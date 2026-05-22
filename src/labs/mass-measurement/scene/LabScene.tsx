@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
 import { ACESFilmicToneMapping } from 'three'
@@ -18,6 +18,7 @@ import { SoundToggle } from '../../../sdk/ui/SoundToggle'
 import { ZoomControls } from '../../../sdk/ui/ZoomControls'
 import { BottomSheet } from '../../../sdk/ui/BottomSheet'
 import { SheetTriggerButton } from '../../../sdk/ui/SheetTriggerButton'
+import { SheetSection } from '../../../sdk/ui/SheetSection'
 import { LoadingScreen } from '../../../sdk/ui/LoadingScreen'
 import { PinchZoomController } from '../../../sdk/scene/PinchZoomController'
 import { HUD } from '../ui/HUD'
@@ -215,24 +216,5 @@ export function LabScene() {
         </div>
       )}
     </>
-  )
-}
-
-function SheetSection({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div style={{ marginBottom: 18 }}>
-      <div
-        style={{
-          fontSize: 11,
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
-          color: '#86868b',
-          marginBottom: 8,
-        }}
-      >
-        {label}
-      </div>
-      {children}
-    </div>
   )
 }
