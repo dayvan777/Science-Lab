@@ -10,9 +10,17 @@ type Props = {
   correctIndex: number
   /** Fires when the student picks the correct answer. */
   onCorrect: (chosenIndex: number) => void
+  /** Tighter padding + font for cramped phone panels. */
+  compact?: boolean
 }
 
 type ButtonState = 'idle' | 'wrong' | 'correct'
+
+function stateIcon(state: ButtonState): string {
+  if (state === 'correct') return '✓ '
+  if (state === 'wrong') return '✕ '
+  return ''
+}
 
 /**
  * Three-button vertical-stack MC widget styled to match the lab's glass HUD.
@@ -20,7 +28,7 @@ type ButtonState = 'idle' | 'wrong' | 'correct'
  * resets after 700 ms so the student can try again). Once correct, all
  * buttons disabled.
  */
-export function MultipleChoice({ question, choices, correctIndex, onCorrect }: Props) {
+export function MultipleChoice({ question, choices, correctIndex, onCorrect, compact = false }: Props) {
   const [states, setStates] = useState<ButtonState[]>(() => choices.map(() => 'idle'))
   const [locked, setLocked] = useState(false)
 
@@ -59,9 +67,9 @@ export function MultipleChoice({ question, choices, correctIndex, onCorrect }: P
   }
   const buttonStyle = (state: ButtonState): CSSProperties => {
     const base: CSSProperties = {
-      padding: '14px 18px',
+      padding: compact ? '10px 14px' : '14px 18px',
       borderRadius: 100,
-      fontSize: 14,
+      fontSize: compact ? 13 : 14,
       fontWeight: 600,
       fontFamily: '"Inter", system-ui, sans-serif',
       textAlign: 'left',
@@ -90,6 +98,7 @@ export function MultipleChoice({ question, choices, correctIndex, onCorrect }: P
           disabled={locked && states[i] !== 'correct'}
           aria-label={c.label}
         >
+          <span aria-hidden="true">{stateIcon(states[i])}</span>
           {c.label}
         </button>
       ))}

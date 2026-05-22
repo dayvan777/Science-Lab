@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useLabState } from '../state/LabState'
 import { Button } from '../../../sdk/ui/Button'
+import { useViewport } from '../../../sdk/a11y/useViewport'
 
 export function IntroScreen() {
   const start = useLabState(s => s.start)
   const [stage, setStage] = useState(0)
+  const { breakpoint } = useViewport()
+  const isPhone = breakpoint === 'phone'
 
   useEffect(() => {
     const t1 = setTimeout(() => setStage(1), 100)
@@ -27,7 +30,7 @@ export function IntroScreen() {
         opacity: stage >= 1 ? 1 : 0,
         transform: stage >= 1 ? 'translateY(0)' : 'translateY(20px)',
         transition: 'opacity 600ms ease, transform 600ms ease',
-        fontSize: 56, fontWeight: 200, letterSpacing: -1.5,
+        fontSize: isPhone ? 34 : 56, fontWeight: 200, letterSpacing: -1.5,
         marginBottom: 8, textAlign: 'center',
       }}>
         Практична робота
@@ -36,7 +39,7 @@ export function IntroScreen() {
         opacity: stage >= 2 ? 1 : 0,
         transform: stage >= 2 ? 'translateY(0)' : 'translateY(20px)',
         transition: 'opacity 600ms ease, transform 600ms ease',
-        fontSize: 32, fontWeight: 400, color: '#0071e3',
+        fontSize: isPhone ? 22 : 32, fontWeight: 400, color: '#0071e3',
         marginBottom: 40, textAlign: 'center',
       }}>
         Дослідження електромагнітної індукції

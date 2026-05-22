@@ -162,7 +162,7 @@ export function HUD() {
           ...layout.topPill,
         }}
       >
-        Лабораторна · {idx + 1} з {TOTAL}
+        Завдання {idx + 1} / {TOTAL}
       </GlassPanel>
 
       {/* Left: current step + live reading */}

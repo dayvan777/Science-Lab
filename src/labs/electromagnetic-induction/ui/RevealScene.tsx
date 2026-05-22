@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLabState } from '../state/LabState'
+import { useViewport } from '../../../sdk/a11y/useViewport'
 
 const CONCLUSIONS = [
   'Струм виникає лише при ЗМІНІ магнітного потоку.',
@@ -11,6 +12,8 @@ const CONCLUSIONS = [
 export function RevealScene() {
   const [stage, setStage] = useState(0)
   const reset = useLabState(s => s.reset)
+  const { breakpoint } = useViewport()
+  const isPhone = breakpoint === 'phone'
 
   useEffect(() => {
     // Stages: 1=title, 2-4=conclusions one by one, 5=nav buttons.
@@ -23,7 +26,7 @@ export function RevealScene() {
   const navWrapStyle: React.CSSProperties = {
     display: 'flex',
     gap: 16,
-    marginTop: 56,
+    marginTop: isPhone ? 32 : 56,
     opacity: stage >= 5 ? 1 : 0,
     transform: stage >= 5 ? 'translateY(0)' : 'translateY(20px)',
     transition: 'opacity 600ms ease, transform 600ms ease',
@@ -66,8 +69,9 @@ export function RevealScene() {
       position: 'fixed', inset: 0,
       background: '#08080a',
       display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      color: '#fff', padding: 32,
+      alignItems: 'center', justifyContent: 'safe center',
+      overflowY: 'auto',
+      color: '#fff', padding: isPhone ? 20 : 32,
       fontFamily: '"Inter", system-ui, sans-serif',
     }}>
       {/* Glow backdrop */}
@@ -87,19 +91,19 @@ export function RevealScene() {
         transform: stage >= 1 ? 'translateY(0)' : 'translateY(20px)',
         transition: 'opacity 600ms ease, transform 600ms ease',
         fontFamily: '"Saira", "Inter", sans-serif',
-        fontSize: 36, fontWeight: 800, letterSpacing: -0.02,
-        marginBottom: 40, textTransform: 'uppercase', textAlign: 'center',
+        fontSize: isPhone ? 26 : 36, fontWeight: 800, letterSpacing: -0.02,
+        marginBottom: isPhone ? 24 : 40, textTransform: 'uppercase', textAlign: 'center',
       }}>
         Висновки
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 22, maxWidth: 760, textAlign: 'center' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: isPhone ? 14 : 22, maxWidth: 760, textAlign: 'center' }}>
         {CONCLUSIONS.map((text, i) => (
           <div key={i} style={{
             opacity: stage >= i + 2 ? 1 : 0,
             transform: stage >= i + 2 ? 'translateY(0)' : 'translateY(20px)',
             transition: 'opacity 600ms ease, transform 600ms ease',
-            fontSize: 22, fontWeight: 500, color: 'rgba(255,255,255,0.9)',
+            fontSize: isPhone ? 16 : 22, fontWeight: 500, color: 'rgba(255,255,255,0.9)',
             lineHeight: 1.5,
           }}>
             <span style={{ color: '#0a84ff', fontWeight: 700, marginRight: 8 }}>{i + 1}.</span>
