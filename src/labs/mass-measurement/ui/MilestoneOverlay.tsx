@@ -63,7 +63,7 @@ export function MilestoneOverlay({ objectId, onDismiss }: Props) {
         color: '#f5f5f7',
         fontFamily: BASE_FONT,
         textAlign: 'center',
-        maxWidth: 520,
+        maxWidth: 'min(520px, calc(100vw - 32px))',
         boxShadow: '0 12px 40px rgba(0,0,0,0.45)',
       }}
     >
