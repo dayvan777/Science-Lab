@@ -15,6 +15,7 @@ import { PinchZoomController } from '../../../sdk/scene/PinchZoomController'
 import { useViewport } from '../../../sdk/a11y/useViewport'
 import { GlassBox, BOX_INTERIOR } from '../instruments/GlassBox'
 import { PollenParticle } from '../instruments/PollenParticle'
+import { PollenTrail } from '../instruments/PollenTrail'
 import { ParticleField } from './ParticleField'
 import { SceneController } from './SceneController'
 import { Particle, PARTICLE_DEFAULTS, randomVelocity } from '../physics/particles'
@@ -82,7 +83,10 @@ export function LabScene() {
           <ParticleField particles={particlesRef} capacity={60} position={BOX_WORLD} />
           <SceneController particles={particlesRef} walls={BOX_INTERIOR} />
           {idx === 1 && (
-            <PollenParticle trayPosition={POLLEN_TRAY_WORLD} enabled={true} />
+            <>
+              <PollenParticle trayPosition={POLLEN_TRAY_WORLD} enabled={true} />
+              <PollenTrail enabled={true} />
+            </>
           )}
         </Physics>
         <PostFX />
