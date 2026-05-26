@@ -14,12 +14,14 @@ import { HUD } from '../ui/HUD'
 import { PinchZoomController } from '../../../sdk/scene/PinchZoomController'
 import { useViewport } from '../../../sdk/a11y/useViewport'
 import { GlassBox, BOX_INTERIOR } from '../instruments/GlassBox'
+import { PollenParticle } from '../instruments/PollenParticle'
 import { ParticleField } from './ParticleField'
 import { SceneController } from './SceneController'
 import { Particle, PARTICLE_DEFAULTS, randomVelocity } from '../physics/particles'
 import { useLabState } from '../state/LabState'
 
 const BOX_WORLD: [number, number, number] = [0, 0.95, 0]
+const POLLEN_TRAY_WORLD: [number, number, number] = [-0.40, 0.94, 0.30]
 
 function makeInitialParticles(): Particle[] {
   const out: Particle[] = []
@@ -79,6 +81,9 @@ export function LabScene() {
           <GlassBox position={BOX_WORLD} />
           <ParticleField particles={particlesRef} capacity={60} position={BOX_WORLD} />
           <SceneController particles={particlesRef} walls={BOX_INTERIOR} />
+          {idx === 1 && (
+            <PollenParticle trayPosition={POLLEN_TRAY_WORLD} enabled={true} />
+          )}
         </Physics>
         <PostFX />
       </Canvas>
