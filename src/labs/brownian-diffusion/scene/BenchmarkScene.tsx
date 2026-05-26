@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { InstancedMesh, Matrix4, Object3D } from 'three'
+import { InstancedMesh, Object3D } from 'three'
 import { Particle, randomVelocity, PARTICLE_DEFAULTS } from '../physics/particles'
 import { step, AABB } from '../physics/kinetics'
 
@@ -31,7 +31,6 @@ function ParticleSwarm({ onFps }: { onFps: (fps: number) => void }) {
   const meshRef = useRef<InstancedMesh>(null)
   const particles = useRef<Particle[]>(makeParticles(COUNT))
   const dummy = useRef(new Object3D())
-  const tmp = useRef(new Matrix4())
   const frames = useRef(0)
   const lastReport = useRef(performance.now())
 
@@ -58,7 +57,6 @@ function ParticleSwarm({ onFps }: { onFps: (fps: number) => void }) {
       frames.current = 0
       lastReport.current = now
     }
-    tmp.current
   })
 
   return (
