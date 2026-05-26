@@ -103,6 +103,8 @@ describe('step (integration + walls)', () => {
       expect(p.pos.x).toBeLessThanOrEqual(walls.max.x + 1e-6)
       expect(p.pos.y).toBeGreaterThanOrEqual(walls.min.y - 1e-6)
       expect(p.pos.y).toBeLessThanOrEqual(walls.max.y + 1e-6)
+      expect(p.pos.z).toBeGreaterThanOrEqual(walls.min.z - 1e-6)
+      expect(p.pos.z).toBeLessThanOrEqual(walls.max.z + 1e-6)
     }
   })
 

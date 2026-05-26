@@ -64,7 +64,7 @@ export function collidePair(a: Particle, b: Particle): void {
   const dvz = b.vel.z - a.vel.z
   const vRelN = dvx * nx + dvy * ny + dvz * nz
 
-  if (vRelN > 0) return  // already separating
+  if (vRelN >= 0) return  // already separating or stationary; skip impulse + correction
 
   const j = (2 * vRelN) / (1 / a.mass + 1 / b.mass)
 
@@ -95,14 +95,20 @@ export function reflectAtWalls(p: Particle, w: AABB): void {
 }
 
 /**
- * Divider at x = d.x acts as a wall ONLY for particles whose y is below openHeightY.
+ * Divider at x = d.x acts as a wall ONLY for particles whose y is at or
+ * below openHeightY. Convention: y-up; particles above openHeightY are
+ * unblocked. The `<=`/`>=` boundary on x handles the float-rare case
+ * where positional correction parks a particle exactly on the plane.
  */
 function reflectAtDivider(p: Particle, d: NonNullable<DividerState>): void {
   if (p.pos.y > d.openHeightY) return
-  if (p.pos.x + p.radius > d.x && p.vel.x > 0 && p.pos.x < d.x) {
+  // Approach from left side (centre at or left of plane, moving right, leading edge crossing)
+  if (p.pos.x + p.radius > d.x && p.vel.x > 0 && p.pos.x <= d.x) {
     p.pos.x = d.x - p.radius
     p.vel.x = -p.vel.x
-  } else if (p.pos.x - p.radius < d.x && p.vel.x < 0 && p.pos.x > d.x) {
+  }
+  // Approach from right side (centre at or right of plane, moving left, leading edge crossing)
+  else if (p.pos.x - p.radius < d.x && p.vel.x < 0 && p.pos.x >= d.x) {
     p.pos.x = d.x + p.radius
     p.vel.x = -p.vel.x
   }
