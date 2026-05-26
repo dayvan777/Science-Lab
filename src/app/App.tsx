@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { MassMeasurementLab } from '../labs/mass-measurement'
 import { EMInductionLab } from '../labs/electromagnetic-induction'
 import { BrownianDiffusionLab } from '../labs/brownian-diffusion'
+import { BenchmarkScene } from '../labs/brownian-diffusion/scene/BenchmarkScene'
 import { LandingPage } from '../site/pages/LandingPage'
 import { PhysicsPage } from '../site/pages/PhysicsPage'
 import { ComingSoonPage } from '../site/pages/ComingSoonPage'
@@ -17,6 +18,9 @@ export default function App() {
         <Route path="/physics/brownian-diffusion" element={<BrownianDiffusionLab />} />
         <Route path="/math" element={<ComingSoonPage subjectId="math" />} />
         <Route path="/history" element={<ComingSoonPage subjectId="history" />} />
+        {import.meta.env.DEV && (
+          <Route path="/dev/diffusion-benchmark" element={<BenchmarkScene />} />
+        )}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
