@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
 import { ACESFilmicToneMapping } from 'three'
@@ -21,6 +21,9 @@ import { ParticleField } from './ParticleField'
 import { SceneController } from './SceneController'
 import { Particle, PARTICLE_DEFAULTS, randomVelocity } from '../physics/particles'
 import { useLabState } from '../state/LabState'
+import { useLabSettings } from '../state/LabSettingsState'
+import { useStepEngine } from '../../../sdk/guided/StepEngine'
+import { findBodyByTag } from '../../../sdk/physics/bodyRegistry'
 
 const BOX_WORLD: [number, number, number] = [0, 0.95, 0]
 const POLLEN_TRAY_WORLD: [number, number, number] = [-0.40, 0.94, 0.30]
@@ -51,6 +54,10 @@ function sceneToPreset(idx: number): CameraPreset {
   return idx === 0 ? 'overview' : 'focus-coil'
 }
 
+// Half-extent of the glass box in world units — pollen must be within
+// this distance from BOX_WORLD centre on all three axes to count as "inside".
+const BOX_HALF_EXTENT = 0.10
+
 export function LabScene() {
   const idx = useLabState(s => s.currentSceneIndex)
   const sessionId = useLabState(s => s.sessionId)
@@ -60,9 +67,53 @@ export function LabScene() {
   const preset: CameraPreset = sceneToPreset(idx)
   const particlesRef = useRef<Particle[]>(makeInitialParticles())
 
+  // showMolecules: read from lab settings to drive ParticleField visibility.
+  const showMolecules = useLabSettings(s => s.showMolecules)
+
+  // advanceStep: mirrors EM's SceneController exactly — same hook, same call.
+  const advanceStep = useStepEngine(s => s.advanceStep)
+
+  // Pollen dwell tracking for the pollen-observed motion trigger.
+  const pollenDwellRef = useRef(0)
+  const pollenObservedFiredRef = useRef(false)
+
   useEffect(() => {
     particlesRef.current = makeInitialParticles()
   }, [sessionId])
+
+  // Reset pollen-dwell state whenever the scene or step changes.
+  const currentStepIdx = useStepEngine(s => s.currentStepIndex)
+  useEffect(() => {
+    pollenDwellRef.current = 0
+    pollenObservedFiredRef.current = false
+  }, [idx, currentStepIdx])
+
+  // onTick: called by SceneController each frame after the physics step.
+  // Mirrors EM's in-useFrame motion-trigger pattern, but extracted as a
+  // callback so it can reference React state without being inside useFrame.
+  const onTick = useCallback((dt: number) => {
+    if (idx !== 1) return
+    if (pollenObservedFiredRef.current) return
+    const body = findBodyByTag('pollen')
+    if (!body) return
+    const t = body.translation()
+    const localX = t.x - BOX_WORLD[0]
+    const localY = t.y - BOX_WORLD[1]
+    const localZ = t.z - BOX_WORLD[2]
+    const inside =
+      Math.abs(localX) < BOX_HALF_EXTENT &&
+      Math.abs(localY) < BOX_HALF_EXTENT &&
+      Math.abs(localZ) < BOX_HALF_EXTENT
+    if (inside) {
+      pollenDwellRef.current += dt
+    } else {
+      pollenDwellRef.current = 0
+    }
+    if (pollenDwellRef.current >= 4.0) {
+      pollenObservedFiredRef.current = true
+      advanceStep()
+    }
+  }, [idx, advanceStep])
 
   return (
     <>
@@ -81,8 +132,17 @@ export function LabScene() {
         <Physics key={sessionId} gravity={[0, -9.81, 0]} timeStep={1 / 60}>
           <Table />
           <GlassBox position={BOX_WORLD} />
-          <ParticleField particles={particlesRef} capacity={60} position={BOX_WORLD} />
-          <SceneController particles={particlesRef} walls={BOX_INTERIOR} />
+          <ParticleField
+            particles={particlesRef}
+            capacity={60}
+            position={BOX_WORLD}
+            isVisible={(_p) => idx !== 1 || showMolecules}
+          />
+          <SceneController
+            particles={particlesRef}
+            walls={BOX_INTERIOR}
+            onTick={onTick}
+          />
           {idx === 1 && (
             <>
               <PollenParticle trayPosition={POLLEN_TRAY_WORLD} enabled={true} />

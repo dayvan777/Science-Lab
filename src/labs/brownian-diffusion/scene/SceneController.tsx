@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber'
-import { MutableRefObject } from 'react'
+import { MutableRefObject, useRef } from 'react'
 import { Particle } from '../physics/particles'
 import { step, AABB, DividerState } from '../physics/kinetics'
 
@@ -10,6 +10,8 @@ type Props = {
   getDivider?: () => DividerState
   /** Velocity multiplier applied each frame BEFORE stepping. 1 = unchanged. */
   velocityMultiplier?: number
+  /** Optional per-frame callback fired AFTER the physics step, with clamped dt. */
+  onTick?: (dt: number) => void
 }
 
 /**
@@ -17,18 +19,25 @@ type Props = {
  * custom kinetic engine each frame. Lives INSIDE <Canvas> so
  * useFrame is available.
  */
-export function SceneController({ particles, walls, getDivider, velocityMultiplier = 1 }: Props) {
+export function SceneController({ particles, walls, getDivider, velocityMultiplier = 1, onTick }: Props) {
+  // Tracks the previous velocityMultiplier so a mid-scene change scales
+  // velocities by ratio rather than re-applying the absolute value each frame.
+  const carry = useRef(velocityMultiplier)
+
   useFrame((_state, delta) => {
     const dt = Math.min(delta, 1 / 60)
-    if (velocityMultiplier !== 1) {
+    if (velocityMultiplier !== carry.current) {
+      const ratio = velocityMultiplier / carry.current
       for (const p of particles.current) {
-        p.vel.x *= velocityMultiplier
-        p.vel.y *= velocityMultiplier
-        p.vel.z *= velocityMultiplier
+        p.vel.x *= ratio
+        p.vel.y *= ratio
+        p.vel.z *= ratio
       }
+      carry.current = velocityMultiplier
     }
     const divider = getDivider ? getDivider() : null
     step(particles.current, walls, divider, dt)
+    if (onTick) onTick(dt)
   })
   return null
 }
