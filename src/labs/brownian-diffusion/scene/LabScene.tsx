@@ -10,6 +10,7 @@ import { PostFX } from '../../../sdk/scene/PostFX'
 import { Table } from '../../../sdk/scene/Table'
 import { CANVAS_BASE_STYLE } from '../../../sdk/scene/canvasStyle'
 import { LoadingScreen } from '../../../sdk/ui/LoadingScreen'
+import { HUD } from '../ui/HUD'
 import { PinchZoomController } from '../../../sdk/scene/PinchZoomController'
 import { useViewport } from '../../../sdk/a11y/useViewport'
 import { GlassBox, BOX_INTERIOR } from '../instruments/GlassBox'
@@ -82,6 +83,7 @@ export function LabScene() {
         <PostFX />
       </Canvas>
       <LoadingScreen done={ready} />
+      <HUD />
     </>
   )
 }
