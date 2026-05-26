@@ -11,6 +11,7 @@ import { Table } from '../../../sdk/scene/Table'
 import { CANVAS_BASE_STYLE } from '../../../sdk/scene/canvasStyle'
 import { LoadingScreen } from '../../../sdk/ui/LoadingScreen'
 import { HUD } from '../ui/HUD'
+import { ShowMoleculesToggle } from '../ui/ShowMoleculesToggle'
 import { PinchZoomController } from '../../../sdk/scene/PinchZoomController'
 import { useViewport } from '../../../sdk/a11y/useViewport'
 import { GlassBox, BOX_INTERIOR } from '../instruments/GlassBox'
@@ -93,6 +94,11 @@ export function LabScene() {
       </Canvas>
       <LoadingScreen done={ready} />
       <HUD />
+      {idx === 1 && (
+        <div style={{ position: 'fixed', bottom: 80, right: 16, zIndex: 10 }}>
+          <ShowMoleculesToggle />
+        </div>
+      )}
     </>
   )
 }
