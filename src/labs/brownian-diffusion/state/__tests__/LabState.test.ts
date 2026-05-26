@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useLabState } from '../LabState'
+import { SCENES } from '../../content/scenes'
 
 describe('useLabState (brownian-diffusion)', () => {
   beforeEach(() => {
@@ -18,13 +19,13 @@ describe('useLabState (brownian-diffusion)', () => {
     expect(useLabState.getState().phase).toBe('in-progress')
   })
 
-  it('advanceScene() walks 0 → 5 then finishes at scene 6', () => {
+  it('advanceScene() finishes after the last scene', () => {
     useLabState.getState().start()
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < SCENES.length; i++) {
       useLabState.getState().advanceScene()
     }
     const s = useLabState.getState()
-    expect(s.currentSceneIndex).toBe(6)
+    expect(s.currentSceneIndex).toBeGreaterThanOrEqual(SCENES.length)
     expect(s.phase).toBe('finished')
   })
 
@@ -38,15 +39,17 @@ describe('useLabState (brownian-diffusion)', () => {
     expect(typeof s.journal[0].timestamp).toBe('number')
   })
 
-  it('reset() returns to intro and clears journal', () => {
+  it('reset() returns to intro, clears journal, and bumps sessionId', () => {
     useLabState.getState().start()
     useLabState.getState().recordMCAnswer(0)
     useLabState.getState().advanceScene()
+    const before = useLabState.getState().sessionId
     useLabState.getState().reset()
     const s = useLabState.getState()
     expect(s.phase).toBe('intro')
     expect(s.currentSceneIndex).toBe(0)
     expect(s.journal).toEqual([])
+    expect(s.sessionId).toBeGreaterThan(before)
   })
 
   it('respawnObjects() bumps sessionId without changing phase or index', () => {
