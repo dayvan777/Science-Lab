@@ -47,11 +47,10 @@ export function Beaker({ position }: Props) {
  * with its inscribed square — particles can't reach the corners but it's
  * close enough at this scale (and avoids cylindrical collision math).
  */
-export function beakerWalls(position: [number, number, number]) {
+export function beakerWalls(_position: [number, number, number]) {
   const r = BEAKER_RADIUS * 0.85
-  const yBase = position[1] - BEAKER_HEIGHT / 2 + 0.005
   return {
-    min: { x: position[0] - r, y: yBase, z: position[2] - r },
-    max: { x: position[0] + r, y: position[1] - BEAKER_HEIGHT / 2 + WATER_LEVEL, z: position[2] + r },
+    min: { x: -r, y: -BEAKER_HEIGHT / 2 + 0.005, z: -r },
+    max: { x:  r, y: -BEAKER_HEIGHT / 2 + WATER_LEVEL, z:  r },
   }
 }
