@@ -9,7 +9,14 @@ import type { CameraPreset } from '../../../sdk/scene/CameraRig'
 import { PostFX } from '../../../sdk/scene/PostFX'
 import { Table } from '../../../sdk/scene/Table'
 import { CANVAS_BASE_STYLE } from '../../../sdk/scene/canvasStyle'
+import { Button } from '../../../sdk/ui/Button'
+import { SoundToggle } from '../../../sdk/ui/SoundToggle'
+import { ZoomControls } from '../../../sdk/ui/ZoomControls'
+import { BottomSheet } from '../../../sdk/ui/BottomSheet'
+import { SheetTriggerButton } from '../../../sdk/ui/SheetTriggerButton'
+import { SheetSection } from '../../../sdk/ui/SheetSection'
 import { LoadingScreen } from '../../../sdk/ui/LoadingScreen'
+import { safeAreaBottom } from '../../../sdk/a11y/safeArea'
 import { HUD } from '../ui/HUD'
 import { ShowMoleculesToggle } from '../ui/ShowMoleculesToggle'
 import { TemperatureButton } from '../ui/TemperatureButton'
@@ -116,8 +123,10 @@ const BOX_HALF_EXTENT = 0.10
 export function LabScene() {
   const idx = useLabState(s => s.currentSceneIndex)
   const sessionId = useLabState(s => s.sessionId)
+  const respawnObjects = useLabState(s => s.respawnObjects)
   const { breakpoint } = useViewport()
-  void breakpoint // wired in Slice 10
+  const isMobile = breakpoint === 'phone' || breakpoint === 'tablet'
+  const [sheetOpen, setSheetOpen] = useState(false)
   const [ready, setReady] = useState(false)
   const preset: CameraPreset = sceneToPreset(idx)
   const particlesRef = useRef<Particle[]>(makeInitialParticles())
@@ -330,19 +339,78 @@ export function LabScene() {
       </Canvas>
       <LoadingScreen done={ready} />
       <HUD />
-      {idx === 1 && (
-        <div style={{ position: 'fixed', bottom: 80, right: 16, zIndex: 10 }}>
-          <ShowMoleculesToggle />
-        </div>
-      )}
-      {idx === 4 && (
-        <div style={{ position: 'fixed', bottom: 80, right: 16, zIndex: 10 }}>
-          <TimeLapseSlider />
-        </div>
-      )}
-      {idx === 5 && (
-        <div style={{ position: 'fixed', bottom: 80, right: 16, zIndex: 10 }}>
-          <TemperatureButton />
+      {isMobile ? (
+        <>
+          <div
+            style={{
+              position: 'fixed',
+              bottom: safeAreaBottom(16),
+              right: 8,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+              zIndex: 10,
+            }}
+          >
+            <ZoomControls />
+            <SheetTriggerButton onClick={() => setSheetOpen(true)} />
+          </div>
+
+          <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
+            {idx === 1 && (
+              <SheetSection label="Показати молекули">
+                <ShowMoleculesToggle />
+              </SheetSection>
+            )}
+            {idx === 4 && (
+              <SheetSection label="Час (роки)">
+                <TimeLapseSlider />
+              </SheetSection>
+            )}
+            {idx === 5 && (
+              <SheetSection label="Температура">
+                <TemperatureButton />
+              </SheetSection>
+            )}
+            <SheetSection label="Звук">
+              <SoundToggle />
+            </SheetSection>
+            <div style={{ marginTop: 8 }}>
+              <Button
+                variant="secondary"
+                onClick={() => respawnObjects()}
+                aria-label="Скинути предмети"
+                title="Скинути предмети"
+              >
+                ↻ Скинути предмети
+              </Button>
+            </div>
+          </BottomSheet>
+        </>
+      ) : (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: safeAreaBottom(16),
+            right: 16,
+            display: 'flex',
+            gap: 8,
+            zIndex: 10,
+          }}
+        >
+          <ZoomControls />
+          <SoundToggle />
+          {idx === 1 && <ShowMoleculesToggle />}
+          {idx === 4 && <TimeLapseSlider />}
+          {idx === 5 && <TemperatureButton />}
+          <Button
+            variant="secondary"
+            onClick={() => respawnObjects()}
+            aria-label="Скинути предмети"
+            title="Скинути предмети"
+          >
+            ↻ Скинути предмети
+          </Button>
         </div>
       )}
     </>
