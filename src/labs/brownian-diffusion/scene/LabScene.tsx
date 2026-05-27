@@ -98,8 +98,15 @@ function makeWaterParticles(): Particle[] {
 }
 
 function sceneToPreset(idx: number): CameraPreset {
-  // Slice 3: every scene uses focus-coil placeholder; Slice 10 wires per-scene presets.
-  return idx === 0 ? 'overview' : 'focus-coil'
+  switch (idx) {
+    case 0: return 'overview'      // mol theory — overview intro
+    case 1: return 'focus-box'     // brownian
+    case 2: return 'focus-box'     // gas
+    case 3: return 'focus-beaker'  // liquid
+    case 4: return 'focus-solids'  // solid
+    case 5: return 'focus-box'     // temperature (back to box)
+    default: return 'overview'
+  }
 }
 
 // Half-extent of the glass box in world units — pollen must be within

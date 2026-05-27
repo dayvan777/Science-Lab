@@ -17,6 +17,9 @@ export type CameraPreset =
   | 'focus-magnet'
   | 'focus-galv'
   | 'focus-bulb'
+  | 'focus-box'
+  | 'focus-beaker'
+  | 'focus-solids'
   | 'reveal'
 
 type Pose = { position: [number, number, number]; lookAt: [number, number, number] }
@@ -34,8 +37,11 @@ const POSES: Record<CameraPreset, Pose> = {
   'focus-coil':   { position: [-0.05, 1.35, 1.1], lookAt: [-0.05, 0.95, 0] },
   'focus-magnet': { position: [-0.30, 1.35, 1.1], lookAt: [-0.30, 0.95, 0] },
   'focus-galv':   { position: [0.30, 1.35, 1.1],  lookAt: [0.30, 0.95, 0]  },
-  'focus-bulb':   { position: [0.55, 1.35, 1.1],  lookAt: [0.55, 0.95, 0]  },
-  reveal:        { position: [0, 3.0, 3.2],   lookAt: [0, 1.0, 0]    },
+  'focus-bulb':    { position: [0.55,  1.35, 1.1],  lookAt: [0.55,  0.95, 0]  },
+  'focus-box':     { position: [ 0,    1.40, 0.45], lookAt: [ 0,    0.95, 0]  },
+  'focus-beaker':  { position: [ 0.30, 1.20, 0.45], lookAt: [ 0.40, 0.92, 0]  },
+  'focus-solids':  { position: [-0.30, 1.25, 0.45], lookAt: [-0.40, 0.88, 0]  },
+  reveal:          { position: [0, 3.0, 3.2],       lookAt: [0, 1.0, 0]       },
 }
 
 const DOLLY_DURATION_MS = 1500
