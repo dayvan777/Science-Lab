@@ -140,6 +140,9 @@ export function LabScene() {
   // Scene 5: time-lapse-reached trigger state.
   const timeLapseFiredRef = useRef(false)
 
+  // Scene 6: temp-reached-hot trigger state.
+  const tempReachedHotRef = useRef(false)
+
   useEffect(() => {
     particlesRef.current = makeInitialParticles()
   }, [sessionId])
@@ -166,6 +169,7 @@ export function LabScene() {
     }
     if (idx === 5) {
       particlesRef.current = makeInitialParticles('mixed')
+      tempReachedHotRef.current = false
     }
   }, [idx, currentStepIdx])
 
@@ -234,6 +238,15 @@ export function LabScene() {
       const y = useLabSettings.getState().timeLapseYears
       if (y >= 100) {
         timeLapseFiredRef.current = true
+        advanceStep()
+      }
+    }
+
+    // Scene 6 (idx 5): temp-reached-hot trigger.
+    if (idx === 5 && !tempReachedHotRef.current) {
+      const level = useLabSettings.getState().temperatureLevel
+      if (level === 'hot') {
+        tempReachedHotRef.current = true
         advanceStep()
       }
     }
