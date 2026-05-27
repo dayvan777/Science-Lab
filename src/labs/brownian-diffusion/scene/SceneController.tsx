@@ -12,6 +12,8 @@ type Props = {
   velocityMultiplier?: number
   /** Optional per-frame callback fired AFTER the physics step, with clamped dt. */
   onTick?: (dt: number) => void
+  /** Liquid drag coefficient passed to step(). 0 = no drag (gas); >0 = liquid mode. */
+  liquidDrag?: number
 }
 
 /**
@@ -19,7 +21,7 @@ type Props = {
  * custom kinetic engine each frame. Lives INSIDE <Canvas> so
  * useFrame is available.
  */
-export function SceneController({ particles, walls, getDivider, velocityMultiplier = 1, onTick }: Props) {
+export function SceneController({ particles, walls, getDivider, velocityMultiplier = 1, onTick, liquidDrag = 0 }: Props) {
   // Tracks the previous velocityMultiplier so a mid-scene change scales
   // velocities by ratio rather than re-applying the absolute value each frame.
   const carry = useRef(velocityMultiplier)
@@ -36,7 +38,7 @@ export function SceneController({ particles, walls, getDivider, velocityMultipli
       carry.current = velocityMultiplier
     }
     const divider = getDivider ? getDivider() : null
-    step(particles.current, walls, divider, dt)
+    step(particles.current, walls, divider, dt, liquidDrag)
     if (onTick) onTick(dt)
   })
   return null

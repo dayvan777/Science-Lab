@@ -18,6 +18,9 @@ import { GlassBox, BOX_INTERIOR } from '../instruments/GlassBox'
 import { PollenParticle } from '../instruments/PollenParticle'
 import { PollenTrail } from '../instruments/PollenTrail'
 import { Divider } from '../instruments/Divider'
+import { Beaker, beakerWalls } from '../instruments/Beaker'
+import { InkDropper } from '../instruments/InkDropper'
+import { spawnInk } from '../physics/spawnInk'
 import { ParticleField } from './ParticleField'
 import { SceneController } from './SceneController'
 import { Particle, PARTICLE_DEFAULTS, randomVelocity } from '../physics/particles'
@@ -29,6 +32,8 @@ import { dividerStateAt, fractionMixed } from '../physics/divider'
 
 const BOX_WORLD: [number, number, number] = [0, 0.95, 0]
 const POLLEN_TRAY_WORLD: [number, number, number] = [-0.40, 0.94, 0.30]
+const BEAKER_WORLD: [number, number, number] = [0.40, 0.85, 0]
+const INK_TRAY_WORLD: [number, number, number] = [0.40, 0.94, 0.30]
 
 function makeInitialParticles(mode: 'mixed' | 'segregated' = 'mixed'): Particle[] {
   const out: Particle[] = []
@@ -54,6 +59,25 @@ function makeInitialParticles(mode: 'mixed' | 'segregated' = 'mixed'): Particle[
         z: (Math.random() - 0.5) * 2 * HALF,
       },
       vel: randomVelocity(0.3),
+      mass: def.mass,
+      radius: def.radius,
+    })
+  }
+  return out
+}
+
+function makeWaterParticles(): Particle[] {
+  const out: Particle[] = []
+  const def = PARTICLE_DEFAULTS.water
+  for (let i = 0; i < 30; i++) {
+    out.push({
+      kind: 'water',
+      pos: {
+        x: (Math.random() - 0.5) * 0.08,
+        y: -0.04 + Math.random() * 0.07,
+        z: (Math.random() - 0.5) * 0.08,
+      },
+      vel: randomVelocity(0.05),
       mass: def.mass,
       radius: def.radius,
     })
@@ -93,6 +117,10 @@ export function LabScene() {
   const dividerHandleY = useRef(BOX_WORLD[1] - 0.10)  // start fully closed (handle at box base)
   const gasesMixedFiredRef = useRef(false)
 
+  // Scene 4: ink spawned + liquid-mixed trigger state.
+  const inkSpawnedRef = useRef(false)
+  const liquidMixedFiredRef = useRef(false)
+
   useEffect(() => {
     particlesRef.current = makeInitialParticles()
   }, [sessionId])
@@ -107,6 +135,11 @@ export function LabScene() {
       particlesRef.current = makeInitialParticles('segregated')
       dividerHandleY.current = BOX_WORLD[1] - 0.10
       gasesMixedFiredRef.current = false
+    }
+    if (idx === 3) {
+      particlesRef.current = makeWaterParticles()
+      inkSpawnedRef.current = false
+      liquidMixedFiredRef.current = false
     }
   }, [idx, currentStepIdx])
 
@@ -157,7 +190,22 @@ export function LabScene() {
         advanceStep()
       }
     }
+
+    // Scene 4 (idx 3): liquid-mixed-partial trigger.
+    if (idx === 3 && inkSpawnedRef.current && !liquidMixedFiredRef.current) {
+      const inkPs = particlesRef.current.filter(p => p.kind === 'ink')
+      if (inkPs.length > 0) {
+        const aboveQuarter = inkPs.filter(p => p.pos.y > -0.05).length
+        if (aboveQuarter / inkPs.length > 0.5) {
+          liquidMixedFiredRef.current = true
+          advanceStep()
+        }
+      }
+    }
   }, [idx, advanceStep])
+
+  const currentWalls = idx === 3 ? beakerWalls(BEAKER_WORLD) : BOX_INTERIOR
+  const liquidDrag = idx === 3 ? 1.2 : 0
 
   return (
     <>
@@ -178,15 +226,16 @@ export function LabScene() {
           <GlassBox position={BOX_WORLD} />
           <ParticleField
             particles={particlesRef}
-            capacity={80}
-            position={BOX_WORLD}
+            capacity={120}
+            position={idx === 3 ? BEAKER_WORLD : BOX_WORLD}
             isVisible={(_p) => idx !== 1 || showMolecules}
           />
           <SceneController
             particles={particlesRef}
-            walls={BOX_INTERIOR}
+            walls={currentWalls}
             getDivider={getDivider}
             onTick={onTick}
+            liquidDrag={liquidDrag}
           />
           {idx === 1 && (
             <>
@@ -199,6 +248,25 @@ export function LabScene() {
               boxCentre={BOX_WORLD}
               enabled={true}
             />
+          )}
+          {idx === 3 && (
+            <>
+              <Beaker position={BEAKER_WORLD} />
+              <InkDropper
+                trayPosition={INK_TRAY_WORLD}
+                enabled={!inkSpawnedRef.current}
+                onRelease={(worldPos) => {
+                  const dx = worldPos.x - BEAKER_WORLD[0]
+                  const dz = worldPos.z - BEAKER_WORLD[2]
+                  const horizDist = Math.sqrt(dx * dx + dz * dz)
+                  const beakerTop = BEAKER_WORLD[1] + 0.03
+                  if (horizDist < 0.07 && worldPos.y > beakerTop) {
+                    spawnInk(particlesRef.current, worldPos, BEAKER_WORLD, 30)
+                    inkSpawnedRef.current = true
+                  }
+                }}
+              />
+            </>
           )}
         </Physics>
         <PostFX />
