@@ -60,6 +60,13 @@ export const SUBJECTS: SubjectEntry[] = [
         path: '/physics/em-induction',
         status: 'available',
       },
+      {
+        id: 'brownian-diffusion',
+        title: 'Броунівський рух та дифузія',
+        subtitle: 'Молекули · Дифузія · Температура',
+        path: '/physics/brownian-diffusion',
+        status: 'available',
+      },
     ],
   },
 ]
