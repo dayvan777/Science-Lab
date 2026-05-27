@@ -21,6 +21,8 @@ import { Divider } from '../instruments/Divider'
 import { Beaker, beakerWalls } from '../instruments/Beaker'
 import { InkDropper } from '../instruments/InkDropper'
 import { spawnInk } from '../physics/spawnInk'
+import { SolidBlocks } from '../instruments/SolidBlocks'
+import { TimeLapseSlider } from '../ui/TimeLapseSlider'
 import { ParticleField } from './ParticleField'
 import { SceneController } from './SceneController'
 import { Particle, PARTICLE_DEFAULTS, randomVelocity } from '../physics/particles'
@@ -34,6 +36,7 @@ const BOX_WORLD: [number, number, number] = [0, 0.95, 0]
 const POLLEN_TRAY_WORLD: [number, number, number] = [-0.40, 0.94, 0.30]
 const BEAKER_WORLD: [number, number, number] = [0.40, 0.85, 0]
 const INK_TRAY_WORLD: [number, number, number] = [0.40, 0.94, 0.30]
+const SOLID_BLOCKS_WORLD: [number, number, number] = [-0.40, 0.86, 0]
 
 function makeInitialParticles(mode: 'mixed' | 'segregated' = 'mixed'): Particle[] {
   const out: Particle[] = []
@@ -121,6 +124,9 @@ export function LabScene() {
   const inkSpawnedRef = useRef(false)
   const liquidMixedFiredRef = useRef(false)
 
+  // Scene 5: time-lapse-reached trigger state.
+  const timeLapseFiredRef = useRef(false)
+
   useEffect(() => {
     particlesRef.current = makeInitialParticles()
   }, [sessionId])
@@ -140,6 +146,10 @@ export function LabScene() {
       particlesRef.current = makeWaterParticles()
       inkSpawnedRef.current = false
       liquidMixedFiredRef.current = false
+    }
+    if (idx === 4) {
+      particlesRef.current = []   // scene 5 has no kinetic particles
+      timeLapseFiredRef.current = false
     }
   }, [idx, currentStepIdx])
 
@@ -200,6 +210,15 @@ export function LabScene() {
           liquidMixedFiredRef.current = true
           advanceStep()
         }
+      }
+    }
+
+    // Scene 5 (idx 4): time-lapse-reached trigger.
+    if (idx === 4 && !timeLapseFiredRef.current) {
+      const y = useLabSettings.getState().timeLapseYears
+      if (y >= 100) {
+        timeLapseFiredRef.current = true
+        advanceStep()
       }
     }
   }, [idx, advanceStep])
@@ -268,6 +287,7 @@ export function LabScene() {
               />
             </>
           )}
+          {idx === 4 && <SolidBlocks position={SOLID_BLOCKS_WORLD} />}
         </Physics>
         <PostFX />
       </Canvas>
@@ -276,6 +296,11 @@ export function LabScene() {
       {idx === 1 && (
         <div style={{ position: 'fixed', bottom: 80, right: 16, zIndex: 10 }}>
           <ShowMoleculesToggle />
+        </div>
+      )}
+      {idx === 4 && (
+        <div style={{ position: 'fixed', bottom: 80, right: 16, zIndex: 10 }}>
+          <TimeLapseSlider />
         </div>
       )}
     </>
