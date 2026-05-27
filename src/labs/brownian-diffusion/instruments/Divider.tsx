@@ -18,6 +18,8 @@ import { useThree } from '@react-three/fiber'
 import { Vector3, Camera, WebGLRenderer } from 'three'
 import type { ThreeEvent } from '@react-three/fiber'
 import { registerBody } from '../../../sdk/physics/bodyRegistry'
+import { dragBus } from '../../../sdk/physics/dragBus'
+import { useStepEngine } from '../../../sdk/guided/StepEngine'
 import { BOX_HALF_Y } from '../physics/divider'
 
 const WALL_THICK = 0.004
@@ -80,6 +82,26 @@ export function Divider({ boxCentre, enabled }: Props) {
     }
   }, [])
 
+  // Cancel any in-flight divider drag when a pinch gesture begins.
+  // Mirrors the dragBus.onCancel pattern from sdk/physics/useDrag.ts.
+  useEffect(() => {
+    return dragBus.onCancel(() => {
+      if (!isDragging.current) return
+      const pid = pointerId.current
+      isDragging.current = false
+      pointerId.current = null
+      useStepEngine.getState().setDragging(null)
+      // Release pointer capture so the browser doesn't keep routing events here.
+      if (pid !== null) {
+        try {
+          gl.domElement.releasePointerCapture(pid)
+        } catch {
+          // Element may no longer hold capture — safe to ignore.
+        }
+      }
+    })
+  }, [gl])
+
   const applyPosition = useCallback((y: number) => {
     if (!ref.current) return
     currentY.current = y
@@ -96,6 +118,7 @@ export function Divider({ boxCentre, enabled }: Props) {
     ev.stopPropagation()
     isDragging.current = true
     pointerId.current = ev.pointerId
+    useStepEngine.getState().setDragging('divider')
     ;(ev.target as Element).setPointerCapture(ev.pointerId)
     // Record the Y offset so the handle doesn't jump on first move.
     const hit = intersectVerticalXYPlane(ev, camera, gl, boxCentre[2])
@@ -119,6 +142,7 @@ export function Divider({ boxCentre, enabled }: Props) {
     if (ev.pointerId !== pointerId.current) return
     isDragging.current = false
     pointerId.current = null
+    useStepEngine.getState().setDragging(null)
     ;(ev.target as Element).releasePointerCapture(ev.pointerId)
   }
 
