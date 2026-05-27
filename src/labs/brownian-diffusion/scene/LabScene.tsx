@@ -12,6 +12,7 @@ import { CANVAS_BASE_STYLE } from '../../../sdk/scene/canvasStyle'
 import { LoadingScreen } from '../../../sdk/ui/LoadingScreen'
 import { HUD } from '../ui/HUD'
 import { ShowMoleculesToggle } from '../ui/ShowMoleculesToggle'
+import { TemperatureButton } from '../ui/TemperatureButton'
 import { PinchZoomController } from '../../../sdk/scene/PinchZoomController'
 import { useViewport } from '../../../sdk/a11y/useViewport'
 import { GlassBox, BOX_INTERIOR } from '../instruments/GlassBox'
@@ -28,9 +29,17 @@ import { SceneController } from './SceneController'
 import { Particle, PARTICLE_DEFAULTS, randomVelocity } from '../physics/particles'
 import { useLabState } from '../state/LabState'
 import { useLabSettings } from '../state/LabSettingsState'
+import type { TemperatureLevel } from '../state/LabSettingsState'
 import { useStepEngine } from '../../../sdk/guided/StepEngine'
 import { findBodyByTag } from '../../../sdk/physics/bodyRegistry'
 import { dividerStateAt, fractionMixed } from '../physics/divider'
+
+const T_VELOCITY_SCALE: Record<TemperatureLevel, number> = {
+  cold:   0.5,
+  normal: 1.0,
+  warm:   1.5,
+  hot:    2.5,
+}
 
 const BOX_WORLD: [number, number, number] = [0, 0.95, 0]
 const POLLEN_TRAY_WORLD: [number, number, number] = [-0.40, 0.94, 0.30]
@@ -109,6 +118,10 @@ export function LabScene() {
   // showMolecules: read from lab settings to drive ParticleField visibility.
   const showMolecules = useLabSettings(s => s.showMolecules)
 
+  // temperatureLevel: drives velocityMultiplier for scene 6.
+  const temperatureLevel = useLabSettings(s => s.temperatureLevel)
+  const velocityMultiplier = idx === 5 ? T_VELOCITY_SCALE[temperatureLevel] : 1.0
+
   // advanceStep: mirrors EM's SceneController exactly — same hook, same call.
   const advanceStep = useStepEngine(s => s.advanceStep)
 
@@ -150,6 +163,9 @@ export function LabScene() {
     if (idx === 4) {
       particlesRef.current = []   // scene 5 has no kinetic particles
       timeLapseFiredRef.current = false
+    }
+    if (idx === 5) {
+      particlesRef.current = makeInitialParticles('mixed')
     }
   }, [idx, currentStepIdx])
 
@@ -255,6 +271,7 @@ export function LabScene() {
             getDivider={getDivider}
             onTick={onTick}
             liquidDrag={liquidDrag}
+            velocityMultiplier={velocityMultiplier}
           />
           {idx === 1 && (
             <>
@@ -301,6 +318,11 @@ export function LabScene() {
       {idx === 4 && (
         <div style={{ position: 'fixed', bottom: 80, right: 16, zIndex: 10 }}>
           <TimeLapseSlider />
+        </div>
+      )}
+      {idx === 5 && (
+        <div style={{ position: 'fixed', bottom: 80, right: 16, zIndex: 10 }}>
+          <TemperatureButton />
         </div>
       )}
     </>
