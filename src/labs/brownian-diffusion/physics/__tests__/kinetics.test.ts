@@ -86,6 +86,15 @@ describe('reflectAtWalls', () => {
   })
 })
 
+describe('step (liquid drag)', () => {
+  it('reduces velocity magnitude over time with liquidDrag > 0', () => {
+    const ps = [mkP(0, 0, 0, 1, 0, 0, 1, 0.005)]
+    const walls = { min: { x: -1, y: -1, z: -1 }, max: { x: 1, y: 1, z: 1 } }
+    for (let f = 0; f < 60; f++) step(ps, walls, null, 1 / 60, 1.2)
+    expect(Math.abs(ps[0].vel.x)).toBeLessThan(0.5)
+  })
+})
+
 describe('step (integration + walls)', () => {
   it('keeps every particle inside the box after many steps', () => {
     const ps: Particle[] = []

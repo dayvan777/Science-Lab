@@ -17,12 +17,23 @@ export function step(
   walls: AABB,
   divider: DividerState,
   dt: number,
+  liquidDrag: number = 0,   // 0 = no drag (gas); >0 = liquid mode
 ): void {
   // 1. Integrate
   for (const p of particles) {
     p.pos.x += p.vel.x * dt
     p.pos.y += p.vel.y * dt
     p.pos.z += p.vel.z * dt
+  }
+
+  // 1.5. Liquid drag (only if liquidDrag > 0)
+  if (liquidDrag > 0) {
+    const factor = Math.max(0, 1 - liquidDrag * dt)
+    for (const p of particles) {
+      p.vel.x *= factor
+      p.vel.y *= factor
+      p.vel.z *= factor
+    }
   }
 
   // 2. Pair collisions — O(n²)
