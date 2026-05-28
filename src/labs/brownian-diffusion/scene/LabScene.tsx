@@ -287,7 +287,7 @@ export function LabScene() {
         <Environment preset="studio" background={false} resolution={64} />
         <Physics key={sessionId} gravity={[0, -9.81, 0]} timeStep={1 / 60}>
           <Table />
-          <GlassBox position={BOX_WORLD} />
+          <GlassBox position={BOX_WORLD} openTop={idx === 1} />
           <ParticleField
             particles={particlesRef}
             capacity={120}

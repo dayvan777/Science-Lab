@@ -1,3 +1,5 @@
+import { DoubleSide } from 'three'
+
 export const BEAKER_RADIUS = 0.06    // metres
 export const BEAKER_HEIGHT = 0.14
 export const WATER_LEVEL = 0.10      // metres above base (i.e., water fills lower 10cm)
@@ -19,7 +21,7 @@ export function Beaker({ position }: Props) {
           transparent
           opacity={0.18}
           roughness={0.1}
-          side={2 /* DoubleSide */}
+          side={DoubleSide}
         />
       </mesh>
       {/* Bottom disc */}

@@ -14,14 +14,16 @@ export function PollenTrail({ enabled }: Props) {
   const samples = useRef<Vector3[]>([])
   const lastSample = useRef(0)
 
-  const { geometry, material } = useMemo(() => {
+  const { geometry, line } = useMemo(() => {
     const positions = new Float32Array(TRAIL_LENGTH * 3)
     const colors = new Float32Array(TRAIL_LENGTH * 3)
     const g = new BufferGeometry()
     g.setAttribute('position', new BufferAttribute(positions, 3))
     g.setAttribute('color', new BufferAttribute(colors, 3))
     const m = new LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.9 })
-    return { geometry: g, material: m }
+    // Create the Line once here (not in JSX) so React re-renders don't
+    // orphan a fresh Three.js object on every render.
+    return { geometry: g, line: new Line(g, m) }
   }, [])
 
   useFrame(() => {
@@ -57,5 +59,5 @@ export function PollenTrail({ enabled }: Props) {
     geometry.setDrawRange(0, Math.min(arr.length, TRAIL_LENGTH))
   })
 
-  return <primitive object={new Line(geometry, material)} />
+  return <primitive object={line} />
 }
