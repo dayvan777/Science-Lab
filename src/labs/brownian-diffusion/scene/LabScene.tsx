@@ -40,6 +40,8 @@ import type { TemperatureLevel } from '../state/LabSettingsState'
 import { useStepEngine } from '../../../sdk/guided/StepEngine'
 import { findBodyByTag } from '../../../sdk/physics/bodyRegistry'
 import { dividerStateAt, fractionMixed } from '../physics/divider'
+import { SCENES } from '../content/scenes'
+import { evaluateStepAdvance } from './stepAdvance'
 
 const T_VELOCITY_SCALE: Record<TemperatureLevel, number> = {
   cold:   0.5,
@@ -265,6 +267,19 @@ export function LabScene() {
         tempReachedHotRef.current = true
         advanceStep()
       }
+    }
+
+    // Generic SDK-rule advance (mirrors EM SceneController's rule-advance block).
+    // Advances non-motion-trigger steps each frame: `dragging` (pickup-pollen,
+    // lift-divider, pick-dropper) and `mc-selected` (every scene's final MC).
+    // Without this the lab is stuck at the first MC and every drag step.
+    // `submitted` steps are advanced by the HUD "Далі →" button instead.
+    const engine = useStepEngine.getState()
+    const ruleStep = SCENES[idx]?.steps[engine.currentStepIndex]
+    const { advance, consumeMC } = evaluateStepAdvance(ruleStep, engine, performance.now())
+    if (advance) {
+      advanceStep()
+      if (consumeMC) engine.setLastMCChoice(null)
     }
   }, [idx, advanceStep])
 
