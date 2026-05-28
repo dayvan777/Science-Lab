@@ -26,4 +26,12 @@ describe('ShowMoleculesToggle', () => {
     fireEvent.click(getByRole('button'))
     expect(useLabSettings.getState().showMolecules).toBe(false)
   })
+
+  it('pulses (attention) only while molecules are hidden', () => {
+    const { container, rerender } = render(<ShowMoleculesToggle />)
+    expect(container.querySelector('.bd-molecule-pulse')).not.toBeNull()
+    useLabSettings.setState({ showMolecules: true })
+    rerender(<ShowMoleculesToggle />)
+    expect(container.querySelector('.bd-molecule-pulse')).toBeNull()
+  })
 })
