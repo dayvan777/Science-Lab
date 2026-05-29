@@ -5,7 +5,7 @@ describe('LabSettingsState rework fields', () => {
   beforeEach(() => {
     useLabSettings.setState({
       materialState: 'gas', dividerRaised: false, redCount: 20, blueCount: 20,
-      tracerActive: false, temperatureLevel: 'normal',
+      tracerActive: false, temperatureLevel: 'normal', showMolecules: true,
     })
   })
 

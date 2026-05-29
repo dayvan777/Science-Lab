@@ -11,7 +11,9 @@ const clampCount = (n: number) => Math.max(5, Math.min(40, Math.round(n)))
 type Settings = {
   temperatureLevel: TemperatureLevel
   showMolecules: boolean
+  /** Solid state only. */
   timeLapseYears: TimeLapseYears
+  /** Internal — dev fallback, no UI control. */
   maxParticles: number
   materialState: MaterialState
   dividerRaised: boolean
