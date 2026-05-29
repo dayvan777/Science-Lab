@@ -1,28 +1,26 @@
 import type { Step } from '../../../sdk/guided/TaskSteps'
 
 /**
- * Motion triggers unique to this lab. Same idiom as EM-induction:
- * SceneController watches lab state and calls advanceStep() directly
- * for these — the SDK predicate engine sees `complete: 'submitted'`.
+ * Mission goals unique to this lab. LabScene.onTick watches lab + settings
+ * state and calls setGoalReached(true) when the current goal step's trigger
+ * is met. The SDK predicate engine sees `complete: 'submitted'`; the HUD
+ * enables «Далі →» only once goalReached is true (no silent auto-advance).
  */
 export type BdMotionTrigger =
-  | 'pollen-observed'
-  | 'gases-mixed'
-  | 'liquid-mixed-partial'
-  | 'time-lapse-reached'
-  | 'temp-reached-hot'
+  | 'molecules-shown'
+  | 'tracer-jiggled'
+  | 'gas-mixed'
+  | 'liquid-mixed'
+  | 'timelapse-reached'
+  | 'temp-hot'
 
 export type BdStep = Step & { motionTrigger?: BdMotionTrigger }
-
-export type BdScene = {
-  title: string
-  steps: BdStep[]
-}
+export type BdScene = { title: string; steps: BdStep[] }
 
 export const SCENES: BdScene[] = [
-  // Scene 1 — Знайомство з молекулами
+  // 1 — Молекули не сплять
   {
-    title: 'Знайомство з молекулами',
+    title: 'Молекули не сплять',
     steps: [
       {
         id: 'intro-ack',
@@ -30,8 +28,8 @@ export const SCENES: BdScene[] = [
         visualHint: 'highlight',
         hintTitle: 'Зазирни в речовину',
         hintExplanation:
-          'Уся матерія складається з крихітних частинок — молекул і атомів. ' +
-          'Вони ніколи не зупиняються. Зараз ти бачиш збільшений шматочок газу.',
+          'Уся матерія складається з крихітних частинок, що ніколи не зупиняються. ' +
+          'Зараз ти бачиш збільшений шматочок газу. Покрути модель, познайомся.',
         complete: { kind: 'submitted' },
       },
       {
@@ -49,35 +47,20 @@ export const SCENES: BdScene[] = [
     ],
   },
 
-  // Scene 2 — Броунівський рух
+  // 2 — Броунівський рух
   {
     title: 'Броунівський рух',
     steps: [
       {
-        id: 'pickup-pollen',
-        target: { kind: 'object', id: 'pollen' },
-        visualHint: 'arrow',
-        hintTitle: 'Візьми велику пилинку',
-        hintExplanation: 'Натисни і утримуй пилинку на лотку зліва.',
-        complete: { kind: 'dragging', bodyPattern: 'pollen' },
-      },
-      {
-        id: 'place-pollen-in-box',
-        target: { kind: 'instrument', id: 'glass-box' },
-        visualHint: 'target-ring',
-        hintTitle: 'Кинь її всередину коробки',
-        complete: { kind: 'submitted' },
-        motionTrigger: 'pollen-observed',
-      },
-      {
-        id: 'observe-jiggle',
+        id: 'add-tracer',
         target: { kind: 'ui', id: 'submit' },
         visualHint: 'highlight',
-        hintTitle: 'Дивись, як пилинка хаотично смикається',
+        hintTitle: 'Додай тестову частинку',
         hintExplanation:
-          'Молекули газу невидимі — але вони штовхають пилинку з усіх боків. ' +
-          'Натисни «Показати причину», щоб побачити їх.',
+          'Натисни «＋ Тестова частинка». Велика пилинка застрибає — її штовхають ' +
+          'невидимі молекули. Увімкни «Показати молекули», щоб переконатись.',
         complete: { kind: 'submitted' },
+        motionTrigger: 'tracer-jiggled',
       },
       {
         id: 'mc-why-jiggle',
@@ -94,25 +77,20 @@ export const SCENES: BdScene[] = [
     ],
   },
 
-  // Scene 3 — Дифузія в газах
+  // 3 — Дифузія в газі
   {
-    title: 'Дифузія в газах',
+    title: 'Дифузія в газі',
     steps: [
       {
-        id: 'lift-divider',
-        target: { kind: 'object', id: 'divider' },
-        visualHint: 'arrow',
-        hintTitle: 'Підніми перегородку догори',
-        hintExplanation: 'Захопи ручку зверху і потягни вгору, щоб гази могли змішатись.',
-        complete: { kind: 'dragging', bodyPattern: 'divider' },
-      },
-      {
-        id: 'observe-mixing',
-        target: { kind: 'instrument', id: 'glass-box' },
-        visualHint: 'target-ring',
-        hintTitle: 'Спостерігай, як гази повільно перемішуються',
+        id: 'raise-divider',
+        target: { kind: 'ui', id: 'submit' },
+        visualHint: 'highlight',
+        hintTitle: 'Підніми перегородку і доведи до повного змішування',
+        hintExplanation:
+          'Тумблер «Перегородка» прибере стінку. Стеж за шкалою «Перемішаність» — ' +
+          'доведи її до 100%.',
         complete: { kind: 'submitted' },
-        motionTrigger: 'gases-mixed',
+        motionTrigger: 'gas-mixed',
       },
       {
         id: 'mc-final-state',
@@ -129,24 +107,20 @@ export const SCENES: BdScene[] = [
     ],
   },
 
-  // Scene 4 — Дифузія в рідинах
+  // 4 — Дифузія в рідині
   {
-    title: 'Дифузія в рідинах',
+    title: 'Дифузія в рідині',
     steps: [
       {
-        id: 'pick-dropper',
-        target: { kind: 'object', id: 'dropper' },
-        visualHint: 'arrow',
-        hintTitle: 'Візьми піпетку з чорнилом',
-        complete: { kind: 'dragging', bodyPattern: 'dropper' },
-      },
-      {
         id: 'drop-ink',
-        target: { kind: 'instrument', id: 'beaker' },
-        visualHint: 'target-ring',
-        hintTitle: 'Капни чорнило в мензурку з водою',
+        target: { kind: 'ui', id: 'submit' },
+        visualHint: 'highlight',
+        hintTitle: 'Капни чорнило і поспостерігай',
+        hintExplanation:
+          'Колба вже з водою. Натисни «＋ Тестова частинка» — крапля чорнила повільно ' +
+          'розходиться. У рідині дифузія повільніша, ніж у газі.',
         complete: { kind: 'submitted' },
-        motionTrigger: 'liquid-mixed-partial',
+        motionTrigger: 'liquid-mixed',
       },
       {
         id: 'mc-where-faster',
@@ -163,26 +137,20 @@ export const SCENES: BdScene[] = [
     ],
   },
 
-  // Scene 5 — Дифузія у твердих тілах
+  // 5 — Дифузія у твердому
   {
-    title: 'Дифузія у твердих тілах',
+    title: 'Дифузія у твердому',
     steps: [
-      {
-        id: 'press-blocks',
-        target: { kind: 'ui', id: 'submit' },
-        visualHint: 'highlight',
-        hintTitle: 'Метали притиснули один до одного',
-        hintExplanation: 'Зверху — золото, знизу — олово. Натисни кнопку для початку експерименту.',
-        complete: { kind: 'submitted' },
-      },
       {
         id: 'time-lapse',
         target: { kind: 'ui', id: 'submit' },
         visualHint: 'highlight',
-        hintTitle: 'Перетягни повзунок часу до 100 років і далі',
-        hintExplanation: 'Дивись, як атоми золота повільно проникають у решітку олова.',
+        hintTitle: 'Перемотай час до 100+ років',
+        hintExplanation:
+          'Зверху золото, знизу олово. Посунь повзунок «Час» до 100 років і далі — ' +
+          'атоми ледь-ледь проникають один в одного. Дифузія в твердому дуже повільна.',
         complete: { kind: 'submitted' },
-        motionTrigger: 'time-lapse-reached',
+        motionTrigger: 'timelapse-reached',
       },
       {
         id: 'mc-solid-timescale',
@@ -199,18 +167,20 @@ export const SCENES: BdScene[] = [
     ],
   },
 
-  // Scene 6 — Залежність від температури
+  // 6 — Температура вирішує
   {
-    title: 'Залежність від температури',
+    title: 'Температура вирішує',
     steps: [
       {
-        id: 'cycle-temp',
+        id: 'heat-up',
         target: { kind: 'ui', id: 'submit' },
         visualHint: 'highlight',
-        hintTitle: 'Покрути «температуру» до «Гаряче»',
-        hintExplanation: 'Кнопка-pill знизу праворуч. Дивись, як змінюється швидкість молекул.',
+        hintTitle: 'Зроби «Гаряче» і поспостерігай',
+        hintExplanation:
+          'Посунь повзунок «Температура» до «Гаряче». Молекули прискорюються, ' +
+          'дифузія йде швидше.',
         complete: { kind: 'submitted' },
-        motionTrigger: 'temp-reached-hot',
+        motionTrigger: 'temp-hot',
       },
       {
         id: 'mc-temp-relationship',
@@ -223,6 +193,23 @@ export const SCENES: BdScene[] = [
           { id: 'none', label: 'Температура не впливає' },
         ],
         complete: { kind: 'mc-selected', correctIndex: 0 },
+      },
+    ],
+  },
+
+  // 7 — Вільна пісочниця
+  {
+    title: 'Вільна пісочниця',
+    steps: [
+      {
+        id: 'free-play',
+        target: { kind: 'ui', id: 'submit' },
+        visualHint: 'highlight',
+        hintTitle: 'Грай вільно',
+        hintExplanation:
+          'Усі контроли відкриті — перемикай стани, грій, додавай молекули. ' +
+          'Натисни «Далі →», коли закінчиш.',
+        complete: { kind: 'submitted' },
       },
     ],
   },
