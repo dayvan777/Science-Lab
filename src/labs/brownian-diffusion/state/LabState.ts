@@ -15,11 +15,15 @@ type LabState = {
   currentSceneIndex: number
   journal: JournalEntry[]
   sessionId: number
+  goalReached: boolean
+  mixedness: number
   start: () => void
   recordMCAnswer: (chosenIndex: number) => void
   advanceScene: () => void
   reset: () => void
   respawnObjects: () => void
+  setGoalReached: (b: boolean) => void
+  setMixedness: (v: number) => void
 }
 
 const TOTAL_SCENES = SCENES.length
@@ -29,6 +33,8 @@ export const useLabState = create<LabState>((set, get) => ({
   currentSceneIndex: 0,
   journal: [],
   sessionId: 0,
+  goalReached: false,
+  mixedness: 0,
 
   start: () => set({ phase: 'in-progress' }),
 
@@ -47,6 +53,7 @@ export const useLabState = create<LabState>((set, get) => ({
     set({
       currentSceneIndex: next,
       phase: next >= TOTAL_SCENES ? 'finished' : 'in-progress',
+      goalReached: false,
     })
   },
 
@@ -55,7 +62,12 @@ export const useLabState = create<LabState>((set, get) => ({
     currentSceneIndex: 0,
     journal: [],
     sessionId: s.sessionId + 1,
+    goalReached: false,
+    mixedness: 0,
   })),
 
   respawnObjects: () => set(s => ({ sessionId: s.sessionId + 1 })),
+
+  setGoalReached: (b) => set({ goalReached: b }),
+  setMixedness: (v) => set({ mixedness: v }),
 }))
