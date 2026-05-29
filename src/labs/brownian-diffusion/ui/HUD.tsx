@@ -16,7 +16,10 @@ export function HUD() {
   const recordMCAnswer = useLabState(s => s.recordMCAnswer)
   const advanceScene = useLabState(s => s.advanceScene)
   const journal = useLabState(s => s.journal)
+  const goalReached = useLabState(s => s.goalReached)
+  const setGoalReached = useLabState(s => s.setGoalReached)
   const stepIdx = useStepEngine(s => s.currentStepIndex)
+  const lastMCChoice = useStepEngine(s => s.lastMCChoice)
   const setLastMCChoice = useStepEngine(s => s.setLastMCChoice)
   const resetForTask = useStepEngine(s => s.resetForTask)
   const draggingBodyId = useStepEngine(s => s.draggingBodyId)
@@ -30,18 +33,12 @@ export function HUD() {
     resetForTask(sceneIdx)
   }, [sceneIdx, resetForTask])
 
+  useEffect(() => {
+    setGoalReached(false)
+  }, [sceneIdx, stepIdx, setGoalReached])
+
   const scene = SCENES[sceneIdx]
   const step = scene?.steps[stepIdx]
-  const sceneComplete = !!scene && !step
-
-  // If the scene's last step completed, advance to next scene
-  useEffect(() => {
-    if (phase !== 'in-progress') return
-    if (sceneComplete) {
-      const t = setTimeout(() => advanceScene(), 400)
-      return () => clearTimeout(t)
-    }
-  }, [phase, sceneComplete, advanceScene])
 
   if (phase !== 'in-progress') return null
   if (!scene) return null
@@ -68,6 +65,23 @@ export function HUD() {
     }
   })()
 
+  // Unified «Далі» button logic
+  const isLast = stepIdx >= (scene.steps.length - 1)
+  const satisfied = step
+    ? step.complete.kind === 'submitted'
+      ? (!step.motionTrigger || goalReached)
+      : step.complete.kind === 'mc-selected'
+        ? (lastMCChoice === step.complete.correctIndex)
+        : false
+    : false
+  const label = step
+    ? step.complete.kind === 'submitted' && step.motionTrigger && !goalReached
+      ? 'Виконай завдання…'
+      : step.complete.kind === 'mc-selected' && lastMCChoice !== step.complete.correctIndex
+        ? 'Обери правильну відповідь…'
+        : 'Далі →'
+    : 'Далі →'
+
   return (
     <>
       {/* Top pill */}
@@ -83,7 +97,7 @@ export function HUD() {
           ...layout.topPill,
         }}
       >
-        Сцена {Math.min(sceneIdx + 1, SCENES.length)} / {SCENES.length}
+        Місія {Math.min(sceneIdx + 1, SCENES.length)} / {SCENES.length}
       </GlassPanel>
 
       {/* Task panel — collapsible */}
@@ -122,14 +136,23 @@ export function HUD() {
             }}
           />
         )}
-        {/* Submit button for non-choice ack steps that are NOT motion-triggered.
-            Motion-triggered steps are advanced automatically by SceneController. */}
-        {step?.complete.kind === 'submitted' && !step.choices && !step.motionTrigger && (
+        {/* Goal reached indicator */}
+        {step?.complete.kind === 'submitted' && step.motionTrigger && goalReached && (
+          <div style={{ marginTop: 8, fontSize: 13, color: '#34c759' }}>✓ Ціль досягнута</div>
+        )}
+        {/* Unified «Далі» button for every step */}
+        {step && (
           <Button
-            onClick={() => useStepEngine.getState().advanceStep()}
+            disabled={!satisfied}
             aria-label="Далі"
+            onClick={() => {
+              setGoalReached(false)
+              useStepEngine.getState().setLastMCChoice(null)
+              if (isLast) advanceScene()
+              else useStepEngine.getState().advanceStep()
+            }}
           >
-            Далі →
+            {label}
           </Button>
         )}
       </CollapsibleGlassPanel>

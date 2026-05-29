@@ -34,7 +34,7 @@ describe('useLabState (brownian-diffusion)', () => {
     useLabState.getState().recordMCAnswer(1)
     const s = useLabState.getState()
     expect(s.journal).toHaveLength(1)
-    expect(s.journal[0].sceneTitle).toBe('Знайомство з молекулами')
+    expect(s.journal[0].sceneTitle).toBe('Молекули не сплять')
     expect(s.journal[0].chosenIndex).toBe(1)
     expect(typeof s.journal[0].timestamp).toBe('number')
   })
