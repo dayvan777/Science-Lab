@@ -16,6 +16,8 @@ export function HUD() {
   const recordMCAnswer = useLabState(s => s.recordMCAnswer)
   const advanceScene = useLabState(s => s.advanceScene)
   const journal = useLabState(s => s.journal)
+  const goalReached = useLabState(s => s.goalReached)
+  const setGoalReached = useLabState(s => s.setGoalReached)
   const stepIdx = useStepEngine(s => s.currentStepIndex)
   const setLastMCChoice = useStepEngine(s => s.setLastMCChoice)
   const resetForTask = useStepEngine(s => s.resetForTask)
@@ -29,6 +31,10 @@ export function HUD() {
   useEffect(() => {
     resetForTask(sceneIdx)
   }, [sceneIdx, resetForTask])
+
+  useEffect(() => {
+    setGoalReached(false)
+  }, [sceneIdx, stepIdx, setGoalReached])
 
   const scene = SCENES[sceneIdx]
   const step = scene?.steps[stepIdx]
@@ -83,7 +89,7 @@ export function HUD() {
           ...layout.topPill,
         }}
       >
-        Сцена {Math.min(sceneIdx + 1, SCENES.length)} / {SCENES.length}
+        Місія {Math.min(sceneIdx + 1, SCENES.length)} / {SCENES.length}
       </GlassPanel>
 
       {/* Task panel — collapsible */}
@@ -122,15 +128,17 @@ export function HUD() {
             }}
           />
         )}
-        {/* Submit button for non-choice ack steps that are NOT motion-triggered.
-            Motion-triggered steps are advanced automatically by SceneController. */}
-        {step?.complete.kind === 'submitted' && !step.choices && !step.motionTrigger && (
+        {step?.complete.kind === 'submitted' && !step.choices && (
           <Button
-            onClick={() => useStepEngine.getState().advanceStep()}
+            onClick={() => { useStepEngine.getState().advanceStep(); setGoalReached(false) }}
+            disabled={!!step.motionTrigger && !goalReached}
             aria-label="Далі"
           >
-            Далі →
+            {step.motionTrigger && !goalReached ? 'Виконай завдання…' : 'Далі →'}
           </Button>
+        )}
+        {step?.complete.kind === 'submitted' && !step.choices && step.motionTrigger && goalReached && (
+          <div style={{ marginTop: 8, fontSize: 13, color: '#34c759' }}>✓ Ціль досягнута</div>
         )}
       </CollapsibleGlassPanel>
 
