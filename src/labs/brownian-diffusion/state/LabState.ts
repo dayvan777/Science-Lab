@@ -66,7 +66,7 @@ export const useLabState = create<LabState>((set, get) => ({
     mixedness: 0,
   })),
 
-  respawnObjects: () => set(s => ({ sessionId: s.sessionId + 1 })),
+  respawnObjects: () => set(s => ({ sessionId: s.sessionId + 1, goalReached: false })),
 
   setGoalReached: (b) => set({ goalReached: b }),
   setMixedness: (v) => set({ mixedness: v }),

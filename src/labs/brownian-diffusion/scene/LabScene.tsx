@@ -113,6 +113,7 @@ export function LabScene() {
   useEffect(() => {
     particlesRef.current = makeParticles(materialState, redCount, blueCount, isSegregated(idx) && materialState === 'gas')
     tracerStartRef.current = null
+    useLabSettings.getState().setTracerActive(false)
     setRenderKey(k => k + 1)
   }, [materialState, redCount, blueCount, sessionId, idx])
 
@@ -140,7 +141,7 @@ export function LabScene() {
   const velocityMultiplier = materialState === 'solid' ? 1 : T_VELOCITY_SCALE[temperatureLevel]
   const liquidDrag = materialState === 'liquid' ? 1.2 : 0
 
-  const onTick = useCallback(() => {
+  const onTick = useCallback((_dt: number) => {
     const engine = useStepEngine.getState()
     const step = SCENES[idx]?.steps[engine.currentStepIndex] as BdStep | undefined
 
