@@ -7,7 +7,6 @@ import type { Step } from '../../../sdk/guided/TaskSteps'
  * enables «Далі →» only once goalReached is true (no silent auto-advance).
  */
 export type BdMotionTrigger =
-  | 'molecules-shown'
   | 'tracer-jiggled'
   | 'gas-mixed'
   | 'liquid-mixed'

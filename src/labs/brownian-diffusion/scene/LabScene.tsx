@@ -33,7 +33,6 @@ import { useLabState } from '../state/LabState'
 import { useLabSettings, type MaterialState, type TemperatureLevel } from '../state/LabSettingsState'
 import { useStepEngine } from '../../../sdk/guided/StepEngine'
 import { SCENES, type BdStep } from '../content/scenes'
-import { evaluateStepAdvance } from './stepAdvance'
 
 const BOX_WORLD: [number, number, number] = [0, 0.95, 0]
 const CAPACITY = 150
@@ -81,7 +80,6 @@ export function LabScene() {
   const idx = useLabState(s => s.currentSceneIndex)
   const sessionId = useLabState(s => s.sessionId)
   const respawnObjects = useLabState(s => s.respawnObjects)
-  const advanceStep = useStepEngine(s => s.advanceStep)
   const { breakpoint } = useViewport()
   const isMobile = breakpoint === 'phone' || breakpoint === 'tablet'
 
@@ -145,10 +143,6 @@ export function LabScene() {
     const engine = useStepEngine.getState()
     const step = SCENES[idx]?.steps[engine.currentStepIndex] as BdStep | undefined
 
-    // MC auto-advance (the only auto-advance).
-    const { advance, consumeMC } = evaluateStepAdvance(step, engine, performance.now())
-    if (advance) { advanceStep(); if (consumeMC) engine.setLastMCChoice(null) }
-
     const set = useLabSettings.getState()
     const lab = useLabState.getState()
     const mx = mixedness(set.materialState, particlesRef.current, set.timeLapseYears)
@@ -165,7 +159,6 @@ export function LabScene() {
     }
     let reached = false
     switch (step.motionTrigger) {
-      case 'molecules-shown':   reached = set.showMolecules; break
       case 'tracer-jiggled':    reached = tracerDisp() >= 0.05; break
       case 'gas-mixed':         reached = set.dividerRaised && mx >= 0.98; break
       case 'liquid-mixed':      reached = set.materialState === 'liquid' && set.tracerActive && mx >= 0.5; break
@@ -173,7 +166,7 @@ export function LabScene() {
       case 'temp-hot':          reached = set.temperatureLevel === 'hot'; break
     }
     if (reached) lab.setGoalReached(true)
-  }, [idx, advanceStep])
+  }, [idx])
 
   const utilities = (
     <Button variant="secondary" onClick={() => respawnObjects()} aria-label="Скинути" title="Скинути">↻ Скинути</Button>
