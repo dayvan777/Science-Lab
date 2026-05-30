@@ -1,22 +1,19 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { useCallback, useEffect, useRef, useState, type ElementRef } from 'react'
+import { Canvas, useThree } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
-import { ACESFilmicToneMapping } from 'three'
-import { Environment } from '@react-three/drei'
+import { ACESFilmicToneMapping, MOUSE, TOUCH, PerspectiveCamera } from 'three'
+import { Environment, OrbitControls } from '@react-three/drei'
 import { CinematicLighting } from '../../../sdk/scene/CinematicLighting'
-import { CameraRig } from '../../../sdk/scene/CameraRig'
 import { PostFX } from '../../../sdk/scene/PostFX'
 import { Table } from '../../../sdk/scene/Table'
 import { CANVAS_BASE_STYLE } from '../../../sdk/scene/canvasStyle'
 import { Button } from '../../../sdk/ui/Button'
 import { SoundToggle } from '../../../sdk/ui/SoundToggle'
-import { ZoomControls } from '../../../sdk/ui/ZoomControls'
 import { BottomSheet } from '../../../sdk/ui/BottomSheet'
 import { SheetTriggerButton } from '../../../sdk/ui/SheetTriggerButton'
 import { SheetSection } from '../../../sdk/ui/SheetSection'
 import { LoadingScreen } from '../../../sdk/ui/LoadingScreen'
 import { safeAreaBottom } from '../../../sdk/a11y/safeArea'
-import { PinchZoomController } from '../../../sdk/scene/PinchZoomController'
 import { useViewport } from '../../../sdk/a11y/useViewport'
 import { HUD } from '../ui/HUD'
 import { ControlPanel } from '../ui/ControlPanel'
@@ -84,6 +81,50 @@ function makeParticles(state: MaterialState, red: number, blue: number, segregat
   return out
 }
 
+function fovForBreakpoint(bp: string): number {
+  return bp === 'phone' ? 62 : bp === 'tablet' ? 56 : 50
+}
+
+/** In-canvas: keep the perspective FOV right for the current breakpoint. */
+function CameraFov({ fov }: { fov: number }) {
+  const { camera } = useThree()
+  useEffect(() => {
+    if (camera instanceof PerspectiveCamera && camera.fov !== fov) {
+      camera.fov = fov
+      camera.updateProjectionMatrix()
+    }
+  }, [camera, fov])
+  return null
+}
+
+type OrbitRef = ElementRef<typeof OrbitControls>
+
+/** Dolly the orbit camera by scaling its distance to the target, clamped to min/max. */
+function dollyOrbit(orbit: OrbitRef | null, factor: number): void {
+  if (!orbit) return
+  const cam = orbit.object
+  const offset = cam.position.clone().sub(orbit.target)
+  const dist = Math.min(orbit.maxDistance, Math.max(orbit.minDistance, offset.length() * factor))
+  offset.setLength(dist)
+  cam.position.copy(orbit.target).add(offset)
+  orbit.update()
+}
+
+/** +/- zoom buttons for the orbit camera (mirrors the SDK ZoomControls look). */
+function OrbitZoom({ orbitRef, isPhone }: { orbitRef: React.RefObject<OrbitRef | null>; isPhone: boolean }) {
+  const btn: React.CSSProperties = {
+    background: 'rgba(20,20,24,0.72)', backdropFilter: 'blur(20px)',
+    border: '1px solid rgba(255,255,255,0.08)', color: '#f5f5f7', borderRadius: 8,
+    width: isPhone ? 48 : 40, height: isPhone ? 48 : 40, fontSize: isPhone ? 22 : 18, cursor: 'pointer',
+  }
+  return (
+    <>
+      <button style={btn} title="Наблизити" aria-label="Наблизити камеру" onClick={() => dollyOrbit(orbitRef.current, 0.85)}>+</button>
+      <button style={btn} title="Віддалити" aria-label="Віддалити камеру" onClick={() => dollyOrbit(orbitRef.current, 1.18)}>−</button>
+    </>
+  )
+}
+
 export function LabScene() {
   const idx = useLabState(s => s.currentSceneIndex)
   const sessionId = useLabState(s => s.sessionId)
@@ -102,6 +143,15 @@ export function LabScene() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [ready, setReady] = useState(false)
   const [renderKey, setRenderKey] = useState(0)
+
+  const orbitRef = useRef<OrbitRef>(null)
+  const fov = fovForBreakpoint(breakpoint)
+
+  // Centre the orbit camera on the box once mounted.
+  useEffect(() => {
+    const o = orbitRef.current
+    if (o) { o.target.set(BOX_WORLD[0], BOX_WORLD[1], BOX_WORLD[2]); o.update() }
+  }, [])
 
   const particlesRef = useRef<Particle[]>(makeParticles('gas', 20, 20, false))
   const tracerStartRef = useRef<{ x: number; y: number; z: number } | null>(null)
@@ -177,6 +227,8 @@ export function LabScene() {
     if (reached) lab.setGoalReached(true)
   }, [idx])
 
+  const isPhone = breakpoint === 'phone'
+
   const utilities = (
     <Button variant="secondary" onClick={() => respawnObjects()} aria-label="Скинути" title="Скинути">↻ Скинути</Button>
   )
@@ -184,17 +236,28 @@ export function LabScene() {
   return (
     <>
       <Canvas
-        camera={{ position: [0, 1.5, 2.0], fov: 50 }}
+        camera={{ position: [0.55, 1.4, 0.95], fov: 50 }}
         dpr={[1, 1.5]}
         shadows
-        gl={{ toneMapping: ACESFilmicToneMapping, toneMappingExposure: 0.55 }}
+        gl={{ toneMapping: ACESFilmicToneMapping, toneMappingExposure: 0.45 }}
         style={{ ...CANVAS_BASE_STYLE, background: 'radial-gradient(ellipse at center, #2a2a30 0%, #1a1a1e 50%, #0a0a0c 100%)' }}
         onCreated={() => setReady(true)}
       >
         <CinematicLighting />
-        <CameraRig preset="focus-box" />
-        <PinchZoomController />
-        <Environment preset="studio" background={false} resolution={64} />
+        <OrbitControls
+          ref={orbitRef}
+          makeDefault
+          enableDamping
+          enablePan={false}
+          minDistance={0.35}
+          maxDistance={1.6}
+          minPolarAngle={Math.PI * 0.12}
+          maxPolarAngle={Math.PI * 0.52}
+          mouseButtons={{ LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.ROTATE, RIGHT: MOUSE.PAN }}
+          touches={{ ONE: TOUCH.ROTATE, TWO: TOUCH.DOLLY_PAN }}
+        />
+        <CameraFov fov={fov} />
+        <Environment preset="studio" background={false} resolution={64} environmentIntensity={0.4} />
         <Physics key={sessionId} gravity={[0, -9.81, 0]} timeStep={1 / 60}>
           <Table />
           <GlassBox position={BOX_WORLD} />
@@ -223,7 +286,7 @@ export function LabScene() {
             velocityMultiplier={velocityMultiplier}
           />
         </Physics>
-        <PostFX />
+        <PostFX bloomIntensity={0.1} bloomThreshold={0.96} />
       </Canvas>
       <LoadingScreen done={ready} />
       <HUD />
@@ -231,7 +294,7 @@ export function LabScene() {
       {isMobile ? (
         <>
           <div style={{ position: 'fixed', bottom: safeAreaBottom(16), right: 8, display: 'flex', flexDirection: 'column', gap: 8, zIndex: 10 }}>
-            <ZoomControls />
+            <OrbitZoom orbitRef={orbitRef} isPhone={isPhone} />
             <SheetTriggerButton onClick={() => setSheetOpen(true)} />
           </div>
           <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
@@ -250,7 +313,7 @@ export function LabScene() {
             <MixednessMeter />
           </div>
           <div style={{ position: 'fixed', bottom: safeAreaBottom(16), right: 16, display: 'flex', gap: 8, zIndex: 10 }}>
-            <ZoomControls />
+            <OrbitZoom orbitRef={orbitRef} isPhone={isPhone} />
             <SoundToggle />
             {utilities}
           </div>
