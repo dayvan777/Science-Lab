@@ -4,6 +4,7 @@ import { MassMeasurementLab } from '../labs/mass-measurement'
 import { EMInductionLab } from '../labs/electromagnetic-induction'
 import { BrownianDiffusionLab } from '../labs/brownian-diffusion'
 import { HeartSlice } from '../labs/anatomy/HeartSlice'
+import { AnatomySpike } from '../labs/anatomy/AnatomySpike'
 import { LandingPage } from '../site/pages/LandingPage'
 import { PhysicsPage } from '../site/pages/PhysicsPage'
 import { ComingSoonPage } from '../site/pages/ComingSoonPage'
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/physics/em-induction" element={<EMInductionLab />} />
         <Route path="/physics/brownian-diffusion" element={<BrownianDiffusionLab />} />
         <Route path="/biology/heart" element={<HeartSlice />} />
+        <Route path="/biology/spike" element={<AnatomySpike />} />
         <Route path="/math" element={<ComingSoonPage subjectId="math" />} />
         <Route path="/history" element={<ComingSoonPage subjectId="history" />} />
         {import.meta.env.DEV && BenchmarkScene && (
