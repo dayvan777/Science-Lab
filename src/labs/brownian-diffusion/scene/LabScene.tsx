@@ -147,12 +147,6 @@ export function LabScene() {
   const orbitRef = useRef<OrbitRef>(null)
   const fov = fovForBreakpoint(breakpoint)
 
-  // Centre the orbit camera on the box once mounted.
-  useEffect(() => {
-    const o = orbitRef.current
-    if (o) { o.target.set(BOX_WORLD[0], BOX_WORLD[1], BOX_WORLD[2]); o.update() }
-  }, [])
-
   const particlesRef = useRef<Particle[]>(makeParticles('gas', 20, 20, false))
   const tracerStartRef = useRef<{ x: number; y: number; z: number } | null>(null)
 
@@ -247,6 +241,7 @@ export function LabScene() {
         <OrbitControls
           ref={orbitRef}
           makeDefault
+          target={BOX_WORLD}
           enableDamping
           enablePan={false}
           minDistance={0.35}
