@@ -1,5 +1,4 @@
-import { useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useLayoutEffect, useRef } from 'react'
 import { Color, InstancedMesh, Matrix4 } from 'three'
 import { interpolateLattice } from '../physics/lattice'
 import { useLabSettings } from '../state/LabSettingsState'
@@ -14,7 +13,10 @@ export function LatticeField({ position }: { position: [number, number, number] 
   const meshRef = useRef<InstancedMesh>(null)
   const years = useLabSettings(s => s.timeLapseYears)
 
-  useFrame(() => {
+  // The lattice is static for a given `years`, so the instance matrices/colors
+  // are written only when it changes (and on mount) — not every frame.
+  // useLayoutEffect so the instances are positioned before the first paint.
+  useLayoutEffect(() => {
     const m = meshRef.current
     if (!m) return
     const { atoms } = interpolateLattice(years)
@@ -27,7 +29,7 @@ export function LatticeField({ position }: { position: [number, number, number] 
     }
     m.instanceMatrix.needsUpdate = true
     if (m.instanceColor) m.instanceColor.needsUpdate = true
-  })
+  }, [years])
 
   return (
     <group position={position}>
