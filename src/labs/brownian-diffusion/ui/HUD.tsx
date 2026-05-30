@@ -139,20 +139,23 @@ export function HUD() {
         {step?.complete.kind === 'submitted' && step.motionTrigger && goalReached && (
           <div style={{ marginTop: 8, fontSize: 13, color: '#34c759' }}>✓ Ціль досягнута</div>
         )}
-        {/* Unified «Далі» button for every step */}
+        {/* Unified «Далі» button for every step — full width to line up under the MC pills */}
         {step && (
-          <Button
-            disabled={!satisfied}
-            aria-label="Далі"
-            onClick={() => {
-              setGoalReached(false)
-              useStepEngine.getState().setLastMCChoice(null)
-              if (isLast) advanceScene()
-              else useStepEngine.getState().advanceStep()
-            }}
-          >
-            {label}
-          </Button>
+          <div style={{ marginTop: 12 }}>
+            <Button
+              fullWidth
+              disabled={!satisfied}
+              aria-label="Далі"
+              onClick={() => {
+                setGoalReached(false)
+                useStepEngine.getState().setLastMCChoice(null)
+                if (isLast) advanceScene()
+                else useStepEngine.getState().advanceStep()
+              }}
+            >
+              {label}
+            </Button>
+          </div>
         )}
       </CollapsibleGlassPanel>
 

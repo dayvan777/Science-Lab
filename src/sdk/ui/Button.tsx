@@ -5,6 +5,7 @@ type Props = {
   variant?: 'primary' | 'secondary'
   children: ReactNode
   disabled?: boolean
+  fullWidth?: boolean
   /** Tooltip + accessible name. Required for icon-only buttons (e.g. when
    *  `children` is just '↻' on phone breakpoints). */
   title?: string
@@ -16,6 +17,7 @@ export function Button({
   variant = 'primary',
   children,
   disabled,
+  fullWidth,
   title,
   'aria-label': ariaLabel,
 }: Props) {
@@ -32,6 +34,7 @@ export function Button({
         color: isPrimary ? '#fff' : (disabled ? '#a0a0a8' : '#0071e3'),
         border: isPrimary ? 'none' : '1px solid rgba(0, 113, 227, 0.2)',
         borderRadius: 12,
+        width: fullWidth ? '100%' : undefined,
         padding: '14px 32px',
         fontSize: 16,
         fontWeight: 600,
