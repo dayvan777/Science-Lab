@@ -65,22 +65,21 @@ export function HUD() {
     }
   })()
 
-  // Unified «Далі» button logic
+  // Unified «Далі» button logic. A step is "pending" when its goal/answer
+  // isn't met yet; otherwise «Далі» is enabled.
   const isLast = stepIdx >= (scene.steps.length - 1)
-  const satisfied = step
-    ? step.complete.kind === 'submitted'
-      ? (!step.motionTrigger || goalReached)
-      : step.complete.kind === 'mc-selected'
-        ? (lastMCChoice === step.complete.correctIndex)
-        : false
-    : false
-  const label = step
-    ? step.complete.kind === 'submitted' && step.motionTrigger && !goalReached
-      ? 'Виконай завдання…'
-      : step.complete.kind === 'mc-selected' && lastMCChoice !== step.complete.correctIndex
-        ? 'Обери правильну відповідь…'
-        : 'Далі →'
-    : 'Далі →'
+  const isMotionPending = !!step && step.complete.kind === 'submitted' && !!step.motionTrigger && !goalReached
+  const isMcWrong = !!step && step.complete.kind === 'mc-selected' && lastMCChoice !== step.complete.correctIndex
+  const satisfied =
+    !!step &&
+    !isMotionPending &&
+    !isMcWrong &&
+    (step.complete.kind === 'submitted' || step.complete.kind === 'mc-selected')
+  const label = isMotionPending
+    ? 'Виконай завдання…'
+    : isMcWrong
+      ? 'Обери правильну відповідь…'
+      : 'Далі →'
 
   return (
     <>

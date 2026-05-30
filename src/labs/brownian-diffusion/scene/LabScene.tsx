@@ -39,11 +39,19 @@ const CAPACITY = 150
 
 const T_VELOCITY_SCALE: Record<TemperatureLevel, number> = { cold: 0.5, normal: 1.0, warm: 1.5, hot: 2.5 }
 
-// Per-mission scene setup. Index = mission (currentSceneIndex).
-const MISSION_STATE:   MaterialState[] = ['gas', 'gas', 'gas', 'liquid', 'solid', 'gas', 'gas']
-const MISSION_DIVIDER: boolean[]       = [true,  true,  false, true,     true,    true,  true]
-const MISSION_SHOWMOL: boolean[]       = [true,  false, true,  true,     true,    true,  true]
-const isSegregated = (idx: number) => idx === 2
+// Per-mission scene setup — one record per mission (index = currentSceneIndex),
+// co-located so adding/removing a mission can't drift across parallel arrays.
+type MissionSetup = { state: MaterialState; dividerRaised: boolean; showMolecules: boolean; segregated: boolean }
+const MISSION_CONFIG: MissionSetup[] = [
+  { state: 'gas',    dividerRaised: true,  showMolecules: true,  segregated: false }, // 1 Молекули не сплять
+  { state: 'gas',    dividerRaised: true,  showMolecules: false, segregated: false }, // 2 Броунівський рух
+  { state: 'gas',    dividerRaised: false, showMolecules: true,  segregated: true  }, // 3 Дифузія в газі
+  { state: 'liquid', dividerRaised: true,  showMolecules: true,  segregated: false }, // 4 Дифузія в рідині
+  { state: 'solid',  dividerRaised: true,  showMolecules: true,  segregated: false }, // 5 Дифузія у твердому
+  { state: 'gas',    dividerRaised: true,  showMolecules: true,  segregated: false }, // 6 Температура вирішує
+  { state: 'gas',    dividerRaised: true,  showMolecules: true,  segregated: false }, // 7 Вільна пісочниця
+]
+const DEFAULT_SETUP: MissionSetup = { state: 'gas', dividerRaised: true, showMolecules: true, segregated: false }
 
 function makeParticles(state: MaterialState, red: number, blue: number, segregated: boolean): Particle[] {
   if (state === 'solid') return []
@@ -100,16 +108,18 @@ export function LabScene() {
 
   // Mission entry: apply the mission's intended state (this triggers the re-seed effect).
   useEffect(() => {
+    const cfg = MISSION_CONFIG[idx] ?? DEFAULT_SETUP
     const s = useLabSettings.getState()
-    s.setMaterialState(MISSION_STATE[idx] ?? 'gas')
-    s.setDividerRaised(MISSION_DIVIDER[idx] ?? true)
-    s.setMolecules(MISSION_SHOWMOL[idx] ?? true)
+    s.setMaterialState(cfg.state)
+    s.setDividerRaised(cfg.dividerRaised)
+    s.setMolecules(cfg.showMolecules)
     s.setTracerActive(false)
   }, [idx, sessionId])
 
   // Re-seed the box whenever the medium or molecule counts change.
   useEffect(() => {
-    particlesRef.current = makeParticles(materialState, redCount, blueCount, isSegregated(idx) && materialState === 'gas')
+    const segregated = (MISSION_CONFIG[idx] ?? DEFAULT_SETUP).segregated
+    particlesRef.current = makeParticles(materialState, redCount, blueCount, segregated && materialState === 'gas')
     tracerStartRef.current = null
     useLabSettings.getState().setTracerActive(false)
     setRenderKey(k => k + 1)
@@ -150,16 +160,15 @@ export function LabScene() {
 
     // Goal detection — set goalReached (HUD shows «Далі»); never auto-advances.
     if (!step || step.complete.kind !== 'submitted' || !step.motionTrigger || lab.goalReached) return
-    const tracerDisp = () => {
-      const s0 = tracerStartRef.current
-      const p = particlesRef.current.find(pp => pp.kind === 'pollen')
-      if (!s0 || !p) return 0
-      const dx = p.pos.x - s0.x, dy = p.pos.y - s0.y, dz = p.pos.z - s0.z
-      return Math.sqrt(dx * dx + dy * dy + dz * dz)
-    }
     let reached = false
     switch (step.motionTrigger) {
-      case 'tracer-jiggled':    reached = tracerDisp() >= 0.05; break
+      case 'tracer-jiggled': {
+        const s0 = tracerStartRef.current
+        const p = particlesRef.current.find(pp => pp.kind === 'pollen')
+        const disp = !s0 || !p ? 0 : Math.hypot(p.pos.x - s0.x, p.pos.y - s0.y, p.pos.z - s0.z)
+        reached = disp >= 0.05
+        break
+      }
       case 'gas-mixed':         reached = set.dividerRaised && mx >= 0.98; break
       case 'liquid-mixed':      reached = set.materialState === 'liquid' && set.tracerActive && mx >= 0.5; break
       case 'timelapse-reached': reached = set.materialState === 'solid' && set.timeLapseYears >= 100; break
