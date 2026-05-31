@@ -8,6 +8,7 @@ import { AnatomySpike } from '../labs/anatomy/AnatomySpike'
 import { LandingPage } from '../site/pages/LandingPage'
 import { PhysicsPage } from '../site/pages/PhysicsPage'
 import { BiologyPage } from '../site/pages/BiologyPage'
+import { AnatomyLab } from '../labs/anatomy'
 import { ComingSoonPage } from '../site/pages/ComingSoonPage'
 
 const BenchmarkScene = import.meta.env.DEV
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/physics" element={<PhysicsPage />} />
         <Route path="/biology" element={<BiologyPage />} />
+        <Route path="/biology/anatomy" element={<AnatomyLab />} />
         <Route path="/physics/mass-measurement" element={<MassMeasurementLab />} />
         <Route path="/physics/em-induction" element={<EMInductionLab />} />
         <Route path="/physics/brownian-diffusion" element={<BrownianDiffusionLab />} />
