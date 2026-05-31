@@ -8,12 +8,14 @@ import { Kidneys } from './Kidneys'
 import { ORGANS, getOrgan } from '../content/organs'
 import { useAnatomyState } from '../state/AnatomyState'
 import { HUD } from '../ui/HUD'
+import { useReducedMotion } from '../../../sdk/a11y/useReducedMotion'
 
 const kidneys = getOrgan('kidneys')
 
 export function AnatomyScene() {
   const deselect = useAnatomyState(s => s.deselect)
   const selectedId = useAnatomyState(s => s.selectedOrganId)
+  const reduced = useReducedMotion()
 
   return (
     <div style={{
@@ -48,7 +50,7 @@ export function AnatomyScene() {
           makeDefault
           enableDamping
           target={[0, 0.45, 0]}
-          autoRotate={selectedId === null}
+          autoRotate={selectedId === null && !reduced}
           autoRotateSpeed={0.4}
           minDistance={0.8}
           maxDistance={6}

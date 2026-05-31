@@ -6,8 +6,9 @@ import { BrownianDiffusionLab } from '../labs/brownian-diffusion'
 import { LandingPage } from '../site/pages/LandingPage'
 import { PhysicsPage } from '../site/pages/PhysicsPage'
 import { BiologyPage } from '../site/pages/BiologyPage'
-import { AnatomyLab } from '../labs/anatomy'
 import { ComingSoonPage } from '../site/pages/ComingSoonPage'
+
+const AnatomyLab = lazy(() => import('../labs/anatomy').then(m => ({ default: m.AnatomyLab })))
 
 const BenchmarkScene = import.meta.env.DEV
   ? lazy(() => import('../labs/brownian-diffusion/scene/BenchmarkScene').then(m => ({ default: m.BenchmarkScene })))
@@ -20,7 +21,14 @@ export default function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/physics" element={<PhysicsPage />} />
         <Route path="/biology" element={<BiologyPage />} />
-        <Route path="/biology/anatomy" element={<AnatomyLab />} />
+        <Route
+          path="/biology/anatomy"
+          element={
+            <Suspense fallback={<div style={{ position: 'fixed', inset: 0, background: '#0a0a0c' }} />}>
+              <AnatomyLab />
+            </Suspense>
+          }
+        />
         <Route path="/physics/mass-measurement" element={<MassMeasurementLab />} />
         <Route path="/physics/em-induction" element={<EMInductionLab />} />
         <Route path="/physics/brownian-diffusion" element={<BrownianDiffusionLab />} />

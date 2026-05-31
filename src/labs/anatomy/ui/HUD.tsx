@@ -27,9 +27,16 @@ export function HUD() {
     fontFamily: '"Inter", system-ui, sans-serif',
   }
 
+  const creditStyle: CSSProperties = {
+    position: 'fixed', zIndex: 5, top: 16, right: 16, maxWidth: 210, textAlign: 'right',
+    color: 'rgba(255,255,255,0.32)', fontSize: 10, lineHeight: 1.4,
+    fontFamily: '"Inter", system-ui, sans-serif', pointerEvents: 'none',
+  }
+
   return (
     <>
       <Link to="/biology" style={backStyle} aria-label="Назад до біології">← Біологія</Link>
+      <div style={creditStyle}>3D-моделі органів: NIH 3D (K. Browne, H. Schlehlein) · CC-BY 4.0</div>
       {allViewed && !selectedId && <div style={badgeStyle}>Готово — ти вивчив усі органи 🎉</div>}
       <OrganRail />
       <OrganInfoCard />
