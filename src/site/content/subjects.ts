@@ -15,7 +15,7 @@ export type LabEntry = {
   status: LabStatus
 }
 
-export type SubjectId = 'math' | 'history' | 'physics'
+export type SubjectId = 'math' | 'history' | 'physics' | 'biology'
 
 export type SubjectEntry = {
   id: SubjectId
@@ -65,6 +65,21 @@ export const SUBJECTS: SubjectEntry[] = [
         title: 'Броунівський рух та дифузія',
         subtitle: 'Молекули · Дифузія · Температура',
         path: '/physics/brownian-diffusion',
+        status: 'available',
+      },
+    ],
+  },
+  {
+    id: 'biology',
+    title: 'Біологія',
+    path: '/biology',
+    status: 'available',
+    labs: [
+      {
+        id: 'anatomy',
+        title: 'Внутрішні органи людини',
+        subtitle: 'Мозок · Серце · Легені · Печінка · Нирки',
+        path: '/biology/anatomy',
         status: 'available',
       },
     ],
