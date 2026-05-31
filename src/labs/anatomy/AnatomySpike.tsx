@@ -1,38 +1,70 @@
 import { Suspense, useMemo } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Environment, ContactShadows, Loader, useGLTF } from '@react-three/drei'
-import { ACESFilmicToneMapping, DoubleSide, MeshStandardMaterial, Mesh, type Object3D } from 'three'
+import { ACESFilmicToneMapping, DoubleSide, MeshPhysicalMaterial, Mesh, type Object3D } from 'three'
 
 /**
  * ASSEMBLY-CALIBRATION SPIKE — not the final lab.
  *
- * Loads all 6 HRA Male GLBs (NIH 3D, CC-BY, Visible Human Male) in ONE group
- * WITHOUT re-centering, proving they auto-register into an anatomically correct
- * body, with the skin rendered as a semi-transparent shell. Validates the visual
- * of the "translucent body + organs inside" design before the full spec. Route:
- * /biology/spike.
+ * Loads the 6 HRA Male GLBs (NIH 3D, CC-BY, Visible Human Male) in ONE group
+ * WITHOUT re-centering, so they auto-register into an anatomically correct body.
+ * The skin is a semi-transparent shell; the single (right) kidney is mirrored to
+ * a pair. Validates the "translucent body + organs inside" visual before the full
+ * spec. Route: /biology/spike.
  */
 
 const ORGANS = [
-  { url: '/models/brain.glb', color: '#d9b6ac' },
-  { url: '/models/heart.glb', color: '#c0392b' },
-  { url: '/models/lungs.glb', color: '#e3909e' },
-  { url: '/models/liver.glb', color: '#7c4a3a' },
-  { url: '/models/kidney.glb', color: '#b35f4c' },
+  { url: '/models/brain.glb', color: '#cbb4ad' },
+  { url: '/models/lungs.glb', color: '#cf8a92' },
+  { url: '/models/heart.glb', color: '#a8392f' },
+  { url: '/models/liver.glb', color: '#6f4034' },
 ] as const
+
+const KIDNEY = { url: '/models/kidney.glb', color: '#9c5446' }
+
+function paintOrgan(root: Object3D, color: string) {
+  root.traverse((o: Object3D) => {
+    const m = o as Mesh
+    if (m.isMesh) {
+      m.material = new MeshPhysicalMaterial({
+        color,
+        roughness: 0.55,
+        metalness: 0,
+        clearcoat: 0.35,
+        clearcoatRoughness: 0.45,
+      })
+      m.castShadow = true
+    }
+  })
+}
 
 function Organ({ url, color }: { url: string; color: string }) {
   const { scene } = useGLTF(url)
-  useMemo(() => {
-    scene.traverse((o: Object3D) => {
-      const m = o as Mesh
-      if (m.isMesh) {
-        m.material = new MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.05 })
-        m.castShadow = true
-      }
-    })
-  }, [scene, color])
+  useMemo(() => paintOrgan(scene, color), [scene, color])
   return <primitive object={scene} />
+}
+
+/** Right kidney at its registered position + a mirrored copy → an anatomical pair. */
+function KidneyPair({ url, color }: { url: string; color: string }) {
+  const { scene } = useGLTF(url)
+  const right = useMemo(() => {
+    const s = scene.clone(true)
+    paintOrgan(s, color)
+    return s
+  }, [scene, color])
+  const left = useMemo(() => {
+    const s = scene.clone(true)
+    paintOrgan(s, color)
+    return s
+  }, [scene, color])
+  return (
+    <>
+      <primitive object={right} />
+      <group scale={[-1, 1, 1]}>
+        <primitive object={left} />
+      </group>
+    </>
+  )
 }
 
 function Body({ url }: { url: string }) {
@@ -41,11 +73,11 @@ function Body({ url }: { url: string }) {
     scene.traverse((o: Object3D) => {
       const m = o as Mesh
       if (m.isMesh) {
-        m.material = new MeshStandardMaterial({
-          color: '#9fc6e0',
+        m.material = new MeshPhysicalMaterial({
+          color: '#a8c2d4',
           transparent: true,
-          opacity: 0.13,
-          roughness: 0.3,
+          opacity: 0.2,
+          roughness: 0.35,
           metalness: 0,
           side: DoubleSide,
           depthWrite: false,
@@ -69,7 +101,7 @@ export function AnatomySpike() {
       <Canvas
         shadows
         dpr={[1, 2]}
-        camera={{ position: [0, 0.4, 2.6], fov: 42 }}
+        camera={{ position: [0, 0.45, 2.55], fov: 42 }}
         gl={{ toneMapping: ACESFilmicToneMapping, toneMappingExposure: 1.05 }}
       >
         <ambientLight intensity={0.35} />
@@ -87,6 +119,7 @@ export function AnatomySpike() {
             {ORGANS.map((o) => (
               <Organ key={o.url} url={o.url} color={o.color} />
             ))}
+            <KidneyPair url={KIDNEY.url} color={KIDNEY.color} />
           </group>
           <Environment preset="studio" environmentIntensity={0.6} />
         </Suspense>
@@ -94,9 +127,9 @@ export function AnatomySpike() {
         <OrbitControls
           makeDefault
           enableDamping
-          target={[0, 0.4, 0]}
+          target={[0, 0.45, 0]}
           autoRotate
-          autoRotateSpeed={0.6}
+          autoRotateSpeed={0.45}
           minDistance={0.8}
           maxDistance={6}
         />
@@ -113,10 +146,10 @@ export function AnatomySpike() {
           pointerEvents: 'none',
         }}
       >
-        <div style={{ fontSize: 18, fontWeight: 700 }}>Анатомія · збірка тіла + 5 органів</div>
+        <div style={{ fontSize: 18, fontWeight: 700 }}>Анатомія · збірка тіла + органи (v2)</div>
         <div style={{ fontSize: 13, color: '#9AA3B2', marginTop: 5, lineHeight: 1.5 }}>
-          Напівпрозоре тіло, органи самі стали на анатомічні місця (HRA, Visible Human Male). Це
-          перевірка збірки — не фінальна лаба. Тягни — обертай, колесо — зум.
+          Пара нирок, вологі матеріали, тіло щільніше, старт із фронту. Органи стоять на
+          анатомічних місцях (HRA, Visible Human Male). Тягни — обертай, колесо — зум.
         </div>
       </div>
 
@@ -126,4 +159,5 @@ export function AnatomySpike() {
 }
 
 ORGANS.forEach((o) => useGLTF.preload(o.url))
+useGLTF.preload(KIDNEY.url)
 useGLTF.preload('/models/body-skin.glb')
