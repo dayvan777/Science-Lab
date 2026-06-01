@@ -82,6 +82,13 @@ export const SUBJECTS: SubjectEntry[] = [
         path: '/biology/anatomy',
         status: 'available',
       },
+      {
+        id: 'paramecium',
+        title: 'Інфузорія-туфелька',
+        subtitle: 'Будова клітини · органели · мікросвіт',
+        path: '/biology/paramecium',
+        status: 'available',
+      },
     ],
   },
 ]
