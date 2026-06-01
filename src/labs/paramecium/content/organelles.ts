@@ -58,7 +58,7 @@ export const ORGANELLES: OrganelleDef[] = [
   },
   {
     id: 'analPore', label: 'Порошиця', color: '#8fb0a8', kind: 'blob',
-    positions: [[1.0, -0.1, 0]], radius: 0.08,
+    positions: [[1.2, -0.3, 0.1]], radius: 0.08,
     facts: ['Отвір ззаду, через який викидаються неперетравлені рештки їжі.'],
   },
 ]

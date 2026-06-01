@@ -36,7 +36,8 @@ export default function App() {
               <ParameciumLab />
             </Suspense>
           }
-        />        <Route path="/physics/mass-measurement" element={<MassMeasurementLab />} />
+        />
+        <Route path="/physics/mass-measurement" element={<MassMeasurementLab />} />
         <Route path="/physics/em-induction" element={<EMInductionLab />} />
         <Route path="/physics/brownian-diffusion" element={<BrownianDiffusionLab />} />
         <Route path="/math" element={<ComingSoonPage subjectId="math" />} />
