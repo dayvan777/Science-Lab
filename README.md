@@ -1,35 +1,49 @@
-# Science Lab · Mass Measurement
+# NOVA EVRIKA — Interactive 3D Science Labs
 
-> **Interactive 3D physics laboratory for Ukrainian schools**
-> Built for Promethean interactive panels (6th-7th grade) — touch-first, browser-based, no install.
+> **Browser-based 3D laboratory simulations for Ukrainian schools (grades 6–7).**
+> Touch-first (Promethean panels) + mouse. No install, no account, no backend.
 
-🌐 **Live demo:** https://science-lab-phi.vercel.app/
-🎬 **Auto-walkthrough:** https://science-lab-phi.vercel.app/?demo=1 (lab plays itself end-to-end in ~70 seconds)
+🌐 **Live:** https://science-lab-phi.vercel.app/
+📦 **Repo:** [dayvan777/Science-Lab](https://github.com/dayvan777/Science-Lab)
 
-This repository contains both an **engine** (`src/sdk/`) for building interactive lab simulations and the first concrete lab on top of it: **"Вимірювання маси тіл"** (Mass Measurement of Bodies). A student measures the mass of three different objects (ping-pong ball, metal sphere, baseball) using three different instruments (digital scale, lever balance, dynamometer) and discovers the **invariance of mass** — three methods, one result.
-
-```
-┌─────────────┐     ┌──────────────┐     ┌──────────────────┐
-│ Pick up     │  →  │ Place on     │  →  │ Read & enter     │  →  …  9 tasks  →  Final reveal
-│ object      │     │ instrument   │     │ value (g or N)   │
-└─────────────┘     └──────────────┘     └──────────────────┘
-```
+NOVA EVRIKA is a **platform**: a reusable engine (`src/sdk/`) plus a growing set of
+subject **labs** (`src/labs/`) built on top of it. A student works through each lab
+solo — picking up objects, driving instruments, extracting organs, reading values —
+guided step by step, no teacher required.
 
 ---
 
-## ✨ Features
+## 🔬 Labs
 
-- **3 instruments, 3 objects, 9 measurements** with guided step-by-step pedagogy
-- **Cinematic dark studio aesthetic** — three-point lighting, shadows, post-FX bloom + vignette, ACES tone mapping
-- **Real physics** via Rapier (continuous collision detection, kinematic ↔ dynamic body switching, snap targets)
-- **Magnetic-pull snap** — drag tolerance is forgiving so children don't fight pixel precision
-- **Visible spring oscillation** on the dynamometer (real spring-damper integration)
-- **Auto-dolly camera presets** + mouse-wheel zoom + on-screen zoom buttons (touch-friendly)
-- **Lab-journal** grouped by object with placeholder slots — visualises the "rope" of progression
-- **Final reveal scene** — three columns, ticking numbers, mass-invariance conclusion
-- **Subtle UI sounds** (CC0 placeholders included; production audio is sourced separately)
-- **Persistent settings** (mute, etc.) via `localStorage`
-- **Ukrainian UI**, single-language by design (architecture-ready for i18n later)
+| Subject | Lab | Route | Status |
+|---|---|---|---|
+| **Physics** | Mass measurement — 3 instruments × 3 objects → invariance of mass | `/physics/mass-measurement` | ✅ |
+| **Physics** | Electromagnetic induction — coil · galvanometer · lamp | `/physics/em-induction` | ✅ |
+| **Physics** | Brownian motion & diffusion — one living box, 7 missions | `/physics/brownian-diffusion` | ✅ |
+| **Biology** | Human internal organs — translucent body + 5 extractable organs | `/biology/anatomy` | ✅ |
+| Math / History | — | `/math` · `/history` | soon |
+
+Adding a subject or lab is **one entry** in `src/site/content/subjects.ts` (the landing
+pill and subject page render automatically) plus a route in `src/app/App.tsx`.
+
+---
+
+## ✨ Two lab archetypes
+
+Both run on the same engine.
+
+**Procedural physics labs** (mass, induction, diffusion)
+- Procedurally-generated geometry — **zero asset files**, full control over quality.
+- Real **Rapier** physics (drag-snap, lever balance, spring oscillation) or custom
+  particle kinetics (diffusion).
+- A guided step engine (3D arrows, multiple-choice questions, "Далі" gating) over a
+  `intro → in-progress → finished` phase machine.
+
+**Model-driven labs** (anatomy)
+- Real **GLTF/GLB** models via `useGLTF`. The anatomy lab is a *free explorer*: a
+  semi-transparent body whose 5 organs **extract → rotate → read → return**, progress N/5.
+- Models are **NIH 3D / HuBMAP Human Reference Atlas** (Visible Human Male, CC-BY 4.0)
+  and share one coordinate space, so they auto-register in correct anatomical position.
 
 ---
 
@@ -37,17 +51,18 @@ This repository contains both an **engine** (`src/sdk/`) for building interactiv
 
 | Layer | Library |
 |---|---|
-| UI | React 19 + TypeScript 6 |
+| UI | React 19 + TypeScript (strict, `noUnusedLocals`) |
 | Build | Vite 8 |
-| 3D scene | [@react-three/fiber](https://r3f.docs.pmnd.rs/) 9 + [three.js](https://threejs.org/) |
-| Helpers | [@react-three/drei](https://github.com/pmndrs/drei) 10 |
-| Physics | [@react-three/rapier](https://github.com/pmndrs/react-three-rapier) 2 ([Rapier](https://rapier.rs/)) |
+| 3D scene | [three.js](https://threejs.org/) 0.184 · [@react-three/fiber](https://r3f.docs.pmnd.rs/) 9 · [@react-three/drei](https://github.com/pmndrs/drei) 10 |
+| Physics | [@react-three/rapier](https://github.com/pmndrs/react-three-rapier) 2 ([Rapier](https://rapier.rs/), WASM) |
 | Post-FX | @react-three/postprocessing 3 (Bloom, Vignette) |
 | State | [Zustand](https://github.com/pmndrs/zustand) 5 |
 | Audio | Web Audio API (custom `SoundManager`) |
-| Tests | Vitest 4 + jsdom |
+| Tests | Vitest 4 + jsdom + @testing-library/react |
 
-No external CDN dependencies, no analytics, no backend. Builds to a single static bundle (~3.6 MB / 1.27 MB gzipped).
+No CDN dependencies, no analytics, no backend. Builds to a static bundle (~3.8 MB main,
+~1.3 MB gzipped). Heavy labs are **code-split** via `React.lazy` — e.g. the anatomy lab's
+~46 MB of models load only on its own route, never on the landing page.
 
 ---
 
@@ -62,124 +77,116 @@ npm install
 npm run dev          # http://localhost:5173/
 ```
 
-Available scripts:
+Scripts:
 
 ```bash
 npm run dev          # Vite dev server with HMR
-npm run build        # type-check + production build → dist/
+npm run build        # type-check (tsc) + production build → dist/
 npm run preview      # serve the production build
 npm run test         # run vitest once
-npm run test:watch   # vitest in watch mode
 npm run typecheck    # tsc --noEmit
 ```
 
-53 unit tests cover physics math, animation helpers, sound manager, step DSL, and step engine.
+**≈470 unit tests** cover pure logic: physics/measurement math, animation helpers,
+state machines, the step DSL + engine, the diffusion kinetics, and per-lab content/data.
+React Three Fiber scenes need a real GPU, so they are verified by `tsc` + `vite build` +
+manual browser smoke rather than unit tests.
 
 ---
 
 ## 📐 Architecture
 
-The codebase splits into two layers:
+Engine vs content, strictly separated:
 
 ```
 src/
-├── sdk/                            ← reusable engine, never imports from labs/
-│   ├── animation/                  lerp, easeOutCubic, easeInOutCubic, springStep
-│   ├── audio/                      SoundManager (lazy AudioContext, mute, preload)
-│   ├── guided/                     StepEngine, GuidedOverlay, primitives, TaskSteps DSL types
-│   ├── object/                     Draggable (kinematic-during-drag, dynamic-on-release)
-│   ├── physics/                    bodyRegistry, snapTargets, useDrag (with magnetic-pull tween)
-│   ├── scene/                      CinematicLighting, CameraRig, PostFX, Table, cameraStore
-│   ├── ui/                         Button, GlassPanel, NumberInput, SoundToggle, ZoomControls
-│   └── types.ts                    LabDefinition contract
+├── sdk/                       ← engine — never imports from labs/
+│   ├── animation/             lerp, easeOutCubic/InOutCubic, springStep
+│   ├── audio/                 SoundManager (lazy AudioContext, mute, preload)
+│   ├── guided/                StepEngine, GuidedOverlay, TaskSteps DSL, primitives
+│   ├── object/                Draggable (kinematic-during-drag → dynamic-on-release)
+│   ├── physics/               bodyRegistry, snapTargets, useDrag (magnetic-pull tween)
+│   ├── scene/                 CinematicLighting, CameraRig, PostFX, Table, webgl, cameraStore
+│   ├── ui/                    Button, GlassPanel, BottomSheet, NumberInput, Loader screens…
+│   └── a11y/                  useViewport, useReducedMotion, safeArea
 │
 ├── labs/
-│   └── mass-measurement/           ← lab-specific content
-│       ├── index.tsx               <MassMeasurementLab/> entry + sound catalog
-│       ├── instruments/            DigitalScale, Dynamometer, LeverBalance
-│       ├── objects/                TennisBall (ping-pong), Apple (metal ball), Baseball, Weights
-│       ├── content/                tasks.ts, steps.ts (Step DSL data)
-│       ├── state/                  LabState (Zustand), InstrumentReadings (Zustand)
-│       ├── textures/               procedural canvas-2d textures (LCD, dial, label, felt, seam)
-│       ├── ui/                     HUD, IntroScreen, IntroTitle, MilestoneOverlay, RevealScene, SummaryScreen
-│       └── scene/                  LabScene (Canvas + Physics + lab-specific layout)
+│   ├── mass-measurement/          physics — guided 9-task measurement
+│   ├── electromagnetic-induction/ physics — induction with coil/galvanometer/lamp
+│   ├── brownian-diffusion/        physics — one stateful glass box, 7 missions
+│   └── anatomy/                   biology — translucent body + 5 GLTF organs
 │
-└── app/                            App shell (just mounts <MassMeasurementLab/>)
+├── site/                      landing + subject pages + subjects.ts registry
+└── app/                       App shell + routes (BrowserRouter)
 ```
 
-### The `LabDefinition` contract
-
-```ts
-// src/sdk/types.ts
-export type LabDefinition = {
-  id: string                    // 'mass-measurement', 'friction', ...
-  title: string                 // displayed in title cards
-  // Future: scene config, instruments[], objects[], steps[], reveal config
-}
-```
-
-Each lab exports its own `MassMeasurementLab`-style entry component and a definition object. The application shell decides which lab to mount (currently hard-coded to mass measurement; routing is trivial to add).
-
-### Why split engine from content?
-
-Today the SDK is a **pattern**, not yet a published package — but the directory boundary is enforced as a rule (engine never imports from labs). When we ship a second lab (`labs/friction/`, `labs/electrostatics/`), we keep all of the SDK and replace only the lab folder. If the SDK reaches stable surface area, it can graduate to a versioned package without restructuring.
+**Rule:** `sdk/` is shared and stable; the engine never imports from `labs/`. A new lab
+is a new folder under `labs/` + one entry in `subjects.ts` + a route. The SDK is a
+pattern today (not yet a published package); once its surface stabilises it can graduate
+to a versioned npm package without restructuring.
 
 ---
 
 ## 🧱 How to add a new lab
 
-1. Create `src/labs/<your-lab-id>/` mirroring the structure of `mass-measurement/`.
-2. Define your task content in `content/tasks.ts` and step DSL in `content/steps.ts`.
-3. Build instruments and objects using `Draggable`, `registerSnap`, `bodyRegistry`, `useReadings`.
-4. Reuse SDK scene primitives (`<CinematicLighting/>`, `<CameraRig/>`, `<Table/>`, `<PostFX/>`) in your `scene/LabScene.tsx`.
-5. Export a `<YourLab/>` entry component and a `LabDefinition`.
-6. Mount it from `src/app/App.tsx`.
+1. Add the subject (if new) + lab entry to `src/site/content/subjects.ts`.
+2. Create `src/labs/<your-lab-id>/` — mirror an existing lab:
+   - **Procedural physics?** copy the `mass-measurement` / `brownian-diffusion` shape
+     (content `tasks`/`scenes`, Zustand state, `scene/`, `ui/`, the SDK step engine).
+   - **Model-driven?** copy the `anatomy` shape (`content/*.ts` data, `useGLTF` scene,
+     a free-explorer or guided state store).
+3. Reuse SDK primitives (`Button`, `GlassPanel`, `BottomSheet`, `CinematicLighting`,
+   `useViewport`, `useReducedMotion`, `isWebGLAvailable`/`WebGLUnsupported`, drei `Loader`).
+4. Export a `<YourLab/>` entry component; add the route in `src/app/App.tsx` (lazy-load
+   if it ships heavy assets).
 
-Most of the heavy lifting is already done — physics, drag-snap-tween, step progression, audio, camera dolly, HUD primitives.
+Most of the heavy lifting is done — physics, drag-snap-tween, step progression, audio,
+camera, HUD primitives, GLTF material/clone patterns.
 
 ---
 
 ## 🗺 Roadmap
 
-Done in `feature/gold-standard`:
-
-- [x] **Slice 0** — Folder split (`sdk/` vs `labs/`)
-- [x] **Slice 1** — t1 vertical polish: cinematic lighting, post-FX, magnetic snap, focus camera, LCD glow, two-layer hint copy, audio wiring
-- [x] **Slice 2** — Lever balance redesign: hanging chrome pans, A-frame V wires, weight stacking
-- [x] **Slice 3** — Dynamometer polish: helix-tube spring, spring-damper hook oscillation
-- [x] **Slice 4** — Object polish: ping-pong / metal ball / baseball / weights with proper PBR
-- [x] **Slice 5** — Pedagogy scaffolding: intro flythrough, milestone overlays, grouped journal
-- [x] **Slice 6** — Final reveal scene: three-column animated comparison + mass-invariance conclusion
+Done:
+- [x] SDK engine extracted (`sdk/` vs `labs/`), subject registry + landing/subject pages
+- [x] **Mass measurement** — guided 9-task physics lab, real Rapier instruments
+- [x] **Electromagnetic induction** — coil/galvanometer/lamp
+- [x] **Brownian motion & diffusion** — single living box, 7-mission arc, "Далі" gating
+- [x] **Human anatomy** (biology) — translucent body + 5 extractable NIH/HRA organs
 
 Open:
-
-- [ ] **Slice 7** — Accessibility pass (keyboard nav, focus rings, WCAG AA contrast audit)
-- [ ] **Slice 8** — Demo mode (`?demo=1` auto-walkthrough), real CC0 audio assets
-- [ ] **Future labs** — friction, electrostatics, simple machines, …
-- [ ] **Lab SDK as a package** — once two labs are shipped, extract the engine to a versioned npm package
-- [ ] **Optional**: i18n, server-side journal storage, classroom dashboard for teachers
+- [ ] More labs in existing subjects (physics, biology) + launch math / history
+- [ ] More model-driven labs via the anatomy asset recipe (organ atlas, cell, …)
+- [ ] Asset optimisation (Draco/meshopt; CDN/LFS for heavy GLB)
+- [ ] Accessibility pass (keyboard nav, WCAG AA audit), real CC0 audio assets
+- [ ] Lab SDK as a versioned package once the surface is stable
+- [ ] Optional: i18n, Promethean/LMS integration, teacher dashboard
 
 ---
 
 ## 📚 Design docs
 
-Living architecture decisions live in `docs/superpowers/specs/` and `docs/superpowers/plans/`. The most recent spec is the gold-standard design that this `master` reflects:
+Living architecture decisions live in `docs/superpowers/specs/` (designs) and
+`docs/superpowers/plans/` (implementation plans). Every lab goes design → plan →
+subagent-driven execution → merge → deploy. The most recent is the biology anatomy lab:
 
-- **Spec:** [`docs/superpowers/specs/2026-05-09-mass-measurement-gold-standard-design.md`](docs/superpowers/specs/2026-05-09-mass-measurement-gold-standard-design.md)
-- **Plan:** [`docs/superpowers/plans/2026-05-09-slice-0-and-1-foundation-flagship.md`](docs/superpowers/plans/2026-05-09-slice-0-and-1-foundation-flagship.md)
+- **Spec:** `docs/superpowers/specs/2026-05-31-anatomy-lab-design.md`
+- **Plan:** `docs/superpowers/plans/2026-05-31-anatomy-lab.md`
 
 ---
 
 ## 🙏 Credits
 
 - Physics by [Rapier](https://rapier.rs/) (Sébastien Crozet) via [@react-three/rapier](https://github.com/pmndrs/react-three-rapier).
-- 3D rendering by [three.js](https://threejs.org/) and [@react-three/fiber](https://r3f.docs.pmnd.rs/).
-- Helper components from [@react-three/drei](https://github.com/pmndrs/drei).
+- 3D rendering by [three.js](https://threejs.org/) and [@react-three/fiber](https://r3f.docs.pmnd.rs/); helpers from [@react-three/drei](https://github.com/pmndrs/drei).
 - Post-FX from [@react-three/postprocessing](https://github.com/pmndrs/postprocessing).
-- Audio placeholders are zero-byte stubs; real sounds will be sourced from [freesound.org](https://freesound.org) under CC0 — see [`public/audio/CREDITS.md`](public/audio/CREDITS.md).
+- Anatomy 3D models: **NIH 3D / HuBMAP Human Reference Atlas** (Kristen Browne & Heidi
+  Schlehlein, Visible Human Male), **CC-BY 4.0** — see [`public/models/CREDITS.md`](public/models/CREDITS.md).
+- Audio placeholders are CC0 stubs; production audio is sourced separately — see [`public/audio/CREDITS.md`](public/audio/CREDITS.md).
 
 ---
 
 ## 📄 License
 
-[MIT](LICENSE) — free for educational and commercial use. If you build something with this, a credit + a link back is appreciated but not required.
+[MIT](LICENSE) — free for educational and commercial use. A credit + link back is
+appreciated but not required.
