@@ -13,6 +13,14 @@ describe('subjects registry', () => {
     expect(anatomy?.status).toBe('available')
   })
 
+  it('biology has the paramecium lab available', () => {
+    const bio = findSubject('biology')
+    const p = bio?.labs.find(l => l.id === 'paramecium')
+    expect(p).toBeDefined()
+    expect(p?.path).toBe('/biology/paramecium')
+    expect(p?.status).toBe('available')
+  })
+
   it('keeps every subject path unique', () => {
     const paths = SUBJECTS.map(s => s.path)
     expect(new Set(paths).size).toBe(paths.length)
