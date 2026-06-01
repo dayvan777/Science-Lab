@@ -7,8 +7,6 @@ import { LandingPage } from '../site/pages/LandingPage'
 import { PhysicsPage } from '../site/pages/PhysicsPage'
 import { BiologyPage } from '../site/pages/BiologyPage'
 import { ComingSoonPage } from '../site/pages/ComingSoonPage'
-import { ParameciumSpike } from '../labs/paramecium/ParameciumSpike'
-
 const AnatomyLab = lazy(() => import('../labs/anatomy').then(m => ({ default: m.AnatomyLab })))
 const ParameciumLab = lazy(() => import('../labs/paramecium').then(m => ({ default: m.ParameciumLab })))
 
@@ -38,9 +36,7 @@ export default function App() {
               <ParameciumLab />
             </Suspense>
           }
-        />
-        <Route path="/biology/paramecium-spike" element={<ParameciumSpike />} />
-        <Route path="/physics/mass-measurement" element={<MassMeasurementLab />} />
+        />        <Route path="/physics/mass-measurement" element={<MassMeasurementLab />} />
         <Route path="/physics/em-induction" element={<EMInductionLab />} />
         <Route path="/physics/brownian-diffusion" element={<BrownianDiffusionLab />} />
         <Route path="/math" element={<ComingSoonPage subjectId="math" />} />
