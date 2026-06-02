@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Environment as DreiEnvironment, Loader } from '@react-three/drei'
 import { ACESFilmicToneMapping } from 'three'
 import { Tray } from './Tray'
+import { PerchBody } from './PerchBody'
 
 export function PerchScene() {
   return (
@@ -10,6 +11,7 @@ export function PerchScene() {
       <Canvas shadows dpr={[1, 2]} camera={{ position: [0.5, 2.2, 5.2], fov: 45 }} gl={{ toneMapping: ACESFilmicToneMapping, toneMappingExposure: 1.05 }}>
         <Suspense fallback={null}>
           <Tray />
+          <PerchBody />
           <DreiEnvironment preset="city" environmentIntensity={0.35} />
         </Suspense>
         <OrbitControls makeDefault enableDamping target={[0, 0, 0]} autoRotate={false} minDistance={3} maxDistance={11} maxPolarAngle={Math.PI * 0.52} />
