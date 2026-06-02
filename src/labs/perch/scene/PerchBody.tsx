@@ -31,16 +31,24 @@ function makeSkin(): CanvasTexture {
   return tex
 }
 
-function Fin({ pts, position, rotation, color }: { pts: [number, number][]; position: [number, number, number]; rotation?: [number, number, number]; color: string }) {
+function Fin({ pts, position, rotation, color, rays }: { pts: [number, number][]; position: [number, number, number]; rotation?: [number, number, number]; color: string; rays?: [number, number, number, number][] }) {
   const geo = useMemo(() => {
     const s = new Shape(); s.moveTo(pts[0][0], pts[0][1])
     pts.slice(1).forEach(([x, y]) => s.lineTo(x, y)); s.closePath(); return s
   }, [pts])
   return (
-    <mesh position={position} rotation={rotation}>
-      <shapeGeometry args={[geo]} />
-      <meshPhysicalMaterial color={color} side={DoubleSide} roughness={0.6} clearcoat={0.5} clearcoatRoughness={0.4} transparent opacity={0.96} />
-    </mesh>
+    <group position={position} rotation={rotation}>
+      <mesh>
+        <shapeGeometry args={[geo]} />
+        <meshPhysicalMaterial color={color} side={DoubleSide} roughness={0.6} clearcoat={0.5} clearcoatRoughness={0.4} transparent opacity={0.96} />
+      </mesh>
+      {(rays ?? []).map(([x1, y1, x2, y2], i) => (
+        <mesh key={i} position={[(x1 + x2) / 2, (y1 + y2) / 2, 0.001]} rotation={[0, 0, Math.atan2(y2 - y1, x2 - x1)]}>
+          <planeGeometry args={[Math.hypot(x2 - x1, y2 - y1), 0.006]} />
+          <meshBasicMaterial color="#46522f" transparent opacity={0.5} side={DoubleSide} />
+        </mesh>
+      ))}
+    </group>
   )
 }
 
@@ -93,8 +101,8 @@ export function PerchBody() {
       {/* tail (forked) at the narrow peduncle */}
       <Fin pts={[[0, 0], [0.7, 0.42], [0.46, 0], [0.7, -0.42]]} position={[BODY.L * 0.98, 0, 0]} rotation={[Math.PI / 2, 0, 0]} color={COLORS.finOlive} />
       {/* dorsal fins follow the tapered back */}
-      <Fin pts={[[0, 0], [0.18, 0.5], [0.5, 0.12], [0.7, 0]]} position={[-0.2, topY(-0.2) + 0.02, 0]} rotation={[Math.PI / 2, 0, 0]} color={COLORS.finOlive} />
-      <Fin pts={[[0, 0], [0.22, 0.34], [0.5, 0]]} position={[0.7, topY(0.7) + 0.02, 0]} rotation={[Math.PI / 2, 0, 0]} color={COLORS.finOlive} />
+      <Fin pts={[[0, 0], [0.18, 0.5], [0.5, 0.12], [0.7, 0]]} position={[-0.2, topY(-0.2) + 0.02, 0]} rotation={[Math.PI / 2, 0, 0]} color={COLORS.finOlive} rays={[[0.08, 0.06, 0.18, 0.46], [0.24, 0.04, 0.32, 0.30], [0.4, 0.04, 0.46, 0.16]]} />
+      <Fin pts={[[0, 0], [0.22, 0.34], [0.5, 0]]} position={[0.7, topY(0.7) + 0.02, 0]} rotation={[Math.PI / 2, 0, 0]} color={COLORS.finOlive} rays={[[0.1, 0.04, 0.18, 0.3], [0.26, 0.02, 0.32, 0.22], [0.4, 0.02, 0.46, 0.1]]} />
       {/* anal + pelvic + pectoral (reddish) on the tapered belly/flank */}
       <Fin pts={[[0, 0], [0.18, -0.3], [0.42, 0]]} position={[0.7, botY(0.7) - 0.02, 0]} rotation={[Math.PI / 2, 0, 0]} color={COLORS.finRed} />
       <Fin pts={[[0, 0], [0.12, -0.28], [0.3, 0]]} position={[-0.5, botY(-0.5) - 0.02, 0.2]} rotation={[Math.PI / 2, 0, 0.3]} color={COLORS.finRed} />
