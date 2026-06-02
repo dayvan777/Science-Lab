@@ -1,5 +1,7 @@
-import { ORGANELLES, type OrganelleId } from '../../content/organelles'
+import { ORGANELLES, getOrganelle, type OrganelleId } from '../../content/organelles'
+import { useParameciumState } from '../../state/ParameciumState'
 import { OrganelleShell, type OrganelleRenderer } from './OrganelleShell'
+import { OrganelleLabel } from './OrganelleLabel'
 import { Trichocysts } from './Trichocysts'
 import { ContractileVacuoles } from './ContractileVacuoles'
 import { FoodVacuoles } from './FoodVacuoles'
@@ -19,6 +21,13 @@ const RENDERERS: Partial<Record<OrganelleId, OrganelleRenderer>> = {
   analPore: AnalPore,
 }
 
+function SelectedLabel() {
+  const id = useParameciumState(s => s.selectedOrganelleId)
+  const viewMode = useParameciumState(s => s.viewMode)
+  if (!id || viewMode !== 'cell') return null
+  return <OrganelleLabel def={getOrganelle(id)} />
+}
+
 export function Organelles() {
   return (
     <>
@@ -27,6 +36,7 @@ export function Organelles() {
         return Renderer ? <OrganelleShell key={def.id} def={def} Renderer={Renderer} /> : null
       })}
       <Trichocysts />
+      <SelectedLabel />
     </>
   )
 }
