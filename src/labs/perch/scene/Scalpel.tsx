@@ -3,16 +3,16 @@ import { useCursor, Line } from '@react-three/drei'
 import { useState } from 'react'
 import { usePerchState } from '../state/PerchState'
 import { BODY } from './anatomy'
-import { cutProgressFromDrag } from './cut'
+import { useScalpelDrag } from './useScalpelDrag'
 
 const X0 = -1.0, X1 = 1.4          // belly cut span (head → vent)
 const YB = -BODY.H * 0.92, ZB = BODY.W * 0.78
-const DRAG_PX = 320                 // pixels of horizontal drag = full cut
 
 export function Scalpel() {
   const phase = usePerchState(s => s.phase)
   const cutProgress = usePerchState(s => s.cutProgress)
   const setCut = usePerchState(s => s.setCut)
+  const { startDrag } = useScalpelDrag(cutProgress, setCut)
   const [hover, setHover] = useState(false)
   useCursor(hover && phase !== 'internal', 'grab')
 
@@ -21,12 +21,7 @@ export function Scalpel() {
 
   const onDown = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation()
-    const startX = e.nativeEvent.clientX
-    const base = cutProgress
-    const move = (ev: PointerEvent) => setCut(base + cutProgressFromDrag(ev.clientX - startX, DRAG_PX))
-    const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up) }
-    window.addEventListener('pointermove', move)
-    window.addEventListener('pointerup', up)
+    startDrag(e.nativeEvent.clientX)
   }
 
   return (
