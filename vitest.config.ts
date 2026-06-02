@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig, configDefaults } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
@@ -8,5 +8,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./tests/setup.ts'],
     passWithNoTests: true,
+    // Never scan sibling git worktrees the agent harness creates under .claude/.
+    exclude: [...configDefaults.exclude, '.claude/**'],
   },
 })
