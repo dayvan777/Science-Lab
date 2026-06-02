@@ -41,20 +41,24 @@ export function PerchBody() {
   const reduced = useReducedMotion()
   const cutProgress = usePerchState(s => s.cutProgress)
   const flapRef = useRef<Group>(null)
+  const bodyRef = useRef<Group>(null)
   const skin = useMemo(() => makeSkin(), [])
   const bodyMat = useMemo(() => new MeshStandardMaterial({ map: skin, roughness: 0.55, side: DoubleSide }), [skin])
   const flapMat = useMemo(() => new MeshStandardMaterial({ map: skin, roughness: 0.55, side: DoubleSide }), [skin])
   const cavityMat = useMemo(() => new MeshStandardMaterial({ color: COLORS.cavity, roughness: 0.9, side: DoubleSide }), [])
 
-  useFrame((_, dt) => {
-    const g = flapRef.current
-    if (!g) return
-    const target = flapAngle(cutProgress)
-    g.rotation.x = reduced ? target : g.rotation.x + (target - g.rotation.x) * dampAlpha(dt, 9)
+  useFrame((st, dt) => {
+    const flap = flapRef.current
+    if (flap) {
+      const target = flapAngle(cutProgress)
+      flap.rotation.x = reduced ? target : flap.rotation.x + (target - flap.rotation.x) * dampAlpha(dt, 9)
+    }
+    const body = bodyRef.current
+    if (body) body.scale.setScalar(reduced ? 1 : 1 + Math.sin(st.clock.elapsedTime * 1.2) * 0.012)
   })
 
   return (
-    <group>
+    <group ref={bodyRef}>
       {/* far body wall (z<0 hemisphere) */}
       <mesh scale={[BODY.L, BODY.H, BODY.W]} material={bodyMat}>
         <sphereGeometry args={[1, 56, 36, Math.PI, Math.PI]} />
