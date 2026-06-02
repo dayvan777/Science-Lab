@@ -7,7 +7,7 @@ import { useParameciumState } from '../state/ParameciumState'
 import { useReducedMotion } from '../../../sdk/a11y/useReducedMotion'
 import { A, B, C, dampAlpha } from './life'
 import { Cilia } from './Cilia'
-import { Organelles } from './Organelles'
+import { Organelles } from './organelles'
 
 const ZERO = new Vector3(0, 0, 0)
 
