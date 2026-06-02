@@ -44,13 +44,13 @@ export const PARTS: PartDef[] = [
     facts: ['Двокамерне серце жене кров до зябер — у риби одне коло кровообігу.'] },
   { id: 'liver', label: 'Печінка', phase: 'internal', kind: 'organ', color: '#8c5a3c', position: [-0.5, -0.42, 0.12],
     facts: ['Велика печінка виробляє жовч для травлення й запасає поживні речовини.'] },
-  { id: 'swimBladder', label: 'Плавальний міхур', phase: 'internal', kind: 'organ', color: '#d6dce0', position: [0.25, 0.5, 0.06],
+  { id: 'swimBladder', label: 'Плавальний міхур', phase: 'internal', kind: 'organ', color: '#d6dce0', position: [0.05, 0.32, 0.06],
     facts: ['Наповнений газом міхур регулює глибину — риба спливає чи занурюється, не витрачаючи сил.'] },
   { id: 'stomach', label: 'Шлунок', phase: 'internal', kind: 'organ', color: '#b89a6a', position: [-0.05, -0.46, 0.12],
     facts: ['У шлунку здобич (дрібна риба, личинки) починає перетравлюватися.'] },
   { id: 'intestine', label: 'Кишечник', phase: 'internal', kind: 'organ', color: '#b8a86a', position: [0.5, -0.5, 0.12],
     facts: ['У звивистому кишечнику поживні речовини всмоктуються в кров.'] },
-  { id: 'kidney', label: 'Нирки', phase: 'internal', kind: 'organ', color: '#6a5a7a', position: [0.25, 0.6, 0.0],
+  { id: 'kidney', label: 'Нирки', phase: 'internal', kind: 'organ', color: '#6a5a7a', position: [0.1, 0.5, -0.04],
     facts: ['Темні нирки вздовж хребта очищають кров і виводять зайву воду.'] },
 ]
 

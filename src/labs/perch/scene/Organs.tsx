@@ -58,7 +58,7 @@ function OrganMesh({ def, state }: { def: PartDef; state: PartVisualState }) {
       )
     case 'swimBladder':
       return (
-        <mesh position={p} scale={[2.5, 0.72, 0.72]} material={mat}>
+        <mesh position={p} scale={[2.3, 0.5, 0.6]} material={mat}>
           <sphereGeometry args={[0.3, 32, 22]} />
         </mesh>
       )
@@ -79,7 +79,7 @@ function OrganMesh({ def, state }: { def: PartDef; state: PartVisualState }) {
     case 'intestine':
       return <mesh position={p} geometry={COIL_GEO} material={mat} />
     case 'kidney':
-      return <mesh position={p} scale={[3.4, 0.42, 0.34]} material={mat}><sphereGeometry args={[0.16, 18, 12]} /></mesh>
+      return <mesh position={p} scale={[3.2, 0.4, 0.34]} material={mat}><sphereGeometry args={[0.16, 18, 12]} /></mesh>
     default:
       return <mesh position={p} material={mat}><sphereGeometry args={[0.16, 16, 12]} /></mesh>
   }
