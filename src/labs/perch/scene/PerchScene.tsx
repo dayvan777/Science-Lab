@@ -4,6 +4,7 @@ import { OrbitControls, Environment as DreiEnvironment, Loader } from '@react-th
 import { ACESFilmicToneMapping } from 'three'
 import { Tray } from './Tray'
 import { PerchBody } from './PerchBody'
+import { Scalpel } from './Scalpel'
 
 export function PerchScene() {
   return (
@@ -12,6 +13,7 @@ export function PerchScene() {
         <Suspense fallback={null}>
           <Tray />
           <PerchBody />
+          <Scalpel />
           <DreiEnvironment preset="city" environmentIntensity={0.35} />
         </Suspense>
         <OrbitControls makeDefault enableDamping target={[0, 0, 0]} autoRotate={false} minDistance={3} maxDistance={11} maxPolarAngle={Math.PI * 0.52} />
