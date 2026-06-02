@@ -4,6 +4,7 @@ import { GenericBlob } from './GenericBlob'
 import { Trichocysts } from './Trichocysts'
 import { ContractileVacuoles } from './ContractileVacuoles'
 import { FoodVacuoles } from './FoodVacuoles'
+import { Macronucleus } from './Macronucleus'
 
 const POINT_ORGANELLES = ORGANELLES.filter(o => o.kind !== 'layer')
 
@@ -11,6 +12,7 @@ const POINT_ORGANELLES = ORGANELLES.filter(o => o.kind !== 'layer')
 const RENDERERS: Partial<Record<OrganelleId, OrganelleRenderer>> = {
   contractileVacuoles: ContractileVacuoles,
   foodVacuoles: FoodVacuoles,
+  macronucleus: Macronucleus,
 }
 
 export function Organelles() {
