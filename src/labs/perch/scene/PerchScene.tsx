@@ -6,6 +6,7 @@ import { Tray } from './Tray'
 import { PerchBody } from './PerchBody'
 import { Scalpel } from './Scalpel'
 import { Organs } from './Organs'
+import { ExternalParts } from './ExternalParts'
 
 export function PerchScene() {
   return (
@@ -16,6 +17,7 @@ export function PerchScene() {
           <PerchBody />
           <Scalpel />
           <Organs />
+          <ExternalParts />
           <DreiEnvironment preset="city" environmentIntensity={0.35} />
         </Suspense>
         <OrbitControls makeDefault enableDamping target={[0, 0, 0]} autoRotate={false} minDistance={3} maxDistance={11} maxPolarAngle={Math.PI * 0.52} />
