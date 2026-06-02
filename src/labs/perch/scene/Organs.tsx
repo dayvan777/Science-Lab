@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Color, MeshStandardMaterial, Group } from 'three'
+import { Color, MeshPhysicalMaterial, Group } from 'three'
 import type { PartDef } from '../content/parts'
 import { PARTS } from '../content/parts'
 import { useReducedMotion } from '../../../sdk/a11y/useReducedMotion'
@@ -9,15 +9,15 @@ import { PartShell, type PartVisualState, type PartRenderer } from './PartShell'
 
 const ORGAN_PARTS = PARTS.filter(p => p.phase === 'internal')
 
-/** Per-organ procedural shape, keyed by id. All share the lerped emissive/opacity from `state`. */
 function OrganMesh({ def, state }: { def: PartDef; state: PartVisualState }) {
   const reduced = useReducedMotion()
   const ref = useRef<Group>(null)
-  const mat = useMemo(() => new MeshStandardMaterial({
+  const wet = def.id === 'swimBladder'
+  const mat = useMemo(() => new MeshPhysicalMaterial({
     color: def.color, emissive: new Color(def.color), emissiveIntensity: 0,
-    roughness: def.id === 'swimBladder' ? 0.3 : 0.55, metalness: def.id === 'swimBladder' ? 0.1 : 0,
+    roughness: wet ? 0.18 : 0.5, clearcoat: wet ? 1 : 0.5, clearcoatRoughness: wet ? 0.1 : 0.4,
     transparent: true, opacity: 0.97,
-  }), [def.color, def.id])
+  }), [def.color, wet])
 
   useFrame((s, dt) => {
     const a = reduced ? 1 : dampAlpha(dt, 8)
@@ -31,27 +31,33 @@ function OrganMesh({ def, state }: { def: PartDef; state: PartVisualState }) {
     case 'gills':
       return (
         <group ref={ref} position={[p[0], p[1], p[2]]}>
-          {[0, 1, 2].map(i => (
-            <mesh key={i} position={[0, -i * 0.12, 0]} material={mat}>
-              <torusGeometry args={[0.16, 0.03, 8, 16, Math.PI]} />
+          {[0, 1, 2, 3].map(i => (
+            <mesh key={i} position={[0, -i * 0.085, 0]} rotation={[0, 0, -0.2]} material={mat}>
+              <torusGeometry args={[0.15, 0.022, 8, 20, Math.PI * 1.1]} />
             </mesh>
           ))}
         </group>
       )
+    case 'liver': // 3 lobes
+      return (
+        <group position={[p[0], p[1], p[2]]}>
+          <mesh material={mat}><sphereGeometry args={[0.2, 18, 14]} /></mesh>
+          <mesh position={[0.16, -0.04, 0.04]} material={mat}><sphereGeometry args={[0.14, 16, 12]} /></mesh>
+          <mesh position={[-0.13, -0.05, -0.03]} material={mat}><sphereGeometry args={[0.12, 16, 12]} /></mesh>
+        </group>
+      )
+    case 'swimBladder':
+      return (
+        <mesh position={p} scale={[2.5, 0.72, 0.72]} material={mat}>
+          <sphereGeometry args={[0.3, 32, 22]} />
+        </mesh>
+      )
     case 'heart':
       return <mesh position={p} material={mat}><sphereGeometry args={[0.17, 18, 14]} /></mesh>
-    case 'liver':
-      return <mesh position={p} scale={[1.5, 0.9, 0.8]} material={mat}><sphereGeometry args={[0.22, 18, 14]} /></mesh>
-    case 'swimBladder':
-      return <mesh position={p} scale={[2.4, 0.7, 0.7]} material={mat}><sphereGeometry args={[0.3, 26, 18]} /></mesh>
     case 'stomach':
       return <mesh position={p} scale={[1.2, 1.4, 0.8]} material={mat}><sphereGeometry args={[0.2, 16, 14]} /></mesh>
     case 'intestine':
-      return (
-        <mesh position={p} material={mat}>
-          <torusKnotGeometry args={[0.16, 0.05, 64, 8, 2, 3]} />
-        </mesh>
-      )
+      return <mesh position={p} material={mat}><torusKnotGeometry args={[0.16, 0.05, 64, 8, 2, 3]} /></mesh>
     case 'kidney':
       return <mesh position={p} scale={[3.2, 0.5, 0.4]} material={mat}><sphereGeometry args={[0.16, 18, 12]} /></mesh>
     default:
