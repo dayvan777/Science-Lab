@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import type { ThreeEvent } from '@react-three/fiber'
 import { useFrame } from '@react-three/fiber'
 import { useCursor } from '@react-three/drei'
-import { Group, Vector3, MeshPhysicalMaterial, Color, DoubleSide } from 'three'
+import { Group, Vector3, MeshPhysicalMaterial, MeshStandardMaterial, Color, DoubleSide, CanvasTexture, RepeatWrapping } from 'three'
 import { useParameciumState } from '../state/ParameciumState'
 import { useReducedMotion } from '../../../sdk/a11y/useReducedMotion'
 import { A, B, C, dampAlpha } from './life'
@@ -10,6 +10,26 @@ import { Cilia } from './Cilia'
 import { Organelles } from './organelles'
 
 const ZERO = new Vector3(0, 0, 0)
+
+/** Faint rhombic cortex pattern drawn at runtime (zero asset files). */
+function makePellicleTexture(): CanvasTexture {
+  const s = 256
+  const c = document.createElement('canvas')
+  c.width = c.height = s
+  const ctx = c.getContext('2d')!
+  ctx.clearRect(0, 0, s, s)
+  ctx.strokeStyle = 'rgba(191,238,226,0.9)'
+  ctx.lineWidth = 2
+  const step = 32
+  for (let i = -s; i < s * 2; i += step) {
+    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i + s, s); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i - s, s); ctx.stroke()
+  }
+  const tex = new CanvasTexture(c)
+  tex.wrapS = tex.wrapT = RepeatWrapping
+  tex.repeat.set(6, 3)
+  return tex
+}
 
 export function Cell() {
   const viewMode = useParameciumState(s => s.viewMode)
@@ -25,6 +45,12 @@ export function Cell() {
     clearcoat: 0.6, clearcoatRoughness: 0.25, ior: 1.33, side: DoubleSide, depthWrite: false,
     emissive: new Color('#5FE3D0'), emissiveIntensity: 0,
   }), [])
+  const pellicleTex = useMemo(() => makePellicleTexture(), [])
+  const pellicleMat = useMemo(() => new MeshStandardMaterial({
+    color: '#bfeee2', emissive: new Color('#5FE3D0'), emissiveIntensity: 0.15,
+    transparent: true, opacity: 0.12, alphaMap: pellicleTex,
+    depthWrite: false, side: DoubleSide,
+  }), [pellicleTex])
 
   useFrame((state, dt) => {
     const g = groupRef.current
@@ -55,6 +81,9 @@ export function Cell() {
         onPointerOut={() => setHovered(false)}
         onPointerDown={(e: ThreeEvent<PointerEvent>) => { if (viewMode === 'environment') { e.stopPropagation(); enterCell() } }}
       >
+        <sphereGeometry args={[1, 64, 48]} />
+      </mesh>
+      <mesh scale={[A * 0.99, B * 0.99, C * 0.99]} material={pellicleMat}>
         <sphereGeometry args={[1, 64, 48]} />
       </mesh>
       <Cilia highlighted={selectedId === 'cilia'} />
