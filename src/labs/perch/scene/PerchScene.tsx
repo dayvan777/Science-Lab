@@ -7,6 +7,16 @@ import { PerchBody } from './PerchBody'
 import { Scalpel } from './Scalpel'
 import { Organs } from './Organs'
 import { ExternalParts } from './ExternalParts'
+import { usePerchState } from '../state/PerchState'
+import { getPart } from '../content/parts'
+import { PartLabel } from './PartLabel'
+import { HUD } from '../ui/HUD'
+
+function SelectedLabel() {
+  const id = usePerchState(s => s.selectedPartId)
+  if (!id) return null
+  return <PartLabel def={getPart(id)} />
+}
 
 export function PerchScene() {
   return (
@@ -18,10 +28,12 @@ export function PerchScene() {
           <Scalpel />
           <Organs />
           <ExternalParts />
+          <SelectedLabel />
           <DreiEnvironment preset="city" environmentIntensity={0.35} />
         </Suspense>
         <OrbitControls makeDefault enableDamping target={[0, 0, 0]} autoRotate={false} minDistance={3} maxDistance={11} maxPolarAngle={Math.PI * 0.52} />
       </Canvas>
+      <HUD />
       <Loader />
     </div>
   )
