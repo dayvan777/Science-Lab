@@ -8,5 +8,10 @@ export function Labels() {
   const selected = usePerchState(s => s.selectedPartId)
   if (phase === 'intro') return null
   const parts = PARTS.filter(p => p.phase === phase)
-  return <>{parts.map(p => <PartLabel key={p.id} def={p} ambient={p.id !== selected} />)}</>
+  return <>{parts.map(p => {
+    // Internal organs: always-on (ambient, selected brightens). External: only the selected one —
+    // 9 persistent pills crowd the head/flank and read as clutter.
+    if (phase === 'external' && p.id !== selected) return null
+    return <PartLabel key={p.id} def={p} ambient={p.id !== selected} />
+  })}</>
 }
