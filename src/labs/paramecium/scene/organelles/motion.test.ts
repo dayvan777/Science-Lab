@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { Color } from 'three'
-import { smoothstep, pumpScale, cyclosisPos, digestColor, fibSphere } from './motion'
+import { smoothstep, pumpScale, cyclosisPos, digestColor, fibSphere, fireEnvelope } from './motion'
 import { A, B, C } from '../life'
 
 describe('smoothstep', () => {
@@ -73,5 +73,21 @@ describe('fibSphere', () => {
   })
   it('handles n=1', () => {
     expect(fibSphere(1)).toHaveLength(1)
+  })
+})
+
+describe('fireEnvelope', () => {
+  it('is zero outside the window and peaks inside', () => {
+    expect(fireEnvelope(-1)).toBe(0)
+    expect(fireEnvelope(0)).toBe(0)
+    expect(fireEnvelope(1.2)).toBe(0)
+    expect(fireEnvelope(0.6, 1.2)).toBeCloseTo(1, 5)
+  })
+  it('ramps up then down within [0,1]', () => {
+    for (let i = 0; i <= 20; i++) {
+      const v = fireEnvelope((i / 20) * 1.2, 1.2)
+      expect(v).toBeGreaterThanOrEqual(0)
+      expect(v).toBeLessThanOrEqual(1)
+    }
   })
 })

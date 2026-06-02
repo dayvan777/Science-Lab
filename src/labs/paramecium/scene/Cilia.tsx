@@ -12,7 +12,7 @@ export function Cilia({ highlighted }: { highlighted: boolean }) {
   const reduced = useReducedMotion()
   const dummy = useMemo(() => new Object3D(), [])
   const mat = useMemo(
-    () => new MeshStandardMaterial({ color: '#bfeee2', transparent: true, opacity: 0.85 }),
+    () => new MeshStandardMaterial({ color: '#bfeee2', transparent: true, opacity: 0.8 }),
     [],
   )
   const data = useMemo(() => {
@@ -37,7 +37,7 @@ export function Cilia({ highlighted }: { highlighted: boolean }) {
     for (let i = 0; i < COUNT; i++) {
       dummy.position.copy(data.pts[i]).addScaledVector(data.nrm[i], 0.06)
       dummy.quaternion.setFromUnitVectors(UP, data.nrm[i])
-      if (!reduced) dummy.rotateX(Math.sin(t * 6 + data.ph[i] * 3) * 0.5)
+      if (!reduced) dummy.rotateX(Math.sin(t * 6 + data.ph[i] * 3) * 0.6 + Math.sin(t * 3 + data.ph[i]) * 0.12)
       dummy.updateMatrix()
       m.setMatrixAt(i, dummy.matrix)
     }
@@ -49,7 +49,7 @@ export function Cilia({ highlighted }: { highlighted: boolean }) {
 
   return (
     <instancedMesh ref={ref} args={[undefined, undefined, COUNT]} material={mat}>
-      <coneGeometry args={[0.018, 0.13, 5]} />
+      <coneGeometry args={[0.009, 0.17, 6]} />
     </instancedMesh>
   )
 }

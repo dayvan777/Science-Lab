@@ -54,3 +54,12 @@ export function fibSphere(n: number): [number, number, number][] {
   }
   return out
 }
+
+/** One-shot 0→1→0 envelope over [0,duration]; 0 outside. For on-select bursts. */
+export function fireEnvelope(localT: number, duration = 1.2): number {
+  if (localT <= 0 || localT >= duration) return 0
+  const u = localT / duration
+  if (u < 0.2) return smoothstep(0, 0.2, u)
+  if (u < 0.55) return 1
+  return 1 - smoothstep(0.55, 1, u)
+}
