@@ -34,7 +34,7 @@
 | `AnalPore.tsx` | Rear notch + on-select expelled remnant | 10 |
 | `OrganelleLabel.tsx` | drei `<Html>` pill + `<Line>` leader | 11 |
 
-**Modified:** `scene/Organelles.tsx` (→ 1-line barrel, T2), `scene/Cilia.tsx` (thinner/wavier, T12), `scene/Cell.tsx` (pellicle CanvasTexture, T13).
+**Modified:** `scene/Cell.tsx` (re-point import to `./organelles` folder in T2; pellicle CanvasTexture in T13), `scene/Cilia.tsx` (thinner/wavier, T12). **Deleted:** `scene/Organelles.tsx` (superseded by the folder, T2).
 **Unchanged:** `content/organelles.ts`, `state/ParameciumState.ts`, `ui/*`, `index.tsx`, route, subject entry.
 
 **Import-depth cheat-sheet (from `scene/organelles/X.tsx`):** content `'../../content/organelles'` · state `'../../state/ParameciumState'` · life `'../life'` · reduced-motion `'../../../../sdk/a11y/useReducedMotion'` · motion `'./motion'`.
@@ -380,16 +380,19 @@ export function Organelles() {
 }
 ```
 
-- [ ] **Step 5: Turn `scene/Organelles.tsx` into a barrel** (replace whole file)
+- [ ] **Step 5: Delete the old file + point `Cell.tsx` at the folder**
 
-```tsx
-export { Organelles } from './organelles'
+A barrel named `scene/Organelles.tsx` that re-exports `'./organelles'` self-resolves on case-insensitive Windows (`./organelles` probes `organelles.tsx` ≈ `Organelles.tsx`) and trips `forceConsistentCasingInFileNames`. So delete the file and import the folder directly:
+
+```bash
+git rm src/labs/paramecium/scene/Organelles.tsx
 ```
 
-- [ ] **Step 6: Confirm nothing imported the old dead `OrganelleId` re-export**
+In `src/labs/paramecium/scene/Cell.tsx`, change `import { Organelles } from './Organelles'` to `import { Organelles } from './organelles'`.
 
-Run: `git grep -n "from './Organelles'" src ; git grep -n 'from "../scene/Organelles"' src`
-Expected: only `src/labs/paramecium/scene/Cell.tsx` importing `{ Organelles }`. If anything imports `OrganelleId` from `./Organelles`, repoint it to `../content/organelles`.
+- [ ] **Step 6: Confirm no stale `./Organelles` (capital-O) imports remain**
+
+Run: `git grep -rn "from './Organelles'" src` → Expected: **no matches** (Cell now imports the lower-case folder `'./organelles'`; the old file is deleted). Repoint any straggler to `'./organelles'` or `'../content/organelles'` as appropriate.
 
 - [ ] **Step 7: Gate**
 
