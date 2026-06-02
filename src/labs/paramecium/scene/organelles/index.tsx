@@ -5,6 +5,7 @@ import { Trichocysts } from './Trichocysts'
 import { ContractileVacuoles } from './ContractileVacuoles'
 import { FoodVacuoles } from './FoodVacuoles'
 import { Macronucleus } from './Macronucleus'
+import { Micronucleus } from './Micronucleus'
 
 const POINT_ORGANELLES = ORGANELLES.filter(o => o.kind !== 'layer')
 
@@ -13,6 +14,7 @@ const RENDERERS: Partial<Record<OrganelleId, OrganelleRenderer>> = {
   contractileVacuoles: ContractileVacuoles,
   foodVacuoles: FoodVacuoles,
   macronucleus: Macronucleus,
+  micronucleus: Micronucleus,
 }
 
 export function Organelles() {
