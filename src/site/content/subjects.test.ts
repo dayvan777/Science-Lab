@@ -21,6 +21,13 @@ describe('subjects registry', () => {
     expect(p?.status).toBe('available')
   })
 
+  it('biology has the perch dissection lab', () => {
+    const bio = SUBJECTS.find(s => s.id === 'biology')!
+    const perch = bio.labs.find(l => l.id === 'perch')!
+    expect(perch.path).toBe('/biology/perch')
+    expect(perch.status).toBe('available')
+  })
+
   it('keeps every subject path unique', () => {
     const paths = SUBJECTS.map(s => s.path)
     expect(new Set(paths).size).toBe(paths.length)

@@ -9,6 +9,7 @@ import { BiologyPage } from '../site/pages/BiologyPage'
 import { ComingSoonPage } from '../site/pages/ComingSoonPage'
 const AnatomyLab = lazy(() => import('../labs/anatomy').then(m => ({ default: m.AnatomyLab })))
 const ParameciumLab = lazy(() => import('../labs/paramecium').then(m => ({ default: m.ParameciumLab })))
+const PerchLab = lazy(() => import('../labs/perch').then(m => ({ default: m.PerchLab })))
 
 const BenchmarkScene = import.meta.env.DEV
   ? lazy(() => import('../labs/brownian-diffusion/scene/BenchmarkScene').then(m => ({ default: m.BenchmarkScene })))
@@ -34,6 +35,14 @@ export default function App() {
           element={
             <Suspense fallback={<div style={{ position: 'fixed', inset: 0, background: '#06121a' }} />}>
               <ParameciumLab />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/biology/perch"
+          element={
+            <Suspense fallback={<div style={{ position: 'fixed', inset: 0, background: '#06121a' }} />}>
+              <PerchLab />
             </Suspense>
           }
         />

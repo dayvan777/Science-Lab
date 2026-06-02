@@ -89,6 +89,13 @@ export const SUBJECTS: SubjectEntry[] = [
         path: '/biology/paramecium',
         status: 'available',
       },
+      {
+        id: 'perch',
+        title: 'Будова річкового окуня',
+        subtitle: 'Зовнішня будова · розтин · внутрішні органи',
+        path: '/biology/perch',
+        status: 'available',
+      },
     ],
   },
 ]
