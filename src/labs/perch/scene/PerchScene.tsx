@@ -5,6 +5,18 @@ import { ACESFilmicToneMapping } from 'three'
 import { Tray } from './Tray'
 import { PerchBody } from './PerchBody'
 import { Scalpel } from './Scalpel'
+import { Organs } from './Organs'
+import { ExternalParts } from './ExternalParts'
+import { usePerchState } from '../state/PerchState'
+import { getPart } from '../content/parts'
+import { PartLabel } from './PartLabel'
+import { HUD } from '../ui/HUD'
+
+function SelectedLabel() {
+  const id = usePerchState(s => s.selectedPartId)
+  if (!id) return null
+  return <PartLabel def={getPart(id)} />
+}
 
 export function PerchScene() {
   return (
@@ -14,21 +26,14 @@ export function PerchScene() {
           <Tray />
           <PerchBody />
           <Scalpel />
-          {/* SPIKE ORGANS — removed in Task 10 (replaced by <Organs/>) */}
-          <group>
-            <mesh position={[0.2, 0.32, 0.05]} scale={[0.9, 0.3, 0.28]}>
-              <sphereGeometry args={[1, 24, 18]} />
-              <meshStandardMaterial color="#d6dce0" roughness={0.35} metalness={0.1} />
-            </mesh>
-            <mesh position={[-0.95, -0.42, 0.1]}>
-              <sphereGeometry args={[0.16, 18, 14]} />
-              <meshStandardMaterial color="#b02a1e" roughness={0.5} />
-            </mesh>
-          </group>
+          <Organs />
+          <ExternalParts />
+          <SelectedLabel />
           <DreiEnvironment preset="city" environmentIntensity={0.35} />
         </Suspense>
         <OrbitControls makeDefault enableDamping target={[0, 0, 0]} autoRotate={false} minDistance={3} maxDistance={11} maxPolarAngle={Math.PI * 0.52} />
       </Canvas>
+      <HUD />
       <Loader />
     </div>
   )

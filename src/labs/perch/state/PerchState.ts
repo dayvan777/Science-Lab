@@ -1,7 +1,5 @@
 import { create } from 'zustand'
-
-// TEMP local type — replaced by `import type { PartId } from '../content/parts'` in a later task.
-type PartId = string
+import type { PartId } from '../content/parts'
 
 export type PerchPhase = 'intro' | 'external' | 'internal'
 
