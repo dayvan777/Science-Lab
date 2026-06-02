@@ -24,7 +24,6 @@ export function FoodVacuoles({ def, state }: { def: OrganelleDef; state: Organel
     [count, def.color], // eslint-disable-line react-hooks/exhaustive-deps
   )
   const speckMat = useMemo(() => new MeshStandardMaterial({ color: '#3f5a23', roughness: 0.7 }), [])
-  const scratch = useMemo(() => new Color(), [])
 
   useFrame((s, dt) => {
     const a = reduced ? 1 : dampAlpha(dt, 8)
@@ -33,7 +32,7 @@ export function FoodVacuoles({ def, state }: { def: OrganelleDef; state: Organel
       m.emissiveIntensity += (state.targetEmissive - m.emissiveIntensity) * a
       m.opacity += (state.targetOpacity - m.opacity) * a
       const prog = reduced ? i / Math.max(1, count) : ((t / 18 + i / Math.max(1, count)) % 1)
-      m.color.copy(scratch.copy(digestColor(prog)))
+      m.color.copy(digestColor(prog))
       const g = groups.current[i]
       if (!g) return
       const pos = reduced ? positions[i] : cyclosisPos(t, i, count)
