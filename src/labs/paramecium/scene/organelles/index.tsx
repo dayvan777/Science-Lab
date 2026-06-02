@@ -6,6 +6,7 @@ import { ContractileVacuoles } from './ContractileVacuoles'
 import { FoodVacuoles } from './FoodVacuoles'
 import { Macronucleus } from './Macronucleus'
 import { Micronucleus } from './Micronucleus'
+import { OralGroove } from './OralGroove'
 
 const POINT_ORGANELLES = ORGANELLES.filter(o => o.kind !== 'layer')
 
@@ -15,6 +16,7 @@ const RENDERERS: Partial<Record<OrganelleId, OrganelleRenderer>> = {
   foodVacuoles: FoodVacuoles,
   macronucleus: Macronucleus,
   micronucleus: Micronucleus,
+  oral: OralGroove,
 }
 
 export function Organelles() {
